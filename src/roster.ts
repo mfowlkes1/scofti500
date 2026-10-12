@@ -65,8 +65,8 @@ export const CARS: Car[] = [
     accent: "#b6ff00",
   },
   {
-    id: "43-muscle",
-    number: "43",
+    id: "3-muscle",
+    number: "3",
     era: "'60s",
     name: "the muscle",
     line: "Chrome bumper, round lights, big old heart.",
