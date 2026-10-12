@@ -4,6 +4,10 @@
 // Art is cut from the sheets in art/reference: faces into public/img/drivers/<id>.jpg,
 // car shots into public/img/cars/<id>.jpg.
 
+import type { KeyHue } from "./paint";
+
+const LIME: KeyHue = { hue: 80, width: 26 };
+
 export type Driver = {
   id: string;
   name: string;
@@ -19,8 +23,10 @@ export type Car = {
   era: string;
   name: string;
   line: string;
-  /** main paint colour, for the card glow */
+  /** main paint colour, for the card glow and the stock swatch */
   accent: string;
+  /** the hue band of the car's own paint, which the colour picker repaints */
+  key: KeyHue;
 };
 
 export const DRIVERS: Driver[] = [
@@ -52,9 +58,10 @@ export const CARS: Car[] = [
     id: "17-modern",
     number: "17",
     era: "modern",
-    name: "the 17",
+    name: "guyute",
     line: "Today's car. Low, wide, splattered in lime.",
     accent: "#b6ff00",
+    key: LIME,
   },
   {
     id: "43-eighties",
@@ -63,6 +70,7 @@ export const CARS: Car[] = [
     name: "the brawler",
     line: "A big square box. Rubbin' is racin'.",
     accent: "#b6ff00",
+    key: LIME,
   },
   {
     id: "3-muscle",
@@ -71,6 +79,7 @@ export const CARS: Car[] = [
     name: "the muscle",
     line: "Chrome bumper, round lights, big old heart.",
     accent: "#b6ff00",
+    key: LIME,
   },
   {
     id: "7-owl",
@@ -79,6 +88,8 @@ export const CARS: Car[] = [
     name: "the hooter",
     line: "Sees the gap before it opens.",
     accent: "#ff7a1a",
+    // the orange sky in the top-left corner stays put
+    key: { hue: 24, width: 16, skip: [[0, 0, 0.31, 0.43]] },
   },
 ];
 

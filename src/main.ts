@@ -2,13 +2,14 @@ import "@fontsource/lilita-one";
 import "@fontsource/permanent-marker";
 import "@fontsource/racing-sans-one";
 import "./style.css";
+import { PAINTS, paintedUrl, savePaint, savedPaint } from "./paint";
 import { createPicker } from "./pick";
 import { CARS, DRIVERS, carUrl, faceUrl, type Car, type Driver } from "./roster";
 
-// Flow: title → PICK YOUR DRIVER → PICK YOUR CAR → race (not built yet). Backspace and the on-screen
+// Flow: title → PICK YOUR DRIVER → PICK YOUR CAR → PICK YOUR TRACK (not built yet). Backspace and the on-screen
 // BACK go back; Escape belongs to the arcade.
-type Screen = "title" | "driver" | "car" | "race";
-const BACK: Partial<Record<Screen, Screen>> = { driver: "title", car: "driver", race: "car" };
+type Screen = "title" | "driver" | "car" | "track";
+const BACK: Partial<Record<Screen, Screen>> = { driver: "title", car: "driver", track: "car" };
 const $ = (id: string) => document.getElementById(id)!;
 
 let screen: Screen = "title";
@@ -46,11 +47,51 @@ const cars = createPicker<Car>({
   line: (c) => c.line,
   badge: (c) => c.number,
   accent: (c) => c.accent,
+  onShow: (c, hero, card) => showPaints(c, hero, card),
   onGo: (c) => {
-    $("race-who").textContent = `${driver.name} in the #${c.number} · ${c.name}`;
-    show("race");
+    const paint = PAINTS.find((p) => p.id === savedPaint(c.id))!;
+    const colour = paint.id === "stock" ? "" : ` in ${paint.label}`;
+    $("race-who").textContent = `${driver.name} in the #${c.number} · ${c.name}${colour}`;
+    show("track");
   },
 });
+
+// the colour swatches under the car; each car remembers its own colour
+function showPaints(car: Car, hero: HTMLImageElement, card: HTMLImageElement): void {
+  const row = $("car-paints");
+  row.style.setProperty("--stock", car.accent);
+  row.replaceChildren(
+    ...PAINTS.map((p) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "swatch";
+      b.title = p.label;
+      b.setAttribute("aria-label", p.label);
+      b.style.background = p.swatch;
+      if (p.id === "stock") b.textContent = "★";
+      b.addEventListener("click", () => {
+        savePaint(car.id, p.id);
+        applyPaint(car, hero, card);
+      });
+      return b;
+    }),
+  );
+  applyPaint(car, hero, card);
+}
+
+let paintJob = 0;
+async function applyPaint(car: Car, hero: HTMLImageElement, card: HTMLImageElement): Promise<void> {
+  const id = savedPaint(car.id);
+  const i = PAINTS.findIndex((p) => p.id === id);
+  for (const [j, s] of [...$("car-paints").children].entries()) s.classList.toggle("on", j === i);
+  $("paint-name").textContent = PAINTS[i].label;
+  const job = ++paintJob;
+  const url = await paintedUrl(carUrl(car), car.key, id);
+  // a later pick won the race: leave the picture alone
+  if (job !== paintJob) return;
+  hero.src = url;
+  card.src = url;
+}
 
 $("race-now").addEventListener("click", () => show("driver"));
 for (const b of document.querySelectorAll<HTMLButtonElement>("[data-back]")) {

@@ -19,6 +19,8 @@ export type PickerOptions<T extends PickerItem> = {
   badge?: (t: T) => string;
   /** colour of the selected card's glow */
   accent?: (t: T) => string;
+  /** called each time the shown item changes, with the hero image and the item's small-card image */
+  onShow?: (t: T, hero: HTMLImageElement, card: HTMLImageElement) => void;
   onGo: (t: T) => void;
 };
 
@@ -68,6 +70,7 @@ export function createPicker<T extends PickerItem>(o: PickerOptions<T>): Picker<
       c.style.setProperty("--accent", i === cur && accent ? accent : "");
     }
     cards[cur].scrollIntoView({ block: "nearest", inline: "nearest" });
+    o.onShow?.(t, img, cards[cur].querySelector("img")!);
   }
 
   $(`${o.prefix}-go`).addEventListener("click", () => {

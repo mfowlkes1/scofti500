@@ -27,12 +27,12 @@ button {
   display: none;
 }
 body[data-screen="title"] #title-screen,
-body[data-screen="race"] #race-screen {
+body[data-screen="track"] #track-screen {
   display: block;
 }
 
 /* Welcome wallpaper: wide stadium on landscape screens, tall one on portrait. Never stretched.
-   Behind the pick and race screens it blurs and dims. */
+   Behind the pick and track screens it blurs and dims. */
 .welcome {
   position: fixed;
   inset: 0;
@@ -272,6 +272,47 @@ body[data-screen="car"] #car-screen {
   max-width: 28ch;
 }
 
+/* car colours */
+.paints-wrap {
+  display: grid;
+  gap: 6px;
+  justify-items: inherit;
+  margin-bottom: 6px;
+}
+.paint-name {
+  font-size: 14px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.paints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 340px;
+  justify-content: inherit;
+}
+.swatch {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  color: var(--night);
+  border: 3px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+.swatch.on {
+  border-color: #fff;
+  box-shadow: 0 0 0 3px var(--night), 0 0 0 5px var(--lime);
+}
+.swatch:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
 .pick-cards {
   display: flex;
   gap: 12px;
@@ -357,12 +398,12 @@ body[data-screen="car"] #car-screen {
 }
 
 /* ---- race (not built yet) ---- */
-#race-screen {
+#track-screen {
   position: fixed;
   inset: 0;
   text-align: center;
 }
-body[data-screen="race"] #race-screen {
+body[data-screen="track"] #track-screen {
   display: grid;
   place-content: center;
   gap: 14px;
@@ -370,7 +411,8 @@ body[data-screen="race"] #race-screen {
 }
 .race-flag {
   margin: 0;
-  font: 400 clamp(48px, 12vmin, 120px) / 1 "Racing Sans One", system-ui, sans-serif;
+  font: 400 clamp(36px, 9.5vmin, 110px) / 1 "Racing Sans One", system-ui, sans-serif;
+  padding-inline: 16px;
   color: var(--lime);
   transform: skewX(-10deg);
 }
@@ -381,4 +423,10 @@ body[data-screen="race"] #race-screen {
   margin: 0 0 10px;
   color: var(--muted);
   font: 600 18px/1.4 system-ui, sans-serif;
+}
+
+/* a longer label on the big button (PICK YOUR TRACK ▶) */
+.go-btn.go-long {
+  font-size: clamp(24px, 4.8vmin, 44px);
+  padding-inline: 1em;
 }
