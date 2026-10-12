@@ -430,3 +430,15 @@ body[data-screen="track"] #track-screen {
   font-size: clamp(24px, 4.8vmin, 44px);
   padding-inline: 1em;
 }
+
+.track-name {
+  margin: 8px 0 0;
+  font: 400 clamp(44px, 11vmin, 120px) / 1 "Racing Sans One", system-ui, sans-serif;
+  transform: skewX(-8deg);
+  text-shadow: 0 0.06em 0 var(--night);
+}
+#track-line {
+  max-width: 34ch;
+  padding-inline: 16px;
+  color: #fff;
+}

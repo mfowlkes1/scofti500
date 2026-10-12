@@ -98,3 +98,21 @@ export const driverById = (id: string | null) => byId(DRIVERS, id);
 export const carById = (id: string | null) => byId(CARS, id);
 export const faceUrl = (d: Driver) => `${import.meta.env.BASE_URL}img/drivers/${d.id}.jpg`;
 export const carUrl = (c: Car) => `${import.meta.env.BASE_URL}img/cars/${c.id}.jpg`;
+
+// Tracks. Invented names only, never a real venue (Michael picked "martinsvale", 2026-10-12).
+export type Track = {
+  id: string;
+  name: string;
+  /** shape and length, shown under the name */
+  kind: string;
+  line: string;
+};
+
+export const TRACKS: Track[] = [
+  {
+    id: "martinsvale",
+    name: "martinsvale",
+    kind: "paperclip · half a mile",
+    line: "Two long straights, two tight hairpins. Flat out, stand on the brakes, bump your way round.",
+  },
+];

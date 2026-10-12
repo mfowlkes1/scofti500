@@ -4,7 +4,7 @@ import "@fontsource/racing-sans-one";
 import "./style.css";
 import { PAINTS, paintedUrl, savePaint, savedPaint } from "./paint";
 import { createPicker } from "./pick";
-import { CARS, DRIVERS, carUrl, faceUrl, type Car, type Driver } from "./roster";
+import { CARS, DRIVERS, TRACKS, carUrl, faceUrl, type Car, type Driver } from "./roster";
 
 // Flow: title → PICK YOUR DRIVER → PICK YOUR CAR → PICK YOUR TRACK (not built yet). Backspace and the on-screen
 // BACK go back; Escape belongs to the arcade.
@@ -92,6 +92,12 @@ async function applyPaint(car: Car, hero: HTMLImageElement, card: HTMLImageEleme
   hero.src = url;
   card.src = url;
 }
+
+// one track so far; a picker comes when there are more
+const track = TRACKS[0];
+$("track-name").textContent = track.name;
+$("track-kind").textContent = track.kind;
+$("track-line").textContent = track.line;
 
 $("race-now").addEventListener("click", () => show("driver"));
 for (const b of document.querySelectorAll<HTMLButtonElement>("[data-back]")) {
