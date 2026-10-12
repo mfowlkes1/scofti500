@@ -660,3 +660,28 @@ body[data-screen="garage"] .welcome {
     font-size: 24px;
   }
 }
+
+/* SCOFTI's I always gets its bars (Permanent Marker draws I as a plain stroke) */
+.cap-i {
+  position: relative;
+  display: inline-block;
+}
+.cap-i::before,
+.cap-i::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 0.36em;
+  height: 0.085em;
+  background: currentColor;
+  box-shadow: 0 0 0 0.03em var(--night);
+  transform: translateX(-50%);
+}
+.cap-i::before {
+  top: 0.2em;
+  margin-left: 0.03em;
+}
+.cap-i::after {
+  bottom: 0.22em;
+  margin-left: -0.03em;
+}

@@ -4,6 +4,8 @@
 // night sky, SCOFTI 500 painted on the infield grass and a scoring pylon showing the running order.
 import * as THREE from "three";
 import { racingLine } from "./ai";
+import { buildInfield } from "./infield";
+import { writeWithBars } from "../lettering";
 import { APRON, HALF, L, LINE_S, PIT, R, S, frame, heightAt } from "./track";
 
 export type TrackScene = {
@@ -11,6 +13,8 @@ export type TrackScene = {
   update(t: number, flag: "green" | "white" | "checkered" | "yellow"): void;
   /** the scoring pylon: car numbers in running order */
   pylon(numbers: string[]): void;
+  /** the big leaderboards in the infield */
+  board(rows: { number: string; name: string; me: boolean }[], lap: string): void;
   /** follow this point with the shadow light */
   focus(x: number, z: number): void;
 };
@@ -191,7 +195,7 @@ function wallTexture(): THREE.CanvasTexture {
   g.fillStyle = "#111";
   g.font = "64px 'Permanent Marker'";
   g.textBaseline = "middle";
-  g.fillText("SCOFTI", 40, 56);
+  writeWithBars(g, "SCOFTI", 40, 56);
   g.font = "italic 62px 'Racing Sans One'";
   g.fillStyle = "#c8161d";
   g.fillText("500", 300, 58);
@@ -288,7 +292,7 @@ function logoTexture(): THREE.CanvasTexture {
   g.textBaseline = "middle";
   g.font = "200px 'Permanent Marker'";
   g.fillStyle = "rgba(245,245,245,0.85)";
-  g.fillText("SCOFTI", 430, 170);
+  writeWithBars(g, "SCOFTI", 430, 170);
   g.font = "italic 190px 'Racing Sans One'";
   g.fillStyle = "rgba(210,28,36,0.9)";
   g.fillText("500", 860, 200);
@@ -518,13 +522,13 @@ export async function buildTrack(scene: THREE.Scene): Promise<TrackScene> {
     const f = frame(s, HALF + 58);
     tower(f.x, f.z, 42);
   }
-  for (const x of [-S / 2 + 20, 0, S / 2 - 20]) tower(x, 0, 30);
+  for (const x of [-60, 0, 60]) tower(x, 0, 30);
 
   // SCOFTI 500 painted on the infield grass
   {
-    const logo = new THREE.Mesh(new THREE.PlaneGeometry(150, 56), new THREE.MeshStandardMaterial({ map: logoTexture(), transparent: true, roughness: 1, depthWrite: false }));
+    const logo = new THREE.Mesh(new THREE.PlaneGeometry(120, 45), new THREE.MeshStandardMaterial({ map: logoTexture(), transparent: true, roughness: 1, depthWrite: false }));
     logo.rotation.x = -Math.PI / 2;
-    logo.position.set(0, 0.02, -8);
+    logo.position.set(0, 0.02, 6);
     scene.add(logo);
   }
 
@@ -562,6 +566,9 @@ export async function buildTrack(scene: THREE.Scene): Promise<TrackScene> {
     scene.add(flag);
   }
 
+  // the infield: haulers, motorhomes, fans and the big leaderboards
+  const infield = buildInfield(scene);
+
   // the light: a cool sky glow, and the towers' glare as one big light that follows your car (for
   // its shadows)
   scene.add(new THREE.HemisphereLight("#b9c6ff", "#2a2a33", 1.1));
@@ -577,7 +584,9 @@ export async function buildTrack(scene: THREE.Scene): Promise<TrackScene> {
   scene.add(sun, sun.target);
 
   return {
+    board: infield.board,
     update(t, state) {
+      infield.update(t);
       // a few flashes going off at any moment
       for (let i = 0; i < 60; i++) {
         const live = Math.sin(t * (3 + (i % 7)) + i * 12.9) > 0.97;

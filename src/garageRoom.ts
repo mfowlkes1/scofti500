@@ -5,6 +5,7 @@
 // in the colour you picked. It turns slowly on its own; drag to spin it. It only draws while the
 // garage is showing.
 import * as THREE from "three";
+import { writeWithBars } from "./lettering";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { loadCar } from "./carModel";
 import { paintedUrl } from "./paint";
@@ -328,7 +329,7 @@ function neonSign(): THREE.CanvasTexture {
     g.shadowBlur = 30;
     g.fillStyle = "#ffffff";
     g.font = '170px "Permanent Marker", cursive';
-    for (let k = 0; k < 2; k++) g.fillText("SCOFTI", 512, 120);
+    for (let k = 0; k < 2; k++) writeWithBars(g, "SCOFTI", 512, 120);
     g.shadowColor = "#ff2a2a";
     g.fillStyle = "#ff5050";
     g.font = 'italic 110px "Racing Sans One", system-ui, sans-serif';

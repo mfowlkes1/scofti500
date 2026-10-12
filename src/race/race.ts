@@ -380,6 +380,12 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     drawCars(dt);
     effects(dt);
     follow(dt);
+    // ?simtest screenshots can put the camera anywhere: window.__camPose = [x, y, z, lookX, lookY, lookZ]
+    const pose = SIMTEST && (window as unknown as { __camPose?: number[] }).__camPose;
+    if (pose) {
+      camera.position.set(pose[0], pose[1], pose[2]);
+      camera.lookAt(pose[3], pose[4], pose[5]);
+    }
     const me = sess.cars[sess.player];
     track!.focus(me.x, me.z);
     track!.update(t / 1000, sess.phase === "checkered" ? "checkered" : sess.phase === "pace" ? "yellow" : whiteFlag() ? "white" : "green");
@@ -391,7 +397,10 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     showPitStop();
     if (t > pylonAt) {
       pylonAt = t + 1000;
-      track!.pylon(order(sess).map((i) => sess!.entries[i].number));
+      const running = order(sess);
+      track!.pylon(running.map((i) => sess!.entries[i].number));
+      const lap = sess.phase === "pace" ? "PACE LAP" : sess.phase === "checkered" ? "CHECKERED" : `LAP ${Math.min(sess.laps, Math.max(...sess.crossed) + 1)}/${sess.laps}`;
+      track!.board(running.map((i) => ({ number: sess!.entries[i].number, name: sess!.entries[i].name, me: i === sess!.player })), lap);
     }
     renderer.render(scene, camera);
     if (finishedAt && t - finishedAt > 4500 && !$("race-results").classList.contains("on")) results();
