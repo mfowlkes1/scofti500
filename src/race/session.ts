@@ -48,6 +48,10 @@ export type Session = {
   finishOrder: number[];
   /** you asked for a pit stop this time by */
   pitCall: boolean;
+  /** pit stops each car has made */
+  stops: number[];
+  /** when you pit, the rivals answer: the lap each one comes in (-1: not planning to) */
+  answerAt: number[];
   events: RaceEvent[];
 };
 
@@ -91,6 +95,8 @@ export function createSession(entries: Entry[], laps: number, easy = false): Ses
     led: entries.map(() => 0),
     finishOrder: [],
     pitCall: false,
+    stops: entries.map(() => 0),
+    answerAt: entries.map(() => -1),
     events: [],
   };
 }
@@ -136,13 +142,23 @@ export function stepSession(sess: Session, playerInput: Input | null, dt: number
     const entry = sess.entries[i];
     // pit stops start down at the end of the backstretch
     if (sess.phase === "green" && drv.mode === "race" && canStartPit(car) && lapsLeft(i) > 1) {
-      const wants = i === sess.player ? sess.pitCall : car.wear > 0.66 + (i % 3) * 0.05 && lapsLeft(i) >= 8;
+      // rivals pit when their tyres are going, or to answer your stop so nobody's left on old tyres
+      const answering = sess.answerAt[i] >= 0 && sess.crossed[i] >= sess.answerAt[i] && lapsLeft(i) >= 3 && car.wear > 0.12;
+      const wants = i === sess.player ? sess.pitCall : (car.wear > 0.66 + (i % 3) * 0.05 && lapsLeft(i) >= 8) || answering;
       if (wants) {
         startPit(drv);
         drv.service = i === sess.player ? YOUR_STOP - pitCrew : PIT_TIME - 0.8 + (i % 4) * 0.4 + Math.random() * 0.8;
         drv.serviceTotal = drv.service;
         drv.stopped = 0;
         sess.events.push({ type: "pit-in", car: i });
+        sess.stops[i]++;
+        sess.answerAt[i] = -1;
+        // you pitted: everyone who's made fewer stops comes in over the next few laps, a few at a time
+        if (i === sess.player) {
+          sess.answerAt.forEach((_, k) => {
+            if (k !== i && sess.stops[k] < sess.stops[i]) sess.answerAt[k] = Math.max(0, sess.crossed[k]) + 1 + (k % 4);
+          });
+        }
       }
     }
     const wasStopped = drv.pitPhase === "stopped";
