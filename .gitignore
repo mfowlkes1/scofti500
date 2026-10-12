@@ -1,0 +1,9 @@
+node_modules
+dist
+dist-test
+.vercel
+*.log
+art/meshy/*.glb
+art/meshy/views/
+art/meshy/*log*.txt
+public/dev/

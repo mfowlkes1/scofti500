@@ -1,0 +1,14 @@
+{
+  "name": "scofti500",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host --port 5250"
+  },
+  "devDependencies": {
+    "vite": "^8.3.2"
+  }
+}
