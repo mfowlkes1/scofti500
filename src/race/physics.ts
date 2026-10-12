@@ -12,7 +12,7 @@
 // - Tyres wear with every meter, much faster while sliding, and lose grip as they go. Cold tyres
 //   (the start, out of the pits) have less grip until they warm up.
 // - Walls and other cars push back: rubbin' is racin', but a hard hit off-center spins you.
-import { frame, gap, heightAt, HALF, INFIELD, L, PIT, project, surfaceAt, bankAt, wrap, type Surface } from "./track";
+import { frame, gap, heightAt, HALF, INFIELD, inPitRoad, L, PIT, project, surfaceAt, bankAt, wrap, type Surface } from "./track";
 
 export const G = 9.81;
 export const WHEELBASE = 2.8;
@@ -198,6 +198,12 @@ export function step(c: CarState, input: Input, spec: Spec, dt: number): void {
   // a sliding car tries to straighten itself out (the tyres pull it back in line)
   const slip = Math.atan2(vLat, Math.max(1, Math.abs(vLong)));
   c.spin *= Math.exp(-dt * (0.8 + 2.4 * Math.min(1, latAvail / 12)));
+  // preseason: knocked slow and sideways, the car straightens itself back down the track
+  if (c.soft && v < 14 && !c.limiter && !inPitRoad(c.s, c.d) && c.d > PIT.wallIn) {
+    const t = frame(c.s, c.d);
+    c.h += angleTo(c.h, Math.atan2(t.tz, t.tx)) * Math.min(1, dt * 2.5);
+    c.spin *= Math.exp(-dt * 6);
+  }
   const settle = -Math.sin(slip) * 1.6 * Math.min(1, v / 10);
   const turn = (yaw + c.spin + settle * 0.35) * dt;
   c.h += turn;
@@ -373,13 +379,14 @@ export function collide(cars: CarState[]): void {
           const rel = (a.vx - b.vx) * nx + (a.vz - b.vz) * nz;
           if (rel >= 0) continue;
           const j2 = (-(1 + 0.15) * rel) / 2;
+          // preseason cars get knocked about half as much
           if (!a.held) {
-            a.vx += nx * j2;
-            a.vz += nz * j2;
+            a.vx += nx * j2 * (a.soft ? 0.5 : 1);
+            a.vz += nz * j2 * (a.soft ? 0.5 : 1);
           }
           if (!b.held) {
-            b.vx -= nx * j2;
-            b.vz -= nz * j2;
+            b.vx -= nx * j2 * (b.soft ? 0.5 : 1);
+            b.vz -= nz * j2 * (b.soft ? 0.5 : 1);
           }
           // off-center hits twist the car: the farther from the middle, the more
           const twist = Math.min(1.8, j2 * 0.11);
