@@ -105,6 +105,22 @@ export async function paintedUrl(url: string, key: KeyHue, paintId: string, view
   return out;
 }
 
+/** a 3D car's texture in this paint: a canvas to use as the new map, or null for stock */
+export function paintedTexture(source: CanvasImageSource & { width: number; height: number }, key: KeyHue, paintId: string): HTMLCanvasElement | null {
+  const paint = PAINTS.find((p) => p.id === paintId);
+  if (!paint || paint.id === "stock") return null;
+  const c = document.createElement("canvas");
+  c.width = source.width;
+  c.height = source.height;
+  const g = c.getContext("2d", { willReadFrequently: true })!;
+  g.drawImage(source, 0, 0);
+  const data = g.getImageData(0, 0, c.width, c.height);
+  // no skip areas or number boxes: those are for the flat pictures
+  recolour(data, paint, key, [], []);
+  g.putImageData(data, 0, 0);
+  return c;
+}
+
 const smooth = (a: number, b: number, x: number) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
   return t * t * (3 - 2 * t);

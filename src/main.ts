@@ -3,6 +3,8 @@ import "@fontsource/permanent-marker";
 import "@fontsource/racing-sans-one";
 import "./style.css";
 import { PAINTS, paintedUrl, savePaint, savedPaint } from "./paint";
+import { UPGRADES, MAX_LEVEL, buy, cash, levels, nextCost } from "./garage";
+import { createGarage } from "./garageRoom";
 import { createPicker } from "./pick";
 import { CARS, DRIVERS, TRACKS, carUrl, faceUrl, type Car, type Driver } from "./roster";
 
@@ -13,9 +15,12 @@ const BACK: Partial<Record<Screen, Screen>> = { driver: "title", car: "driver", 
 const $ = (id: string) => document.getElementById(id)!;
 
 let screen: Screen = "title";
+const garage = createGarage($("garage-canvas") as HTMLCanvasElement);
+let garageCar: Car | null = null;
 function show(next: Screen): void {
   screen = next;
   document.body.dataset.screen = next;
+  garage.show(next === "garage");
 }
 
 // ✕ back to the arcade shelf: /arcade/scofti500/ → /arcade/
@@ -59,7 +64,9 @@ const cars = createPicker<Car>({
     const paint = PAINTS.find((p) => p.id === paintOf(c))!;
     const colour = paint.id === "stock" ? "" : ` in ${paint.label}`;
     $("race-who").textContent = `${driver.name} in the #${c.number} · ${c.name}${colour}`;
-    ($("garage-car") as HTMLImageElement).src = shownCard?.src ?? carUrl(c);
+    garageCar = c;
+    garage.setCar(c, paintOf(c));
+    showUpgrades();
     show("garage");
   },
 });
@@ -199,3 +206,36 @@ addEventListener("keydown", (e) => {
 });
 
 show("title");
+
+// ---- the pit garage's upgrades: each car keeps its own, paid for with cash ----
+const money = (n: number) => `$${n.toLocaleString()}`;
+function showUpgrades(): void {
+  const car = garageCar;
+  if (!car) return;
+  $("garage-cash").textContent = money(cash());
+  const lv = levels(car.id);
+  $("garage-upgrades").replaceChildren(
+    ...UPGRADES.map((u) => {
+      const row = document.createElement("div");
+      row.className = "upgrade";
+      const cost = nextCost(car.id, u.id);
+      const pips = Array.from({ length: MAX_LEVEL }, (_, i) => `<i class="${i < lv[u.id] ? "on" : ""}"></i>`).join("");
+      row.innerHTML = `<div class="up-text"><b>${u.name}</b><span>${u.does}</span><span class="pips">${pips}</span></div>`;
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "buy";
+      if (cost === null) {
+        b.textContent = "MAX";
+        b.disabled = true;
+      } else {
+        b.textContent = money(cost);
+        b.disabled = cash() < cost;
+        b.addEventListener("click", () => {
+          if (buy(car.id, u.id)) showUpgrades();
+        });
+      }
+      row.append(b);
+      return row;
+    }),
+  );
+}

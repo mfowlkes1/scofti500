@@ -58,12 +58,17 @@
   </section>
 
   <section id="garage-screen" class="screen">
-    <p class="race-flag">PIT GARAGE</p>
-    <img id="garage-car" class="garage-car" alt="" />
-    <span id="race-who"></span>
-    <p class="race-soon">The crew will tune your car here. Coming soon.</p>
-    <button id="garage-go" class="go-btn go-long" type="button">PICK YOUR TRACK ▶</button>
-    <button class="back-btn" type="button" data-back>◀ BACK</button>
+    <canvas id="garage-canvas" class="garage-canvas"></canvas>
+    <div class="pick-top garage-top">
+      <button class="back-btn" type="button" data-back>◀ BACK</button>
+      <h2 class="pick-title">PIT GARAGE</h2>
+      <span id="garage-cash" class="cash"></span>
+    </div>
+    <div class="garage-panel">
+      <span id="race-who" class="garage-who"></span>
+      <div id="garage-upgrades" class="upgrades"></div>
+      <button id="garage-go" class="go-btn go-long" type="button">PICK YOUR TRACK ▶</button>
+    </div>
   </section>
 
   <section id="track-screen" class="screen">
