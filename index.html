@@ -116,10 +116,32 @@
       </div>
       <div class="hud-br">
         <div id="hud-limiter" class="hud-limiter">PIT LIMITER</div>
-        <div id="hud-tyres" class="hud-tyres"><span class="tyre-bar"><i></i></span><small>TYRES <b id="hud-tyre-pct">100%</b></small></div>
+        <!-- the tyre monitor: each tyre's wear (how much is left) and temperature -->
+        <div id="hud-tyres" class="hud-tyres">
+          <small class="tm-head">TYRES</small>
+          <div class="tm">
+            <span class="tm-val" id="tv-0"></span>
+            <div class="tm-car"><i class="tm-t" id="tt-0"><b></b></i><i class="tm-t" id="tt-1"><b></b></i><i class="tm-t" id="tt-2"><b></b></i><i class="tm-t" id="tt-3"><b></b></i></div>
+            <span class="tm-val" id="tv-1"></span>
+            <span class="tm-val" id="tv-2"></span>
+            <span class="tm-val" id="tv-3"></span>
+          </div>
+        </div>
         <div class="hud-speed"><b id="hud-speed">0</b><small>MPH · GEAR <span id="hud-gear">1</span></small></div>
       </div>
       <p class="hud-keys">← → steer · ↑ gas · ↓ brake · C view · P pit · space pause</p>
+    </div>
+
+    <!-- your pit stop: the crew changes four tyres; tap the air gun to make it quicker -->
+    <div id="pit-stop" class="pit-stop">
+      <p class="ps-title">PIT STOP</p>
+      <div id="ps-wheels" class="ps-wheels"></div>
+      <p class="ps-time"><b id="ps-time">0.0</b> s</p>
+      <button id="ps-gun" class="ps-gun" type="button" aria-label="air gun">
+        <svg viewBox="0 0 120 80" aria-hidden="true"><rect x="22" y="16" width="60" height="30" rx="11" fill="#c8161d" /><rect x="26" y="20" width="26" height="8" rx="4" fill="#ff5a5f" /><rect x="82" y="24" width="16" height="14" rx="3" fill="#9aa0a6" /><rect x="98" y="26" width="14" height="10" rx="2" fill="#5f6368" /><path d="M36 44 L30 74 L48 74 L54 44 Z" fill="#1d1d20" /><rect x="10" y="24" width="14" height="14" rx="4" fill="#333" /><path d="M2 31 H10" stroke="#ffd400" stroke-width="5" stroke-linecap="round" /></svg>
+        <span>TAP! TAP! TAP!</span>
+      </button>
+      <small>the crew's on it either way · tap the air gun (or space) to get out quicker</small>
     </div>
 
     <!-- on a phone: steer with the left thumb, pedals under the right -->

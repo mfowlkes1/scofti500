@@ -4,7 +4,16 @@
 import type { Who } from "./radio";
 import { RIVALS } from "./rivals";
 
-export type Line = { who: Who; text: string };
+export type Line = {
+  who: Who;
+  text: string;
+  /** shown on screen instead of the role (a driver's name) */
+  label?: string;
+  /** an ElevenLabs voice for this line instead of the role's */
+  voice?: string;
+  /** not over the radio: no two-way-radio filter */
+  clean?: boolean;
+};
 
 const lines: Record<string, Line> = {
   "ann-welcome": { who: "announcer", text: "Good evening, race fans, and welcome to Martinsvale under the lights!" },
@@ -40,6 +49,22 @@ for (const r of RIVALS) {
   lines[`ann-win-${id}`] = { who: "announcer", text: `Checkered flag! ${r.name} wins at Martinsvale!` };
 }
 for (const name of ["Madhuvan", "Allan", "Si"]) lines[`ann-win-${slug(name)}`] = { who: "announcer", text: `Checkered flag! ${name} wins it under the lights!` };
+
+// the drivers talk back. Madhuvan: "Jessa" from the ElevenLabs library (Michael, 2026-10-12)
+const DRIVER_VOICES: Record<string, string> = { madhuvan: "yj30vwTGJxSHezdAGsv9" };
+const DRIVER_LINES: Record<string, string> = {
+  green: "Here we go!",
+  pit: "Copy. Coming in.",
+  win: "Woo! That one's for the crew! Look at that infield!",
+  podium: "Good run tonight. We'll be back.",
+  wall: "I'm okay, I'm okay. Talk to me.",
+};
+for (const [driver, voice] of Object.entries(DRIVER_VOICES)) {
+  const label = driver.toUpperCase();
+  for (const [k, text] of Object.entries(DRIVER_LINES)) lines[`drv-${driver}-${k}`] = { who: "driver", text, label, voice };
+  // said when you pick her, not on the radio
+  lines[`drv-${driver}-pick`] = { who: "driver", text: "Madhuvan. Let's go racing.", label, voice, clean: true };
+}
 
 export const LINES = lines;
 

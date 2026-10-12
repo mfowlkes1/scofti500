@@ -21,8 +21,8 @@ export const PIT = {
   wallTo: 222, // ...to here, along the front straight
   wallIn: -11.6, // its pit-road face (d)
   wallOut: -10.8, // its track face (d)
-  lane: -12.9, // where cars drive down pit road
-  box: -16.3, // where they stop in their box, out of the way
+  lane: -13.4, // where cars drive down pit road
+  box: -15.9, // where they stop in their box, out of the way
   inner: -17.5, // the far wall of pit road
   speed: 15.6, // the limiter: 35 mph
   stall: (i: number) => 46 + i * 20, // s of each team's box

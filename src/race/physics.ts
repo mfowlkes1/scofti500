@@ -49,9 +49,11 @@ export type CarState = {
   brake: number;
   s: number;
   d: number;
-  /** tyres: 0 new .. 1 gone */
+  /** each tyre: left front, right front, left rear, right rear */
+  tyres: Tyre[];
+  /** the tyres overall, for grip: 0 new .. 1 gone (the most worn tyre counts most) */
   wear: number;
-  /** tyre warmth, 0 cold .. 1 working */
+  /** tyre warmth overall, 0 cold .. 1 working */
   temp: number;
   /** last step's slide (m/s sideways), for smoke and squeal */
   slide: number;
@@ -71,6 +73,17 @@ export type CarState = {
   limiter: boolean;
 };
 
+/** one tyre: wear 0 new .. 1 gone, warmth 0 cold .. 1 working (past ~1.15 it's overheating) */
+export type Tyre = { wear: number; temp: number };
+export const TYRE_NAMES = ["LF", "RF", "LR", "RR"];
+
+/** four new tyres, cold (out of the pits) or warm (the start, after the pace laps) */
+export function freshTyres(c: CarState, temp: number): void {
+  c.tyres = [0, 1, 2, 3].map(() => ({ wear: 0, temp }));
+  c.wear = 0;
+  c.temp = temp;
+}
+
 export function newCar(s: number, d: number, speed: number): CarState {
   const f = frame(s, d);
   return {
@@ -85,6 +98,7 @@ export function newCar(s: number, d: number, speed: number): CarState {
     brake: 0,
     s: wrap(s),
     d,
+    tyres: [0, 1, 2, 3].map(() => ({ wear: 0, temp: 0.75 })),
     wear: 0,
     temp: 0.75,
     slide: 0,
@@ -126,6 +140,8 @@ export function steerLock(v: number): number {
 
 // the gearbox: top speed of each gear (m/s); rpm runs 3500..9400 across it
 const GEARS = [19, 31, 43, 58];
+// tyre wear: tuned so a hard-driven set is about done after 20 laps
+const WEAR_SCALE = 0.95;
 const DRAG = 2.0e-4; // per meter: a_drag = DRAG * v²  (top speed ~ 70 m/s with no draft)
 
 export function step(c: CarState, input: Input, spec: Spec, dt: number): void {
@@ -212,12 +228,33 @@ export function step(c: CarState, input: Input, spec: Spec, dt: number): void {
   c.scrape = 0;
   wallCheck(c, prevD);
 
-  // ---- tyres: wear and warmth ----
+  // ---- tyres: each one wears and warms with the work it does ----
+  // Martinsvale is all left turns, so the right side carries the corners (the right front most);
+  // braking leans on the fronts, the throttle on the rears, and sliding chews them all.
   const dist = v * dt;
-  const work = Math.min(3, c.slide / 2) + Math.abs(tyreLong) / 25;
-  c.wear = Math.min(1, c.wear + (dist / L) * (1 / 42) * spec.wear * (1 + work * 2.2));
-  const warmTo = v > 12 ? 0.9 + Math.min(0.25, work * 0.2) : 0.55;
-  c.temp += (warmTo - c.temp) * Math.min(1, dt / (c.temp < warmTo ? 14 : 40));
+  const cornering = yaw * v; // + turning right
+  const lat = Math.min(1.5, Math.abs(cornering) / Math.max(4, aMax));
+  const brk = braking / Math.max(4, aMax);
+  const drv = drive / Math.max(4, aMax);
+  const sliding = Math.min(3, c.slide / 2);
+  const base = (dist / L) * (1 / 42) * spec.wear * WEAR_SCALE;
+  let worst = 0;
+  let sumW = 0;
+  let sumT = 0;
+  c.tyres.forEach((t, i) => {
+    const front = i < 2;
+    const right = i % 2 === 1;
+    const outside = cornering < 0 ? right : !right;
+    const load = 0.45 + lat * (outside ? 1.35 : 0.3) + brk * (front ? 1.2 : 0.3) + drv * (front ? 0.05 : 0.55);
+    t.wear = Math.min(1, t.wear + base * load * (1 + sliding * 2.2));
+    const warmTo = v > 12 ? 0.8 + Math.min(0.4, load * 0.13 + sliding * 0.15) : 0.55;
+    t.temp += (warmTo - t.temp) * Math.min(1, dt / (t.temp < warmTo ? 14 : 40));
+    worst = Math.max(worst, t.wear);
+    sumW += t.wear;
+    sumT += t.temp;
+  });
+  c.wear = 0.55 * worst + 0.45 * (sumW / 4);
+  c.temp = sumT / 4;
 
   // ---- the engine ----
   const speed = Math.max(0, vLong);
@@ -271,7 +308,8 @@ function hitWall(c: CarState, depth: number, side: 1 | -1): void {
     const fz = Math.sin(c.h);
     const cross = fx * nz - fz * nx;
     c.spin += cross * Math.min(2.5, into * 0.18);
-    c.wear = Math.min(1, c.wear + into * 0.002);
+    // and scuffs the tyres on that side
+    for (const i of side > 0 ? [1, 3] : [0, 2]) c.tyres[i].wear = Math.min(1, c.tyres[i].wear + into * 0.003);
   } else {
     c.scrape = Math.max(c.scrape, 0.3);
   }

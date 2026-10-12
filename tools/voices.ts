@@ -14,7 +14,9 @@ if (!KEY) throw new Error("ELEVENLABS_API_KEY not set");
 const VOICES: Record<Who, { id: string; name: string; stability: number; style: number }> = {
   spotter: { id: "iP95p4xoKVk53GoZ742B", name: "Chris", stability: 0.35, style: 0.45 },
   crew: { id: "Bj9UqZbhQsanLzgalpEG", name: "Austin Knox", stability: 0.45, style: 0.35 },
-  announcer: { id: "mtrellq69YZsNwzUSyXh", name: "Rex Thunder", stability: 0.4, style: 0.6 },
+  // a stand-in until Michael designs the Martinsvale announcer (Rex Thunder "sounds like transformers")
+  announcer: { id: "pqHfZKP75CvOlQylNhV4", name: "Bill", stability: 0.45, style: 0.5 },
+  driver: { id: "", name: "driver", stability: 0.4, style: 0.45 },
 };
 
 const RAW = "art/voices";
@@ -32,7 +34,7 @@ for (const key of wanted) {
   const raw = `${RAW}/${key}.mp3`;
   const out = `${OUT}/${key}.mp3`;
   if (!existsSync(raw)) {
-    const v = VOICES[line.who];
+    const v = { ...VOICES[line.who], ...(line.voice ? { id: line.voice, name: line.label ?? "driver" } : {}) };
     const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${v.id}?output_format=mp3_44100_128`, {
       method: "POST",
       headers: { "xi-api-key": KEY, "Content-Type": "application/json", Accept: "audio/mpeg" },
@@ -52,7 +54,7 @@ for (const key of wanted) {
   if (!existsSync(out)) {
     // the spotter and crew chief come over a two-way radio; the announcer is on the PA
     const radio = "highpass=f=320,lowpass=f=3400,acompressor=threshold=-18dB:ratio=4,volume=1.4,";
-    const filter = `${line.who === "announcer" ? "" : radio}loudnorm=I=-16:TP=-1.5:LRA=7`;
+    const filter = `${line.who === "announcer" || line.clean ? "" : radio}loudnorm=I=-16:TP=-1.5:LRA=7`;
     execFileSync("ffmpeg", ["-v", "error", "-y", "-i", raw, "-af", filter, "-ac", "1", "-ar", "44100", "-b:a", "80k", out]);
   }
 }

@@ -5,6 +5,8 @@
 export type RaceAudio = {
   set(o: { rpm: number; throttle: number; slide: number; scrape: number; field: number; fieldPitch: number }): void;
   bump(power: number): void;
+  /** the air gun on a lug nut: a short buzzing brrrt */
+  airGun(): void;
   roar(): void;
   pause(on: boolean): void;
   stop(): void;
@@ -144,6 +146,42 @@ export function startAudio(): RaceAudio | null {
       src.connect(f).connect(g).connect(master);
       src.start(now, Math.random());
       src.stop(now + 0.3);
+    },
+    airGun() {
+      const now = ctx.currentTime;
+      const len = 0.16;
+      // a hiss of air, chopped fast by the hammer inside
+      const src = ctx.createBufferSource();
+      src.buffer = noiseBuf;
+      const f = ctx.createBiquadFilter();
+      f.type = "bandpass";
+      f.frequency.value = 2400;
+      f.Q.value = 1.2;
+      const chop = ctx.createGain();
+      chop.gain.value = 0.5;
+      const hammer = ctx.createOscillator();
+      hammer.type = "square";
+      hammer.frequency.value = 55;
+      const depth = ctx.createGain();
+      depth.gain.value = 0.5;
+      hammer.connect(depth).connect(chop.gain);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.exponentialRampToValueAtTime(0.5, now + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + len);
+      src.connect(f).connect(chop).connect(g).connect(master);
+      // and the motor's whine
+      const whine = ctx.createOscillator();
+      whine.type = "sawtooth";
+      whine.frequency.setValueAtTime(700, now);
+      whine.frequency.linearRampToValueAtTime(1100, now + len);
+      const wg = ctx.createGain();
+      wg.gain.value = 0.05;
+      whine.connect(wg).connect(g);
+      src.start(now, Math.random());
+      hammer.start(now);
+      whine.start(now);
+      for (const n of [src, hammer, whine]) n.stop(now + len + 0.02);
     },
     roar() {
       const now = ctx.currentTime;

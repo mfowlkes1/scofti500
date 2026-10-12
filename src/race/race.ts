@@ -5,7 +5,7 @@ import * as THREE from "three";
 import { loadCar } from "../carModel";
 import { earn } from "../garage";
 import { CARS, type Car } from "../roster";
-import { autopilot, createSession, mph, order, progress, stepSession, type Entry, type Session } from "./session";
+import { airGun, autopilot, createSession, mph, order, pitStop, progress, stepSession, type Entry, type Session } from "./session";
 import { STOCK, speedOf, type CarState, type Input, type Spec } from "./physics";
 import { RIVALS } from "./rivals";
 import { buildTrack, type TrackScene } from "./scene";
@@ -73,7 +73,9 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(k)) e.preventDefault();
     if (e.repeat) return;
     keys.add(k);
-    if (k === "c") toggleCam();
+    // in the pit box, space and enter work the air gun
+    if ((k === " " || k === "Enter") && sess && pitStop(sess)) tapGun();
+    else if (k === "c") toggleCam();
     else if (k === "p") callPit();
     else if (k === " ") setPaused(!paused);
   });
@@ -119,6 +121,42 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     pedal($("t-gas"), (on) => (touchGas = on));
     pedal($("t-brake"), (on) => (touchBrake = on));
   }
+  // the pit stop's four wheels, five lug nuts each
+  const nuts: HTMLElement[] = [];
+  const wheels = [0, 1, 2, 3].map(() => {
+    const w = document.createElement("span");
+    w.className = "ps-wheel";
+    for (let k = 0; k < 5; k++) {
+      const n = document.createElement("i");
+      n.style.setProperty("--a", `${k * 72}deg`);
+      w.append(n);
+      nuts.push(n);
+    }
+    $("ps-wheels").append(w);
+    return w;
+  });
+  const gun = $("ps-gun");
+  gun.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    tapGun();
+  });
+  function tapGun(): void {
+    if (!sess || paused || !airGun(sess)) return;
+    audio?.airGun();
+    gun.classList.remove("hit");
+    void gun.offsetWidth;
+    gun.classList.add("hit");
+  }
+  function showPitStop(): void {
+    const ps = sess ? pitStop(sess) : null;
+    $("pit-stop").classList.toggle("on", !!ps);
+    if (!ps) return;
+    const lit = Math.floor(ps.done * 20 + 1e-6);
+    nuts.forEach((n, k) => n.classList.toggle("on", k < lit));
+    wheels.forEach((w, k) => w.classList.toggle("done", lit >= (k + 1) * 5));
+    $("ps-time").textContent = ps.time.toFixed(1);
+  }
+
   $("hud-cam").addEventListener("click", toggleCam);
   $("hud-pit").addEventListener("click", callPit);
   $("hud-pause").addEventListener("click", () => setPaused(true));
@@ -177,13 +215,20 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     resize();
   }
 
+  /** your driver's own line (only some drivers have a voice so far) */
+  const me = (what: string) => `drv-${slug(setup?.driver ?? "")}-${what}`;
+  let wallSaidAt = 0;
+
   function callPit(): void {
     if (!sess || sess.phase !== "green" || autopilot(sess)) return;
     const left = sess.laps - Math.max(0, sess.crossed[sess.player]);
     if (left <= 1) return;
     sess.pitCall = !sess.pitCall;
     $("hud-pit").classList.toggle("on", sess.pitCall);
-    if (sess.pitCall) radio.say("crew-pit-call");
+    if (sess.pitCall) {
+      radio.say("crew-pit-call");
+      radio.say(me("pit"));
+    }
     else radio.say("crew-stay-out");
   }
 
@@ -327,6 +372,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
       hudAt = t + 100;
       hud();
     }
+    showPitStop();
     if (t > pylonAt) {
       pylonAt = t + 1000;
       track!.pylon(order(sess).map((i) => sess!.entries[i].number));
@@ -499,6 +545,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     for (const e of s.events) {
       if (e.type === "green") {
         radio.say("spot-green");
+        radio.say(me("green"));
         audio?.roar();
       } else if (e.type === "white") {
         radio.say("crew-white");
@@ -510,6 +557,8 @@ export function createRace(opts: { onDone(again: boolean): void }) {
         finishedAt = performance.now();
         const p = e.pos;
         radio.say(p === 1 ? "crew-win" : p <= 3 ? `crew-podium-${p}` : "crew-next-time");
+        if (p <= 3) radio.say(me(p === 1 ? "win" : "podium"));
+        if (p <= 3) radio.say(me(p === 1 ? "win" : "podium"));
       } else if (e.type === "lap" && e.car === s.player) {
         const left = s.laps - s.crossed[s.player];
         const pos = order(s).indexOf(s.player) + 1;
@@ -528,11 +577,17 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     }
     s.events.length = 0;
     if (s.phase !== "green" || finishedAt) return;
-    const me = s.cars[s.player];
-    if (me.wear > 0.45 && !warned.half) {
+    const mine = s.cars[s.player];
+    // a big hit on the wall
+    if (mine.scrape > 9 && performance.now() - wallSaidAt > 12000) {
+      wallSaidAt = performance.now();
+      radio.say(me("wall"));
+      radio.say("spot-wall");
+    }
+    if (mine.wear > 0.45 && !warned.half) {
       warned.half = true;
       radio.say("crew-tyres-half");
-    } else if (me.wear > 0.72 && !warned.gone && s.laps - s.crossed[s.player] > 3) {
+    } else if (mine.wear > 0.72 && !warned.gone && s.laps - s.crossed[s.player] > 3) {
       warned.gone = true;
       radio.say("crew-tyres-gone");
     }
@@ -571,12 +626,15 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     $("ck-gear").textContent = String(me.gear);
     ($("ck-rpm") as HTMLElement).style.width = `${clamp((me.rpm - 3000) / 6600, 0, 1) * 100}%`;
     ($("ck-wheel") as HTMLElement).style.transform = `rotate(${me.steer * 120}deg)`;
-    // the tyres: how much is left, coloured by how hot they are
-    const left = Math.round((1 - me.wear) * 100);
-    $("hud-tyre-pct").textContent = `${left}%`;
-    const tyres = $("hud-tyres");
-    tyres.style.setProperty("--left", `${left}%`);
-    tyres.dataset.temp = me.temp < 0.75 ? "cold" : me.wear > 0.7 ? "gone" : "ok";
+    // the tyre monitor: how much of each tyre is left, and how hot it is
+    me.tyres.forEach((t, i) => {
+      const left = Math.round((1 - t.wear) * 100);
+      const tyre = $(`tt-${i}`);
+      tyre.style.setProperty("--left", `${left}%`);
+      tyre.dataset.wear = left > 60 ? "good" : left > 30 ? "used" : "gone";
+      tyre.dataset.heat = t.temp < 0.8 ? "cold" : t.temp > 1.12 ? "hot" : "ok";
+      $(`tv-${i}`).innerHTML = `<b>${left}%</b><small>${Math.round(120 + t.temp * 95)}°F</small>`;
+    });
     $("hud-limiter").classList.toggle("on", me.limiter);
     const flag = $("hud-flag");
     const label = s.phase === "pace" ? "" : s.phase === "checkered" ? "CHECKERED" : whiteFlag() ? "WHITE FLAG" : s.t < greenUntil() ? "GREEN" : "";
@@ -632,8 +690,14 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     $("rr-title").textContent = pos === 1 ? "VICTORY LANE" : pos <= 3 ? "PODIUM" : "CHECKERED FLAG";
     $("rr-pos").textContent = `P${pos}`;
     $("rr-cash").textContent = `+$${payout.toLocaleString()}`;
+    // laps down on the winner, the way the real results sheet shows it
+    const down = (i: number) => s.crossed[ord[0]] - s.crossed[i];
     $("rr-table").innerHTML = ord
-      .map((i, k) => `<li class="${i === s.player ? "me" : ""}"><b>${k + 1}</b><i>#${s.entries[i].number}</i><span>${s.entries[i].name}</span><small>best ${fmt(s.bestLap[i])}${s.led[i] ? ` · led ${s.led[i]}` : ""}</small></li>`)
+      .map((i, k) => {
+        const d = down(i);
+        const laps = d > 0 ? `<em>-${d} LAP${d > 1 ? "S" : ""}</em> · ` : "";
+        return `<li class="${i === s.player ? "me" : ""}"><b>${k + 1}</b><i>#${s.entries[i].number}</i><span>${s.entries[i].name}</span><small>${laps}best ${fmt(s.bestLap[i])}${s.led[i] ? ` · led ${s.led[i]}` : ""}</small></li>`;
+      })
       .join("");
     $("race-results").classList.add("on");
   }

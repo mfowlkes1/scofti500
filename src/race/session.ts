@@ -52,7 +52,13 @@ export type Session = {
 };
 
 export const PACE_SPEED = 21;
-const PIT_TIME = 13.5; // a four-tyre stop with a stock crew
+const PIT_TIME = 13.5; // a rival crew's four-tyre stop
+// Your stop: the crew gets it done in 16 s on their own (a second less per pit crew upgrade); every
+// tap on the air gun takes another 0.16 s off, so a fast thumb gets you out in about 7.5 s. Taps
+// past 12 a second don't count.
+const YOUR_STOP = 16;
+const TAP = 0.16;
+const MAX_TAPS = 12;
 
 export function createSession(entries: Entry[], laps: number): Session {
   const cars: CarState[] = [];
@@ -86,14 +92,20 @@ export function createSession(entries: Entry[], laps: number): Session {
   };
 }
 
-/** how far round the race a car is, for the running order */
-export const progress = (sess: Session, i: number) => sess.crossed[i] * L + wrap(sess.cars[i].s - LINE_S);
+/** how far round the race a car is, for the running order. A car that has taken the checkered flag
+ * stops where it crossed the line, so the laps it completed are what count. */
+export function progress(sess: Session, i: number): number {
+  if (sess.finishOrder.includes(i)) return sess.crossed[i] * L;
+  return sess.crossed[i] * L + wrap(sess.cars[i].s - LINE_S);
+}
 
+/** the running order: most laps first; cars level on laps finish in the order they crossed the line
+ * (a car six laps down that crosses right behind the winner is still six laps down) */
 export function order(sess: Session): number[] {
-  const done = sess.finishOrder;
-  const rest = sess.cars.map((_, i) => i).filter((i) => !done.includes(i));
-  rest.sort((a, b) => progress(sess, b) - progress(sess, a));
-  return [...done, ...rest];
+  const at = (i: number) => sess.finishOrder.indexOf(i);
+  return sess.cars
+    .map((_, i) => i)
+    .sort((a, b) => progress(sess, b) - progress(sess, a) || (at(a) < 0 ? 1e9 : at(a)) - (at(b) < 0 ? 1e9 : at(b)));
 }
 
 /** is your car driving itself right now (pace laps, a pit stop, after the flag) */
@@ -124,7 +136,9 @@ export function stepSession(sess: Session, playerInput: Input | null, dt: number
       const wants = i === sess.player ? sess.pitCall : car.wear > 0.66 + (i % 3) * 0.05 && lapsLeft(i) >= 8;
       if (wants) {
         startPit(drv);
-        drv.service = (i === sess.player ? PIT_TIME - pitCrew * 1.4 : PIT_TIME - 0.8 + (i % 4) * 0.4) + Math.random() * 0.8;
+        drv.service = i === sess.player ? YOUR_STOP - pitCrew : PIT_TIME - 0.8 + (i % 4) * 0.4 + Math.random() * 0.8;
+        drv.serviceTotal = drv.service;
+        drv.stopped = 0;
         sess.events.push({ type: "pit-in", car: i });
       }
     }
@@ -172,7 +186,7 @@ function crossLine(sess: Session, i: number): void {
     }
     sess.finishOrder.push(i);
     sess.drivers[i].mode = "cool";
-    sess.events.push({ type: "finish", car: i, pos: sess.finishOrder.length });
+    sess.events.push({ type: "finish", car: i, pos: order(sess).indexOf(i) + 1 });
     return;
   }
   if (c === sess.laps - 1 && order(sess)[0] === i) sess.events.push({ type: "white" });
@@ -180,3 +194,23 @@ function crossLine(sess: Session, i: number): void {
 }
 
 export const mph = (c: CarState) => speedOf(c) * 2.237;
+
+/** a tap on the air gun during your pit stop: true when it counted */
+const taps: number[] = [];
+export function airGun(sess: Session): boolean {
+  const drv = sess.drivers[sess.player];
+  if (drv.pitPhase !== "stopped" || drv.service <= 0) return false;
+  const now = sess.t;
+  while (taps.length && now - taps[0] > 1) taps.shift();
+  if (taps.length >= MAX_TAPS) return false;
+  taps.push(now);
+  drv.service -= TAP;
+  return true;
+}
+
+/** your pit stop as it stands: how far along (0..1) and how long you've sat there, or null */
+export function pitStop(sess: Session): { done: number; time: number } | null {
+  const drv = sess.drivers[sess.player];
+  if (drv.pitPhase !== "stopped") return null;
+  return { done: Math.min(1, 1 - Math.max(0, drv.service) / drv.serviceTotal), time: drv.stopped };
+}

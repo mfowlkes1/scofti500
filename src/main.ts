@@ -7,6 +7,7 @@ import { PAINTS, paintedUrl, savePaint, savedPaint } from "./paint";
 import { UPGRADES, MAX_LEVEL, buy, cash, levels, nextCost, tuned } from "./garage";
 import { createGarage } from "./garageRoom";
 import { createPicker } from "./pick";
+import { LINES, slug } from "./race/lines";
 import { STOCK } from "./race/physics";
 import { createRace } from "./race/race";
 import { CARS, DRIVERS, TRACKS, carUrl, faceUrl, type Car, type Driver } from "./roster";
@@ -41,6 +42,8 @@ const drivers = createPicker<Driver>({
   line: (d) => d.line,
   onGo: (d) => {
     driver = d;
+    // she says her line as you pick her (only drivers with a voice so far)
+    if (LINES[`drv-${slug(d.name)}-pick`]) void new Audio(`${import.meta.env.BASE_URL}audio/radio/drv-${slug(d.name)}-pick.mp3`).play().catch(() => null);
     show("car");
   },
 });

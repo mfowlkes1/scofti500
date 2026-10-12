@@ -3,7 +3,7 @@
 // turn, down to the apex, wide out) at a speed plan worked out from grip: brake late, carry speed,
 // and pass when there's room.
 import { frame, gap, HALF, L, LINE_S, PIT, R, S, bankAt, wrap } from "./track";
-import { G, STOCK, WHEELBASE, speedOf, steerLock, tyreGrip, type CarState, type Input, type Spec } from "./physics";
+import { G, STOCK, WHEELBASE, freshTyres, speedOf, steerLock, tyreGrip, type CarState, type Input, type Spec } from "./physics";
 
 // ---- the racing line and how fast it can be driven ----
 
@@ -90,10 +90,14 @@ export type Driver = {
   box: number;
   pitPhase: "in" | "stopped" | "out" | null;
   service: number;
+  /** how long this stop takes with no help (seconds of work) */
+  serviceTotal: number;
+  /** how long the car has sat in the box */
+  stopped: number;
 };
 
 export function newDriver(skill: number, aggression: number, box: number): Driver {
-  return { skill, aggression, mode: "pace", offset: 0, want: 0, file: 0, slot: 0, box, pitPhase: null, service: 0 };
+  return { skill, aggression, mode: "pace", offset: 0, want: 0, file: 0, slot: 0, box, pitPhase: null, service: 0, serviceTotal: 0, stopped: 0 };
 }
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
@@ -214,10 +218,10 @@ function pit(drv: Driver, ctx: Context, c: CarState, v: number): Input {
   if (drv.pitPhase === "stopped") {
     c.held = true;
     drv.service -= ctx.dt;
+    drv.stopped += ctx.dt;
     if (drv.service <= 0) {
       c.held = false;
-      c.wear = 0;
-      c.temp = 0.4;
+      freshTyres(c, 0.4);
       drv.pitPhase = "out";
     }
     return { steer: 0, throttle: 0.3, brake: 1 };

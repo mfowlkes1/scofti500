@@ -5,14 +5,15 @@
 
 import { LINES } from "./lines";
 
-export type Who = "spotter" | "crew" | "announcer";
+export type Who = "spotter" | "crew" | "announcer" | "driver";
 
-const LABEL: Record<Who, string> = { spotter: "SPOTTER", crew: "CREW CHIEF", announcer: "ANNOUNCER" };
+const LABEL: Record<Who, string> = { spotter: "SPOTTER", crew: "CREW CHIEF", announcer: "ANNOUNCER", driver: "DRIVER" };
 // how each one sounds with the browser's voice
 const VOICE: Record<Who, { rate: number; pitch: number; pick: number }> = {
   spotter: { rate: 1.3, pitch: 1.05, pick: 0 },
   crew: { rate: 1.02, pitch: 0.72, pick: 1 },
   announcer: { rate: 1.08, pitch: 1.12, pick: 2 },
+  driver: { rate: 1.1, pitch: 1.2, pick: 3 },
 };
 
 export type Radio = {
@@ -34,7 +35,7 @@ export function createRadio(box: HTMLElement): Radio {
   loadVoices();
   synth?.addEventListener?.("voiceschanged", loadVoices);
 
-  const queue: { who: Who; text: string; key?: string }[] = [];
+  const queue: { who: Who; text: string; key?: string; label?: string }[] = [];
   let busy = false;
   let playing = 0; // which line is current, so a cut-off line finishing late changes nothing
   let muted = false;
@@ -43,9 +44,9 @@ export function createRadio(box: HTMLElement): Radio {
   // which lines have a recording (public/audio/radio/lines.json: a list of keys)
   let recorded: Promise<Set<string>> | null = null;
 
-  function show(who: Who, text: string): void {
+  function show(who: Who, text: string, label?: string): void {
     box.dataset.who = who;
-    box.querySelector("b")!.textContent = LABEL[who];
+    box.querySelector("b")!.textContent = label ?? LABEL[who];
     box.querySelector("span")!.textContent = text;
     box.classList.add("on");
     hideAt = performance.now() + 2600 + text.length * 45;
@@ -68,7 +69,7 @@ export function createRadio(box: HTMLElement): Radio {
     if (!line) return;
     busy = true;
     const id = ++playing;
-    show(line.who, line.text);
+    show(line.who, line.text, line.label);
     const done = () => {
       if (id !== playing) return;
       busy = false;
@@ -108,10 +109,10 @@ export function createRadio(box: HTMLElement): Radio {
           current?.pause();
           busy = false;
         }
-        queue.unshift({ who, text, key });
+        queue.unshift({ who, text, key, label: line.label });
       } else {
         if (queue.length > 3) return;
-        queue.push({ who, text, key });
+        queue.push({ who, text, key, label: line.label });
       }
       void next();
     },
