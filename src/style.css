@@ -232,6 +232,33 @@ body[data-screen="pick"] #pick-screen {
   width: 100%;
   margin: 0 auto;
 }
+.hero-wrap {
+  position: relative;
+  min-width: 0;
+  /* room for the face hanging off the bottom-left corner */
+  padding: 0 0 6% 10%;
+}
+.hero-face {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 42%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 6px solid #fff;
+  box-shadow: 0 0 0 4px var(--night), 0 1rem 2.5rem rgba(0, 0, 0, 0.6);
+  background: var(--night);
+}
+.hero-face.pop {
+  animation: face-pop 0.34s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+@keyframes face-pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+}
 #pick-hero {
   width: 100%;
   aspect-ratio: 16 / 10;
@@ -241,6 +268,10 @@ body[data-screen="pick"] #pick-screen {
   box-shadow: 0 1.2rem 3rem rgba(0, 0, 0, 0.6);
   font-size: clamp(110px, 22vmin, 260px);
   transform: skewX(-4deg);
+  /* the number sits right of the face */
+  justify-items: end;
+  padding-right: 9%;
+  box-sizing: border-box;
 }
 #pick-hero.pop {
   animation: pop 0.28s ease-out;
@@ -298,12 +329,32 @@ body[data-screen="pick"] #pick-screen {
   border: 0;
   opacity: 0.7;
 }
-.card .door {
-  width: clamp(76px, 10vmin, 112px);
-  aspect-ratio: 16 / 10;
-  border-radius: 8px;
+.card-face {
+  position: relative;
+  width: clamp(80px, 11vmin, 120px);
+  aspect-ratio: 1;
+}
+.card-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
   border: 3px solid rgba(255, 255, 255, 0.4);
-  font-size: clamp(30px, 4.6vmin, 50px);
+  box-sizing: border-box;
+  background: var(--night);
+}
+/* the car number as a little door badge on the face */
+.card-num {
+  position: absolute;
+  right: -8%;
+  bottom: -4%;
+  width: 52%;
+  aspect-ratio: 16 / 10;
+  border-radius: 6px;
+  border: 2px solid #fff;
+  font-size: clamp(18px, 2.6vmin, 28px);
+  /* plain body colour so the small number reads */
+  background: var(--body);
 }
 .card-name {
   font-size: 15px;
@@ -312,7 +363,7 @@ body[data-screen="pick"] #pick-screen {
 .card.on {
   opacity: 1;
 }
-.card.on .door {
+.card.on .card-face img {
   border-color: var(--lime);
   box-shadow: 0 0 0 3px var(--night), 0 0 1.2rem rgba(182, 255, 0, 0.7);
 }
@@ -324,16 +375,13 @@ body[data-screen="pick"] #pick-screen {
     align-content: center;
     gap: 18px;
   }
-  #pick-hero {
-    width: 90%;
+  .hero-wrap {
+    width: 88%;
     justify-self: center;
   }
   .pick-info {
     justify-items: center;
     text-align: center;
-  }
-  .pick-cards {
-    justify-content: flex-start;
   }
 }
 

@@ -6,7 +6,21 @@ The game reads them from one place later (`src/roster.ts`), so changing a name i
 Feel: Days of Thunder. Rookie hotshot, a hard veteran rival, a wise crew chief in your ear,
 a dry spotter, the champion to beat. Mood only: no movie names, no real teams, sponsors, makers or tracks.
 
-## drivers and cars
+## in the game now (2026-10-12)
+
+Michael: "just those three for now". The pick screen has only these (`src/roster.ts`), all Scofti Racing
+in the red / black / white SCOFTI suits from their sheets:
+
+| driver | car | livery | sheet |
+|---|---|---|---|
+| **madhuvan** | #27 | red, black band, checkered strip | `madhuvan-driver-sheet.png`, `madhuvan-garage.png` |
+| **allan** | #33 | black, red-white-red slash | `driver-blond-sheet.png` |
+| **si** | #00 | black, iridescent shine, red stripe | `pit-crew-bubble-sheet.png` (crew suit) |
+
+Faces for the pick screen are cut from those sheets into `public/img/drivers/<id>.jpg`.
+The cast lineup below is the earlier draft, kept for later.
+
+## drivers and cars (earlier draft)
 
 | driver | role in the story | car | number | livery | team / sponsor (invented) |
 |---|---|---|---|---|---|

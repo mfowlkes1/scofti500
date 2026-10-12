@@ -1,7 +1,7 @@
 // PICK YOUR DRIVER: bold 2D cards like winter games'. Each driver comes with their own car, so it's one pick.
-// No driver art yet, so the big card is the car's door (number + livery); the sheets drop in here later.
-// The pick is saved (scofti500:driver).
-import { ROSTER, driverById, type Driver } from "./roster";
+// The big card is the car's door (number + livery) with the driver's face over its corner; the small
+// cards are faces with their number. The pick is saved (scofti500:driver).
+import { ROSTER, driverById, faceUrl, type Driver } from "./roster";
 
 const KEY = "scofti500:driver";
 const $ = (id: string) => document.getElementById(id)!;
@@ -28,7 +28,7 @@ export function createPick(onGo: (d: Driver) => void): Pick {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "card";
-    b.innerHTML = `<span class="door"><span class="num">${d.number}</span></span><span class="card-name">${d.name}</span>`;
+    b.innerHTML = `<span class="card-face"><img src="${faceUrl(d)}" alt="" /><span class="door card-num"><span class="num">${d.number}</span></span></span><span class="card-name">${d.name}</span>`;
     paintDoor(b.querySelector(".door")!, d);
     b.addEventListener("click", () => {
       cur = i;
@@ -43,10 +43,14 @@ export function createPick(onGo: (d: Driver) => void): Pick {
     const hero = $("pick-hero");
     paintDoor(hero, d);
     $("pick-num").textContent = d.number;
+    const face = $("pick-face") as HTMLImageElement;
+    face.src = faceUrl(d);
     // replay the pop-in each time
-    hero.classList.remove("pop");
-    void hero.offsetWidth;
-    hero.classList.add("pop");
+    for (const el of [hero, face]) {
+      el.classList.remove("pop");
+      void el.offsetWidth;
+      el.classList.add("pop");
+    }
     $("pick-role").textContent = d.role;
     $("pick-name").textContent = d.name;
     $("pick-team").textContent = `#${d.number} · ${d.team}`;
