@@ -1,6 +1,8 @@
 # scofti500 roster: drivers, cars, crew, voices
 
 Draft 1 (2026-10-12). Every name, number and colour here is a first pass for Michael to change.
+
+**The current sheet (drivers, cars, rivals, voices, track, gameplay notes, the token plan) is `docs/sheet/scofti500-sheet.html`, published at https://claude.ai/artifact/VQ3REemcRm8JY5jMRETvip. This file below is the older draft.**
 The game reads them from one place later (`src/roster.ts`), so changing a name is one edit.
 
 Feel: Days of Thunder. Rookie hotshot, a hard veteran rival, a wise crew chief in your ear,

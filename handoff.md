@@ -133,4 +133,5 @@ Waiting on Michael / next up:
 - Rivals in the same car model share its baked-in number (two #17s).
 - Country music tracks from Michael. Voices for Allan and Si.
 - The game isn't on scofti.com yet (/arcade/scofti500 returns 404).
+- The character sheet with gameplay notes and the token plan: docs/sheet/scofti500-sheet.html (https://claude.ai/artifact/VQ3REemcRm8JY5jMRETvip).
 - Spelling: American (tires). SCOFTI's I always has bars; the Permanent Marker font already draws them.

@@ -535,7 +535,7 @@ export async function buildTrack(scene: THREE.Scene): Promise<TrackScene> {
   const [pc, pg] = canvas(128, 1024);
   const pylonTex = tex(pc, false);
   {
-    const f = frame(S / 2 + 40, -32);
+    const f = frame(S / 2 + 78, -32);
     const tower = new THREE.Mesh(new THREE.BoxGeometry(3.2, 26, 3.2), new THREE.MeshStandardMaterial({ color: "#1a1b20", roughness: 0.6 }));
     tower.position.set(f.x, 13, f.z);
     scene.add(tower);

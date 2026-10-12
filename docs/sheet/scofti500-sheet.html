@@ -1,0 +1,400 @@
+<title>SCOFTI 500 Race Program</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Racing+Sans+One&family=Barlow+Condensed:wght@500;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: a race-night program. Entry-list rows, numbers as the loudest type, a checkered rule between sections. One dark look on purpose (it's a night race). */
+:root {
+  --night: #0c0e18;
+  --panel: #151927;
+  --rule: #2a3046;
+  --ink: #f2f1ec;
+  --muted: #9ba1b6;
+  --lime: #c8f21c;
+  --red: #e0262f;
+  --display: "Racing Sans One", "Arial Black", Impact, sans-serif;
+  --marker: "Permanent Marker", "Comic Sans MS", cursive;
+  --label: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --body: "Barlow", "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--night); color: var(--ink); font: 400 16px/1.55 var(--body); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 64px; display: grid; gap: 56px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; font-weight: 400; }
+p { margin: 0; }
+.eyebrow { font: 700 13px/1 var(--label); letter-spacing: 0.16em; text-transform: uppercase; color: var(--lime); }
+.muted { color: var(--muted); }
+
+/* masthead */
+.mast { display: grid; gap: 14px; padding-bottom: 22px; border-bottom: 1px solid var(--rule); }
+.mast h1 { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 0.3em; line-height: 0.95; }
+.mast .word { font: 400 clamp(52px, 11vw, 104px)/1 var(--marker); }
+.mast .five { font: italic 400 clamp(58px, 12vw, 116px)/1 var(--display); color: var(--lime); }
+.mast .sub { font: 500 clamp(18px, 2.4vw, 22px)/1.35 var(--label); letter-spacing: 0.04em; color: var(--muted); max-width: 60ch; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; }
+.facts span { font: 700 13px/1 var(--label); letter-spacing: 0.1em; text-transform: uppercase; padding: 7px 10px; border: 1px solid var(--rule); border-radius: 4px; color: var(--ink); }
+
+/* section heads with a checkered strip */
+section { display: grid; gap: 20px; }
+.head { display: grid; gap: 8px; }
+.head h2 { font: italic 400 clamp(30px, 5vw, 44px)/1 var(--display); }
+.head p { max-width: 68ch; color: var(--muted); }
+.checker { height: 10px; background: repeating-conic-gradient(var(--ink) 0 25%, var(--night) 0 50%) 0 0 / 10px 10px; opacity: 0.85; border-radius: 1px; }
+
+/* drivers */
+.drivers { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.driver { background: var(--panel); border-radius: 10px; overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
+.driver img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
+.driver .body { padding: 16px 18px 18px; display: grid; gap: 8px; align-content: start; }
+.driver h3 { font: 400 34px/1 var(--marker); }
+.role { font: 700 14px/1 var(--label); letter-spacing: 0.14em; text-transform: uppercase; color: var(--red); }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; font-size: 14px; margin-top: 4px; }
+.kv dt { font: 700 12px/1.7 var(--label); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.kv dd { margin: 0; min-width: 0; }
+
+/* cars */
+.cars { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.car { background: var(--panel); border-radius: 10px; overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
+.car .pic { position: relative; }
+.car img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; display: block; }
+.car .num { position: absolute; left: 14px; bottom: 6px; font: italic 400 64px/1 var(--display); color: var(--ink); -webkit-text-stroke: 2px var(--night); paint-order: stroke fill; text-shadow: 0 4px 14px rgba(0,0,0,0.6); }
+.car .body { padding: 14px 18px 18px; display: grid; gap: 6px; align-content: start; }
+.car h3 { font: 700 26px/1.05 var(--label); letter-spacing: 0.02em; text-transform: uppercase; }
+.era { font: 700 12px/1 var(--label); letter-spacing: 0.14em; text-transform: uppercase; color: var(--lime); }
+
+/* entry list */
+.scroll { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; min-width: 720px; font-variant-numeric: tabular-nums; }
+th { font: 700 12px/1 var(--label); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--rule); background: var(--panel); }
+td { padding: 12px 14px; border-bottom: 1px solid var(--rule); vertical-align: middle; font-size: 15px; }
+tr:last-child td { border-bottom: 0; }
+td.no { font: italic 400 30px/1 var(--display); color: var(--lime); width: 64px; }
+td.name { font: 600 16px/1.2 var(--body); white-space: nowrap; }
+.chip { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.chip i { width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.35); display: inline-block; }
+.bar { display: grid; grid-template-columns: 90px auto; align-items: center; gap: 8px; font: 500 13px/1 var(--label); color: var(--muted); }
+.bar b { height: 6px; border-radius: 3px; background: var(--rule); position: relative; overflow: hidden; }
+.bar b::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--v); background: var(--c, var(--lime)); }
+.note { font-size: 14px; color: var(--muted); max-width: 72ch; }
+
+/* voices */
+.voices { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.voice { border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; display: grid; gap: 6px; align-content: start; }
+.voice h3 { font: 700 20px/1.1 var(--label); text-transform: uppercase; letter-spacing: 0.04em; }
+.voice q { font-style: italic; color: var(--ink); }
+.voice .who { font: 700 12px/1 var(--label); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.pending { color: var(--red); font: 700 12px/1 var(--label); letter-spacing: 0.12em; text-transform: uppercase; }
+
+/* track */
+.track { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.track figure { margin: 0; display: grid; gap: 8px; }
+.track img { width: 100%; border-radius: 10px; display: block; }
+figcaption { font-size: 13px; color: var(--muted); }
+.spec { background: var(--panel); border-radius: 10px; padding: 18px 20px; display: grid; gap: 14px; }
+.spec h3 { font: 400 40px/1 var(--marker); }
+.spec dl { display: grid; grid-template-columns: max-content 1fr; gap: 8px 16px; margin: 0; font-size: 15px; }
+.spec dt { font: 700 12px/1.9 var(--label); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.spec dd { margin: 0; min-width: 0; }
+.shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+
+/* paint booth */
+.paints { display: flex; flex-wrap: wrap; gap: 10px; }
+.paints span { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px 8px 8px; border: 1px solid var(--rule); border-radius: 999px; font: 600 14px/1 var(--label); letter-spacing: 0.06em; text-transform: uppercase; }
+.paints i { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3); }
+
+/* bench */
+.bench { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px 20px; }
+.bench div { border-top: 1px solid var(--rule); padding-top: 10px; display: grid; gap: 2px; }
+.bench b { font: 700 18px/1.2 var(--label); text-transform: uppercase; letter-spacing: 0.04em; }
+.bench span { font-size: 14px; color: var(--muted); }
+
+/* gameplay notes */
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+.note-card { background: var(--panel); border-radius: 10px; padding: 16px 18px 18px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.note-card h3 { font: 700 22px/1.1 var(--label); text-transform: uppercase; letter-spacing: 0.04em; color: var(--lime); }
+.note-card .kv { font-size: 15px; gap: 8px 14px; margin: 0; }
+table.upgrades { min-width: 560px; }
+
+/* token plan */
+.steps { margin: 0; padding: 0; list-style: none; counter-reset: step; display: grid; gap: 12px; }
+.steps li { counter-increment: step; display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 4px 14px; padding: 14px 16px; border: 1px solid var(--rule); border-radius: 10px; max-width: 900px; }
+.steps li::before { content: counter(step); grid-row: span 2; font: italic 400 40px/1 var(--display); color: var(--lime); }
+.steps li b { font: 700 18px/1.3 var(--label); text-transform: uppercase; letter-spacing: 0.04em; }
+
+@media (max-width: 760px) { .track { grid-template-columns: 1fr; } }
+@media (max-width: 420px) { .notes { grid-template-columns: 1fr; } .note-card .kv { grid-template-columns: 1fr; } }
+:focus-visible { outline: 2px solid var(--lime); outline-offset: 2px; }
+</style>
+
+<div class="wrap">
+  <header class="mast">
+    <span class="eyebrow">Race night program · Martinsvale under the lights</span>
+    <h1><span class="word">SCOFTI</span><span class="five">500</span></h1>
+    <p class="sub">Everyone and everything in the game right now: the three Scofti Racing drivers you pick from, the four cars, the seven rivals in the field, the voices on the radio, and the track.</p>
+    <div class="facts"><span>3 drivers</span><span>4 cars</span><span>7 rivals</span><span>1 track</span><span>12 paints</span><span>Updated Oct 12, 2026</span></div>
+  </header>
+
+  <section aria-labelledby="h-drivers">
+    <div class="head">
+      <div class="checker"></div>
+      <h2 id="h-drivers">The drivers</h2>
+      <p>You pick one. All three drive for Scofti Racing, and any driver can take any car.</p>
+    </div>
+    <div class="drivers">
+      <article class="driver">
+        <img src="img/madhuvan.jpg" alt="Madhuvan in her red and black Scofti Racing suit">
+        <div class="body">
+          <span class="role">The closer</span>
+          <h3>madhuvan</h3>
+          <p>Smiles on the grid. Gone by turn three.</p>
+          <dl class="kv"><dt>Voice</dt><dd>“Jessa” (ElevenLabs). Talks on the radio and when you pick her.</dd><dt>Says</dt><dd>“Madhuvan. Let's go racing.”</dd></dl>
+        </div>
+      </article>
+      <article class="driver">
+        <img src="img/allan.jpg" alt="Allan, blond, in his Scofti Racing suit">
+        <div class="body">
+          <span class="role">The hotshot</span>
+          <h3>allan</h3>
+          <p>Cocky, quick, and grinning the whole way round.</p>
+          <dl class="kv"><dt>Voice</dt><dd class="pending">Needs a voice</dd></dl>
+        </div>
+      </article>
+      <article class="driver">
+        <img src="img/si.jpg" alt="Si in the bubble helmet and black crew suit">
+        <div class="body">
+          <span class="role">The wild card</span>
+          <h3>si</h3>
+          <p>Nobody knows what's in the bubble. Nobody asks.</p>
+          <dl class="kv"><dt>Voice</dt><dd class="pending">Needs a voice</dd></dl>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-cars">
+    <div class="head">
+      <div class="checker"></div>
+      <h2 id="h-cars">The cars</h2>
+      <p>Each car is a 3D model with its number and SCOFTI lettering painted on. The paint color is your pick in the garage.</p>
+    </div>
+    <div class="cars">
+      <article class="car">
+        <div class="pic"><img src="img/17-modern.jpg" alt="The #17 guyute, a modern stock car in lime and black splatter"><span class="num">17</span></div>
+        <div class="body"><span class="era">Modern</span><h3>guyute</h3><p>Today's car. Low, wide, all splatter.</p><p class="muted">Starts in white camo.</p></div>
+      </article>
+      <article class="car">
+        <div class="pic"><img src="img/43-eighties.jpg" alt="The #43 brawler, a boxy 1980s stock car"><span class="num">43</span></div>
+        <div class="body"><span class="era">'80s</span><h3>the brawler</h3><p>A big square box. Rubbin' is racin'.</p><p class="muted">Starts in black.</p></div>
+      </article>
+      <article class="car">
+        <div class="pic"><img src="img/3-muscle.jpg" alt="The #3 muscle, a late-1960s muscle car built as a stock car"><span class="num">3</span></div>
+        <div class="body"><span class="era">'60s</span><h3>the muscle</h3><p>Chrome bumper, round lights, big old heart.</p><p class="muted">Starts in black.</p></div>
+      </article>
+      <article class="car">
+        <div class="pic"><img src="img/7-owl.jpg" alt="The #7 hooter, an orange and white 1980s stock car with an owl face"><span class="num">7</span></div>
+        <div class="body"><span class="era">'80s</span><h3>the hooter</h3><p>Sees the gap before it opens.</p><p class="muted">Starts in its own orange and white owl paint.</p></div>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-field">
+    <div class="head">
+      <div class="checker"></div>
+      <h2 id="h-field">The field</h2>
+      <p>Seven rivals start ahead of you, shuffled a little each race. Pace is how close to the limit they drive. Aggression is how happily they lean on you.</p>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>No.</th><th>Driver</th><th>Car</th><th>Paint</th><th>How they race</th><th>Pace</th><th>Aggression</th></tr></thead>
+        <tbody>
+          <tr><td class="no">17</td><td class="name">Dixie Hart</td><td>guyute</td><td><span class="chip"><i style="background:#1f62e8"></i>blue</span></td><td>Smooth and fast. The one to beat.</td><td><span class="bar" style="--v:100%"><b></b>fastest</span></td><td><span class="bar" style="--v:35%;--c:var(--red)"><b></b>low</span></td></tr>
+          <tr><td class="no">43</td><td class="name">Buck Tarwater</td><td>the brawler</td><td><span class="chip"><i style="background:#e0201f"></i>red</span></td><td>Moves you out of the way.</td><td><span class="bar" style="--v:72%"><b></b>quick</span></td><td><span class="bar" style="--v:95%;--c:var(--red)"><b></b>very high</span></td></tr>
+          <tr><td class="no">7</td><td class="name">Tex Calloway</td><td>the hooter</td><td><span class="chip"><i style="background:#f2f2f2"></i>white</span></td><td>Hard to get by.</td><td><span class="bar" style="--v:60%"><b></b>quick</span></td><td><span class="bar" style="--v:55%;--c:var(--red)"><b></b>medium</span></td></tr>
+          <tr><td class="no">3</td><td class="name">Hoss Delaney</td><td>the muscle</td><td><span class="chip"><i style="background:#ffd400"></i>yellow</span></td><td>Steady.</td><td><span class="bar" style="--v:48%"><b></b>steady</span></td><td><span class="bar" style="--v:60%;--c:var(--red)"><b></b>medium</span></td></tr>
+          <tr><td class="no">17</td><td class="name">Jolene Brisket</td><td>guyute</td><td><span class="chip"><i style="background:radial-gradient(circle at 30% 30%, #565f34 0 30%, transparent 32%), radial-gradient(circle at 70% 65%, #705c3e 0 30%, transparent 32%), #34401f"></i>woods camo</span></td><td>Saves her tires.</td><td><span class="bar" style="--v:32%"><b></b>steady</span></td><td><span class="bar" style="--v:30%;--c:var(--red)"><b></b>low</span></td></tr>
+          <tr><td class="no">43</td><td class="name">Skeeter Mudd</td><td>the brawler</td><td><span class="chip"><i style="background:#ff7a1a"></i>orange</span></td><td>Wild.</td><td><span class="bar" style="--v:20%"><b></b>uneven</span></td><td><span class="bar" style="--v:100%;--c:var(--red)"><b></b>all in</span></td></tr>
+          <tr><td class="no">3</td><td class="name">Bo Lightfoot</td><td>the muscle</td><td><span class="chip"><i style="background:#7b3fe0"></i>purple</span></td><td>A rookie.</td><td><span class="bar" style="--v:8%"><b></b>slowest</span></td><td><span class="bar" style="--v:20%;--c:var(--red)"><b></b>gentle</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Rivals in the same car share its number for now (two #17s, two #43s, two #3s). Giving each rival their own number is on the to-do list. In preseason testing every rival is about a second a lap slower and much gentler.</p>
+  </section>
+
+  <section aria-labelledby="h-radio">
+    <div class="head">
+      <div class="checker"></div>
+      <h2 id="h-radio">On the radio</h2>
+      <p>Every line is recorded with ElevenLabs. The spotter and crew chief come through a two-way-radio filter; the announcer is over the PA.</p>
+    </div>
+    <div class="voices">
+      <div class="voice"><span class="who">Crew chief</span><h3>Austin Knox voice</h3><p>Talks you through the race: pit calls, laps to go, tire warnings, your position.</p><q>Tires are starting to go away. Be easy on 'em in the corners.</q></div>
+      <div class="voice"><span class="who">Spotter</span><h3>Chris voice</h3><p>Up on the roof, calling traffic around you.</p><q>Car high. … Clear.</q></div>
+      <div class="voice"><span class="who">Announcer</span><h3>Bill voice <span class="pending">stand-in</span></h3><p>Welcomes the crowd and calls the winner. A new voice is coming from ElevenLabs Voice Design.</p><q>Good evening, race fans, and welcome to Martinsvale under the lights!</q></div>
+      <div class="voice"><span class="who">Driver</span><h3>Madhuvan · Jessa voice</h3><p>Talks back at the green, on pit calls, after a wall hit, and on the podium.</p><q>Woo! That one's for the crew! Look at that infield!</q></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-track">
+    <div class="head">
+      <div class="checker"></div>
+      <h2 id="h-track">The track</h2>
+      <p>One track so far. More to come, all invented names.</p>
+    </div>
+    <div class="track">
+      <figure>
+        <img src="img/martinsvale.jpg" alt="Martinsvale from above at night: a paperclip oval with packed grandstands, light towers, and an infield full of team haulers and motorhomes">
+        <figcaption>Martinsvale from above, race night. Team haulers along the backstretch, motorhome camps and big leaderboards at both ends.</figcaption>
+      </figure>
+      <div class="spec">
+        <span class="eyebrow">Paperclip · half a mile</span>
+        <h3>martinsvale</h3>
+        <p>Two long straights, two tight hairpins. Flat out, stand on the brakes, bump your way round.</p>
+        <dl>
+          <dt>Lap</dt><dd>844 m (about half a mile)</dd>
+          <dt>Straights</dt><dd>240 m each, asphalt</dd>
+          <dt>Turns</dt><dd>Tight hairpins, concrete, 12° banking</dd>
+          <dt>Lap time</dt><dd>About 23 s for the fast rivals</dd>
+          <dt>Pit road</dt><dd>Inside the front straight, 8 boxes, 35 mph limit</dd>
+          <dt>Races</dt><dd>15, 30 or 60 laps, under the lights</dd>
+          <dt>Modes</dt><dd>Preseason testing (forgiving) or race night (the real thing)</dd>
+        </dl>
+      </div>
+    </div>
+    <div class="shots">
+      <figure><img src="img/martinsvale-board.jpg" alt="The front straight at night with the scoring pylon and a big video leaderboard in the infield"><figcaption>Down the front straight: the scoring pylon and the turn 1 leaderboard.</figcaption></figure>
+      <figure><img src="img/martinsvale-infield.jpg" alt="Motorhomes with colored awnings, string lights and fans inside turns 1 and 2"><figcaption>The motorhome camp inside turns 1 and 2.</figcaption></figure>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-paint">
+    <div class="head">
+      <div class="checker"></div>
+      <h2 id="h-paint">Paint booth</h2>
+      <p>Every car can wear any of these. Stock keeps a car's own paint.</p>
+    </div>
+    <div class="paints">
+      <span><i style="background:linear-gradient(135deg,#111 50%,#c8f21c 50%)"></i>stock</span>
+      <span><i style="background:#e0201f"></i>red</span>
+      <span><i style="background:#1f62e8"></i>blue</span>
+      <span><i style="background:#ffd400"></i>yellow</span>
+      <span><i style="background:#ff7a1a"></i>orange</span>
+      <span><i style="background:#1fae3a"></i>green</span>
+      <span><i style="background:#7b3fe0"></i>purple</span>
+      <span><i style="background:#ff4fa3"></i>pink</span>
+      <span><i style="background:#f2f2f2"></i>white</span>
+      <span><i style="background:#111"></i>black</span>
+      <span><i style="background:radial-gradient(circle at 30% 30%, #565f34 0 30%, transparent 32%), radial-gradient(circle at 70% 65%, #705c3e 0 30%, transparent 32%), #34401f"></i>woods camo</span>
+      <span><i style="background:radial-gradient(circle at 30% 30%, #c4c8ce 0 30%, transparent 32%), radial-gradient(circle at 70% 65%, #969ba2 0 30%, transparent 32%), #eceef0"></i>white camo</span>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-play">
+    <div class="head">
+      <div class="checker"></div>
+      <h2 id="h-play">How it plays</h2>
+      <p>As real as we can make it, in our style. You race from the back of an 8-car field, and the car behaves like a stock car: grip runs out, tires wear, and the draft matters.</p>
+    </div>
+    <div class="notes">
+      <div class="note-card">
+        <h3>Controls</h3>
+        <dl class="kv">
+          <dt>Keyboard</dt><dd>← → steer · ↑ gas · ↓ brake · C changes the view · P calls a pit stop · Space pauses</dd>
+          <dt>Phone</dt><dd>Steering pad bottom left, gas and brake pedals bottom right</dd>
+          <dt>Gamepad</dt><dd>Left stick steers · right trigger or A for gas · left trigger or B to brake</dd>
+          <dt>Views</dt><dd>Right behind the car, or in the seat looking over the dash</dd>
+          <dt>Exit</dt><dd>The red ✕ EXIT button is always on screen and goes straight back to the garage</dd>
+        </dl>
+      </div>
+      <div class="note-card">
+        <h3>Two ways to race</h3>
+        <dl class="kv">
+          <dt>Preseason testing</dt><dd>The default. Walls and bumps slow you down but don't wreck you, and a car knocked sideways straightens itself. There's no brake pedal: let off the gas and the car slows itself for the corner. A little extra grip, and the rivals are slower and gentler.</dd>
+          <dt>Race night</dt><dd>The real thing. Brake yourself, hit the wall and you can spin, and the rivals race hard.</dd>
+        </dl>
+      </div>
+      <div class="note-card">
+        <h3>The race</h3>
+        <dl class="kv">
+          <dt>Start</dt><dd>Pace laps double file behind the pace car, then the green at the line</dd>
+          <dt>Length</dt><dd>15, 30 or 60 laps</dd>
+          <dt>Grip</dt><dd>Brake and turn share the same grip, so braking hard while turning slides you up the track. The banking in the turns adds grip.</dd>
+          <dt>Draft</dt><dd>Tuck in behind a car on the straights and you pick up speed</dd>
+          <dt>Contact</dt><dd>Rubbin' is racin'. A hard hit off-center can turn a car around (race night only).</dd>
+        </dl>
+      </div>
+      <div class="note-card">
+        <h3>Tires</h3>
+        <dl class="kv">
+          <dt>Wear</dt><dd>All four wear on their own. Martinsvale is all left turns, so the right side wears about twice as fast. Braking works the fronts, the gas works the rears, and sliding chews all four.</dd>
+          <dt>Cost</dt><dd>A set loses roughly 5% a lap driven hard. Worn tires cost about a second a lap.</dd>
+          <dt>Heat</dt><dd>Cold tires grip less: take it easy for a lap after a stop. Overheated tires show orange.</dd>
+          <dt>Monitor</dt><dd>The TIRES box shows each tire's % left and °F. The crew chief warns you at half and when they're about gone.</dd>
+        </dl>
+      </div>
+      <div class="note-card">
+        <h3>Pit stops</h3>
+        <dl class="kv">
+          <dt>Call it</dt><dd>Press P or tap PIT. Your car drives itself down pit road on the 35 mph limiter.</dd>
+          <dt>Air gun</dt><dd>Four fresh tires. The crew alone takes 16 s, a second less per pit crew upgrade. Every tap on the air gun takes time off; hammer it and you're out in about 7½ s.</dd>
+          <dt>Rivals</dt><dd>They pit when their tires are going, and they answer your stop over the next few laps so nobody is stuck on old tires</dd>
+        </dl>
+      </div>
+      <div class="note-card">
+        <h3>Results and money</h3>
+        <dl class="kv">
+          <dt>Order</dt><dd>Laps completed first, then who crossed the line first. A car six laps down stays six laps down.</dd>
+          <dt>Purse</dt><dd>$3,000 · $2,200 · $1,700 · $1,300 · $1,000 · $800 · $600 · $400 for 1st to 8th at 30 laps. 15 laps pays 70%, 60 laps pays 160%. Plus $40 for every lap you lead.</dd>
+          <dt>Start</dt><dd>$2,500 in the bank</dd>
+        </dl>
+      </div>
+    </div>
+    <div class="scroll">
+      <table class="upgrades">
+        <thead><tr><th>Upgrade</th><th>What it does</th><th>Level 1</th><th>Level 2</th><th>Level 3</th></tr></thead>
+        <tbody>
+          <tr><td class="name">Engine</td><td>+4.5% power per level: faster down the straights</td><td>$1,000</td><td>$2,500</td><td>$5,000</td></tr>
+          <tr><td class="name">Brakes</td><td>+6% braking per level: brake later into the turns</td><td>$800</td><td>$2,000</td><td>$4,000</td></tr>
+          <tr><td class="name">Tires</td><td>+1.8% grip and 15% less wear per level</td><td>$800</td><td>$2,000</td><td>$4,000</td></tr>
+          <tr><td class="name">Pit crew</td><td>1 s off the crew's stop time per level</td><td>$600</td><td>$1,500</td><td>$3,000</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Each car keeps its own upgrades. Cash and upgrades are saved on the device you play on.</p>
+  </section>
+
+  <section aria-labelledby="h-tokens">
+    <div class="head">
+      <div class="checker"></div>
+      <h2 id="h-tokens">Plan: Scofti tokens</h2>
+      <p>Not built yet. When the time comes, upgrades are bought with tokens that players buy. The business accounts and D-U-N-S numbers already exist; this is what has to be in place first, in order.</p>
+    </div>
+    <ol class="steps">
+      <li><b>Player accounts and a server wallet.</b> Cash and upgrades live on the device today, which anyone can edit. Bought tokens have to live on our server, tied to a Scofti arcade sign-in, with a ledger of every purchase and every spend. One wallet for the whole arcade, so tokens work in every Scofti game.</li>
+      <li><b>Prices in tokens.</b> Each upgrade gets a token price next to (or instead of) its cash price. Decide whether race cash stays as a second, earned currency. Recommendation: keep it, so a player who never pays can still progress, just slower.</li>
+      <li><b>Checkout on the web.</b> Stripe Checkout under the business account, in test mode first. A Stripe webhook credits the tokens on our server; the game only reads the balance and never adds tokens itself.</li>
+      <li><b>Token packs.</b> A few fixed packs with clear prices, no random rewards. Suggested starting point: 100 / 550 / 1,200 tokens, with a small bonus on the bigger packs.</li>
+      <li><b>Kids and parents.</b> The players are kids, so purchases sit behind a parent check, with a spending cap and receipts emailed to the parent. Under-13 sign-ups need a parent's consent (COPPA) and no ad tracking.</li>
+      <li><b>App stores, later.</b> If the game ships as a phone app, Apple and Google require their own in-app purchase for digital items. The D-U-N-S number is what enrolls the business as the developer on both. The server wallet stays the same; their receipts get checked on our server before tokens are credited.</li>
+      <li><b>Turn it on.</b> Test the whole flow with test cards, refunds and a parent saying no, then switch Stripe to live.</li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="h-bench">
+    <div class="head">
+      <div class="checker"></div>
+      <h2 id="h-bench">On the bench</h2>
+      <p>Characters from the earlier draft with reference sheets in the folder, not in the game yet.</p>
+    </div>
+    <div class="bench">
+      <div><b>scofti</b><span>The rookie hotshot. Planned #17.</span></div>
+      <div><b>zyra</b><span>Teammate, the secret weapon. Planned #71.</span></div>
+      <div><b>deekdeek</b><span>Hard veteran rival, trades paint all race. Planned #99.</span></div>
+      <div><b>gem</b><span>The sneak, steals your draft. Planned #4.</span></div>
+      <div><b>metis</b><span>The quiet one, never makes a mistake. Planned #8.</span></div>
+      <div><b>clyde</b><span>Clean and friendly, always gives you room. Planned #12.</span></div>
+      <div><b>tela</b><span>The champion, the last car to beat. Planned #1.</span></div>
+      <div><b>al · chickadee · sloth</b><span>Crew chief, spotter and jack man from the draft crew.</span></div>
+    </div>
+  </section>
+</div>
