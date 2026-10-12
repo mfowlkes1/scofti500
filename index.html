@@ -2,12 +2,60 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>scofti500</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SCOFTI 500</title>
 <style>
-  html, body { margin: 0; height: 100%; background: #0a0a0a; color: #b6ff00; }
-  body { display: grid; place-items: center; font: 900 clamp(32px, 10vw, 96px) system-ui, sans-serif; letter-spacing: 0.04em; }
+  html, body { margin: 0; height: 100%; background: #0b0716; color: #fff; overflow: hidden; }
+  /* Welcome wallpaper: wide stadium on landscape screens, tall one on portrait. Never stretched. */
+  .welcome {
+    position: fixed; inset: 0;
+    background: #0b0716 url("/img/welcome-wide.jpg") center / cover no-repeat;
+  }
+  @media (max-aspect-ratio: 1/1) {
+    .welcome { background-image: url("/img/welcome-tall.jpg"); background-position: center bottom; }
+  }
+  /* Title like the arcade shelf: SCOFTI in the brush font (only ever that word), 500 in Lilita One. */
+  .title {
+    position: fixed; left: 0; right: 0; top: 7vh; margin: 0; text-align: center; line-height: 0.9;
+    text-shadow: 0 0.3rem 1.4rem rgba(0, 0, 0, 0.6);
+  }
+  .mark {
+    display: block; font: 400 clamp(64px, 18vmin, 170px) "Permanent Marker", cursive; color: #fff;
+    -webkit-text-stroke: 0.06em #0b0716; paint-order: stroke fill;
+  }
+  /* 500, gnarly: hard slant, chrome lime with a horizon line, chunky 3D drop, white pinstripe, speed lines. */
+  .five {
+    position: relative; display: inline-block; isolation: isolate;
+    margin: -0.08em 0 0 -0.75em; padding-left: 0.75em;
+    font: 400 clamp(84px, 24vmin, 230px)/1 "Racing Sans One", system-ui, sans-serif;
+    letter-spacing: 0.01em; transform: skewX(-14deg) rotate(-3deg);
+    /* speed lines trailing off the left of the 5 */
+    background:
+      linear-gradient(90deg, transparent 0%, #b6ff00 100%) 0 38% / 0.75em 0.05em no-repeat,
+      linear-gradient(90deg, transparent 20%, #fff 100%) 0.15em 52% / 0.6em 0.035em no-repeat,
+      linear-gradient(90deg, transparent 0%, #b6ff00 100%) 0.05em 66% / 0.7em 0.05em no-repeat,
+      linear-gradient(90deg, transparent 30%, #fff 100%) 0.3em 79% / 0.45em 0.03em no-repeat;
+  }
+  .five .fill {
+    position: relative; z-index: 1;
+    background: linear-gradient(180deg, #fbffd6 0%, #e2ff5c 30%, #b6ff00 49%, #2f6b00 50%, #6fc400 68%, #b6ff00 86%, #eaff8f 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .five::before, .five::after {
+    content: attr(data-t); position: absolute; inset: 0; padding-left: 0.75em; z-index: -1; color: #0b0716;
+  }
+  .five::before { -webkit-text-stroke: 0.1em #0b0716; }
+  .five::after {
+    z-index: -2; -webkit-text-stroke: 0.18em #fff;
+    text-shadow: 0.02em 0.02em 0 #0b0716, 0.04em 0.04em 0 #0b0716, 0.06em 0.06em 0 #0b0716, 0.08em 0.08em 0 #0b0716,
+      0.1em 0.1em 0 #0b0716, 0.12em 0.12em 0 #0b0716;
+    filter: drop-shadow(0 0.1em 0.3em rgba(0, 0, 0, 0.75));
+  }
 </style>
 </head>
-<body>scofti500</body>
+<body>
+  <div class="welcome"></div>
+  <h1 class="title"><span class="mark">SCOFTI</span><span class="five" data-t="500"><span class="fill">500</span></span></h1>
+  <script type="module" src="/src/main.ts"></script>
+</body>
 </html>
