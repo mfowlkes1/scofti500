@@ -151,9 +151,12 @@ function paintModel(obj: THREE.Object3D, car: Car, paintId: string): void {
       normalMap: m.normalMap,
       normalScale: new THREE.Vector2(0.15, 0.15),
       metalness: 0,
-      roughness: 0.3,
-      specularIntensity: 0.3,
-      envMapIntensity: 0.12,
+      roughness: 0.42,
+      specularIntensity: 0.04,
+      envMapIntensity: 0.08,
+      // the garage lamps are bright enough to wash colours out (the hooter went pale yellow), so the
+      // paint sits a little darker
+      color: new THREE.Color(0.5, 0.5, 0.5),
       side: m.side,
     });
     o.material = mat;
