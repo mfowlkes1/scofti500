@@ -1,66 +1,89 @@
-// Every driver and car in one place: change a name, number or colour here and the whole game follows.
-// Just these three for now (Michael, 2026-10-12). Invented teams only: no real teams, sponsors, makers or tracks.
-// Faces are cut from the sheets in art/reference into public/img/drivers/<id>.jpg.
+// Every driver and car in one place: change a name, line or colour here and the whole game follows.
+// Drivers and cars are picked separately; any driver can take any car (Michael, 2026-10-12).
+// Invented teams only: no real teams, sponsors, makers or tracks.
+// Art is cut from the sheets in art/reference: faces into public/img/drivers/<id>.jpg,
+// car shots into public/img/cars/<id>.jpg.
 
 export type Driver = {
   id: string;
   name: string;
-  number: string;
   team: string;
   role: string;
   line: string;
-  /** car body colour */
-  body: string;
-  /** door number fill and outline */
-  numFill: string;
-  numEdge: string;
-  /** the livery painted over the body on the door (a CSS background) */
-  paint: string;
 };
 
-// one checkered row across the door, 80% of the way down
-const CHECKS = "repeating-conic-gradient(#fff 0 25%, #0b0b0b 0 50%) 0 80% / 20px 20px repeat-x";
+export type Car = {
+  id: string;
+  number: string;
+  /** the era badge on the card */
+  era: string;
+  name: string;
+  line: string;
+  /** main paint colour, for the card glow */
+  accent: string;
+};
 
-export const ROSTER: Driver[] = [
+export const DRIVERS: Driver[] = [
   {
     id: "madhuvan",
     name: "madhuvan",
-    number: "27",
     team: "Scofti Racing",
     role: "the closer",
     line: "Smiles on the grid. Gone by turn three.",
-    body: "#d0141f",
-    numFill: "#fff",
-    numEdge: "#0b0b0b",
-    // red, a checkered strip low on the door over a black band
-    paint: `${CHECKS}, linear-gradient(180deg, transparent 0 72%, #0b0b0b 72% 92%, transparent 92%)`,
   },
   {
     id: "allan",
     name: "allan",
-    number: "33",
     team: "Scofti Racing",
     role: "the hotshot",
     line: "Cocky, quick, and grinning the whole way round.",
-    body: "#0b0b0b",
-    numFill: "#fff",
-    numEdge: "#d0141f",
-    paint: "linear-gradient(105deg, transparent 58%, #d0141f 58% 66%, #fff 66% 69%, #d0141f 69% 74%, transparent 74%)",
   },
   {
     id: "si",
     name: "si",
-    number: "00",
     team: "Scofti Racing",
     role: "the wild card",
     line: "Nobody knows what's in the bubble. Nobody asks.",
-    body: "#0b0b0b",
-    numFill: "#e9f2ff",
-    numEdge: "#d0141f",
-    paint:
-      "radial-gradient(120% 90% at 85% 15%, rgba(255, 190, 240, 0.55), rgba(140, 200, 255, 0.35) 35%, rgba(255, 230, 150, 0.25) 55%, transparent 70%), linear-gradient(180deg, transparent 84%, #d0141f 84% 90%, transparent 90%)",
   },
 ];
 
-export const driverById = (id: string | null) => ROSTER.find((d) => d.id === id);
+export const CARS: Car[] = [
+  {
+    id: "17-modern",
+    number: "17",
+    era: "modern",
+    name: "the 17",
+    line: "Today's car. Low, wide, splattered in lime.",
+    accent: "#b6ff00",
+  },
+  {
+    id: "43-eighties",
+    number: "43",
+    era: "'80s",
+    name: "the brawler",
+    line: "A big square box. Rubbin' is racin'.",
+    accent: "#b6ff00",
+  },
+  {
+    id: "43-muscle",
+    number: "43",
+    era: "'60s",
+    name: "the muscle",
+    line: "Chrome bumper, round lights, big old heart.",
+    accent: "#b6ff00",
+  },
+  {
+    id: "7-owl",
+    number: "7",
+    era: "'80s",
+    name: "the night owl",
+    line: "Sees the gap before it opens.",
+    accent: "#ff7a1a",
+  },
+];
+
+const byId = <T extends { id: string }>(list: T[], id: string | null) => list.find((x) => x.id === id);
+export const driverById = (id: string | null) => byId(DRIVERS, id);
+export const carById = (id: string | null) => byId(CARS, id);
 export const faceUrl = (d: Driver) => `${import.meta.env.BASE_URL}img/drivers/${d.id}.jpg`;
+export const carUrl = (c: Car) => `${import.meta.env.BASE_URL}img/cars/${c.id}.jpg`;

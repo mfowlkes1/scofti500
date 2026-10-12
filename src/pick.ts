@@ -1,79 +1,91 @@
-// PICK YOUR DRIVER: bold 2D cards like winter games'. Each driver comes with their own car, so it's one pick.
-// The big card is the car's door (number + livery) with the driver's face over its corner; the small
-// cards are faces with their number. The pick is saved (scofti500:driver).
-import { ROSTER, driverById, faceUrl, type Driver } from "./roster";
+// The pick screens, bold and 2D like winter games': PICK YOUR DRIVER, then PICK YOUR CAR. One picker
+// drives both: a big hero image with the name, role and line beside it (below on a phone), a row of
+// small cards to switch, and a fat button. Each pick is saved (scofti500:driver, scofti500:car).
 
-const KEY = "scofti500:driver";
 const $ = (id: string) => document.getElementById(id)!;
 
-function paintDoor(el: HTMLElement, d: Driver): void {
-  el.style.setProperty("--body", d.body);
-  el.style.setProperty("--paint", d.paint);
-  el.style.setProperty("--num-fill", d.numFill);
-  el.style.setProperty("--num-edge", d.numEdge);
-}
+export type PickerItem = { id: string; name: string };
 
-export type Pick = { step: (by: number) => void };
+export type PickerOptions<T extends PickerItem> = {
+  /** element id prefix: <prefix>-img, -role, -name, -sub, -line, -go, -cards */
+  prefix: string;
+  items: T[];
+  storageKey: string;
+  img: (t: T) => string;
+  role: (t: T) => string;
+  sub: (t: T) => string;
+  line: (t: T) => string;
+  /** little badge on the small card (a car number, say) */
+  badge?: (t: T) => string;
+  /** colour of the selected card's glow */
+  accent?: (t: T) => string;
+  onGo: (t: T) => void;
+};
 
-export function createPick(onGo: (d: Driver) => void): Pick {
+export type Picker<T> = { step: (by: number) => void; current: () => T };
+
+export function createPicker<T extends PickerItem>(o: PickerOptions<T>): Picker<T> {
   let cur = 0;
   try {
-    const saved = driverById(localStorage.getItem(KEY));
-    if (saved) cur = ROSTER.indexOf(saved);
+    const saved = o.items.findIndex((t) => t.id === localStorage.getItem(o.storageKey));
+    if (saved >= 0) cur = saved;
   } catch {
     // no storage: start on the first
   }
 
-  const cards = ROSTER.map((d, i) => {
+  // warm the art so switching is instant
+  for (const t of o.items) new Image().src = o.img(t);
+
+  const cards = o.items.map((t, i) => {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "card";
-    b.innerHTML = `<span class="card-face"><img src="${faceUrl(d)}" alt="" /><span class="door card-num"><span class="num">${d.number}</span></span></span><span class="card-name">${d.name}</span>`;
-    paintDoor(b.querySelector(".door")!, d);
+    const badge = o.badge ? `<span class="card-badge">${o.badge(t)}</span>` : "";
+    b.innerHTML = `<span class="card-art"><img src="${o.img(t)}" alt="" />${badge}</span><span class="card-name">${t.name}</span>`;
     b.addEventListener("click", () => {
       cur = i;
       refresh();
     });
-    $("pick-cards").append(b);
+    $(`${o.prefix}-cards`).append(b);
     return b;
   });
 
   function refresh(): void {
-    const d = ROSTER[cur];
-    const hero = $("pick-hero");
-    paintDoor(hero, d);
-    $("pick-num").textContent = d.number;
-    const face = $("pick-face") as HTMLImageElement;
-    face.src = faceUrl(d);
+    const t = o.items[cur];
+    const img = $(`${o.prefix}-img`) as HTMLImageElement;
+    img.src = o.img(t);
     // replay the pop-in each time
-    for (const el of [hero, face]) {
-      el.classList.remove("pop");
-      void el.offsetWidth;
-      el.classList.add("pop");
+    img.classList.remove("pop");
+    void img.offsetWidth;
+    img.classList.add("pop");
+    $(`${o.prefix}-role`).textContent = o.role(t);
+    $(`${o.prefix}-name`).textContent = t.name;
+    $(`${o.prefix}-sub`).textContent = o.sub(t);
+    $(`${o.prefix}-line`).textContent = o.line(t);
+    const accent = o.accent?.(t) ?? "";
+    for (const [i, c] of cards.entries()) {
+      c.classList.toggle("on", i === cur);
+      c.style.setProperty("--accent", i === cur && accent ? accent : "");
     }
-    $("pick-role").textContent = d.role;
-    $("pick-name").textContent = d.name;
-    $("pick-team").textContent = `#${d.number} · ${d.team}`;
-    $("pick-line").textContent = d.line;
-    for (const [i, c] of cards.entries()) c.classList.toggle("on", i === cur);
     cards[cur].scrollIntoView({ block: "nearest", inline: "nearest" });
   }
 
-  $("pick-go").addEventListener("click", () => {
-    const d = ROSTER[cur];
+  $(`${o.prefix}-go`).addEventListener("click", () => {
+    const t = o.items[cur];
     try {
-      localStorage.setItem(KEY, d.id);
+      localStorage.setItem(o.storageKey, t.id);
     } catch {
       // no storage: the pick just isn't remembered
     }
-    onGo(d);
+    o.onGo(t);
   });
 
   refresh();
   return {
     step(by) {
-      cur = (cur + by + ROSTER.length) % ROSTER.length;
+      cur = (cur + by + o.items.length) % o.items.length;
       refresh();
     },
+    current: () => o.items[cur],
   };
 }

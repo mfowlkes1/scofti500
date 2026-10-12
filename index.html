@@ -14,32 +14,47 @@
     <button id="race-now" class="go-btn" type="button">RACE NOW</button>
   </section>
 
-  <section id="pick-screen" class="screen">
+  <section id="driver-screen" class="screen pick-screen">
     <div class="pick-top">
-      <button id="pick-back" class="back-btn" type="button">◀ BACK</button>
+      <button class="back-btn" type="button" data-back>◀ BACK</button>
       <h2 class="pick-title">PICK YOUR DRIVER</h2>
     </div>
     <div class="pick-stage">
-      <div class="hero-wrap">
-        <div id="pick-hero" class="door"><span id="pick-num" class="num"></span></div>
-        <img id="pick-face" class="hero-face" alt="" />
-      </div>
+      <img id="driver-img" class="hero-img" alt="" />
       <div class="pick-info">
-        <span id="pick-role" class="pick-role"></span>
-        <h3 id="pick-name" class="pick-name"></h3>
-        <span id="pick-team" class="pick-team"></span>
-        <p id="pick-line" class="pick-line"></p>
-        <button id="pick-go" class="go-btn" type="button">RACE!</button>
+        <span id="driver-role" class="pick-role"></span>
+        <h3 id="driver-name" class="pick-name"></h3>
+        <span id="driver-sub" class="pick-sub"></span>
+        <p id="driver-line" class="pick-line"></p>
+        <button id="driver-go" class="go-btn" type="button">NEXT ▶</button>
       </div>
     </div>
-    <div id="pick-cards" class="pick-cards"></div>
+    <div id="driver-cards" class="pick-cards"></div>
+  </section>
+
+  <section id="car-screen" class="screen pick-screen">
+    <div class="pick-top">
+      <button class="back-btn" type="button" data-back>◀ BACK</button>
+      <h2 class="pick-title">PICK YOUR CAR</h2>
+    </div>
+    <div class="pick-stage">
+      <img id="car-img" class="hero-img" alt="" />
+      <div class="pick-info">
+        <span id="car-role" class="pick-role"></span>
+        <h3 id="car-name" class="pick-name"></h3>
+        <span id="car-sub" class="pick-sub"></span>
+        <p id="car-line" class="pick-line"></p>
+        <button id="car-go" class="go-btn" type="button">RACE!</button>
+      </div>
+    </div>
+    <div id="car-cards" class="pick-cards"></div>
   </section>
 
   <section id="race-screen" class="screen">
     <p class="race-flag">GREEN FLAG</p>
     <span id="race-who"></span>
     <p class="race-soon">The race isn't built yet.</p>
-    <button id="race-back" class="back-btn" type="button">◀ BACK</button>
+    <button class="back-btn" type="button" data-back>◀ BACK</button>
   </section>
 
   <script type="module" src="/src/main.ts"></script>
