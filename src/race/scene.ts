@@ -5,7 +5,6 @@
 import * as THREE from "three";
 import { racingLine } from "./ai";
 import { buildInfield } from "./infield";
-import { writeWithBars } from "../lettering";
 import { APRON, HALF, L, LINE_S, PIT, R, S, frame, heightAt } from "./track";
 
 export type TrackScene = {
@@ -195,7 +194,7 @@ function wallTexture(): THREE.CanvasTexture {
   g.fillStyle = "#111";
   g.font = "64px 'Permanent Marker'";
   g.textBaseline = "middle";
-  writeWithBars(g, "SCOFTI", 40, 56);
+  g.fillText("SCOFTI", 40, 56);
   g.font = "italic 62px 'Racing Sans One'";
   g.fillStyle = "#c8161d";
   g.fillText("500", 300, 58);
@@ -292,7 +291,7 @@ function logoTexture(): THREE.CanvasTexture {
   g.textBaseline = "middle";
   g.font = "200px 'Permanent Marker'";
   g.fillStyle = "rgba(245,245,245,0.85)";
-  writeWithBars(g, "SCOFTI", 430, 170);
+  g.fillText("SCOFTI", 430, 170);
   g.font = "italic 190px 'Racing Sans One'";
   g.fillStyle = "rgba(210,28,36,0.9)";
   g.fillText("500", 860, 200);

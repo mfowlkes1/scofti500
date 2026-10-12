@@ -5,7 +5,6 @@
 // Built from simple shapes; if Meshy models turn up in public/models (hauler, motorhome, pickup) they
 // take the place of the hand-built ones.
 import * as THREE from "three";
-import { writeWithBars } from "../lettering";
 import { model } from "../models";
 import { PAINTS } from "../paint";
 import { CARS } from "../roster";
@@ -109,7 +108,7 @@ export function buildInfield(scene: THREE.Scene): Infield {
     x.font = "84px 'Lilita One'";
     x.fillText(team.name.toUpperCase(), team.number ? 300 : 60, 100);
     x.font = "40px 'Permanent Marker'";
-    writeWithBars(x, "SCOFTI RACING", team.number ? 304 : 64, 170);
+    x.fillText("SCOFTI RACING", team.number ? 304 : 64, 170);
     const side = new THREE.MeshStandardMaterial({ map: tex(c), roughness: 0.45 });
     const paint = std(team.color, { roughness: 0.35 });
     // trailer along +x, cab at the +x end
@@ -370,7 +369,7 @@ export function buildInfield(scene: THREE.Scene): Infield {
       bg.fillStyle = "#fff";
       bg.font = "64px 'Permanent Marker'";
       bg.textAlign = "left";
-      writeWithBars(bg, "SCOFTI 500", 28, 50);
+      bg.fillText("SCOFTI 500", 28, 50);
       bg.textAlign = "right";
       bg.font = "58px 'Lilita One'";
       bg.fillText(lap, 996, 50);
