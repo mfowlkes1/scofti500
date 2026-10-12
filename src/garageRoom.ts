@@ -1,7 +1,7 @@
 // The pit garage in 3D, built from scofti-offroad's garage room (Michael, 2026-10-12: "no like a
 // garage, where we will offer upgrades", pointing at offroad's): a bright white shop with a glossy
 // floor, diamond plate along the walls, hex lights on the ceiling, a black feature wall with SCOFTI
-// 500 in neon, red tool chests, a rack of race tyres, and your car on a turntable in the middle,
+// 500 in neon, red tool chests, a rack of race tires, and your car on a turntable in the middle,
 // in the colour you picked. It turns slowly on its own; drag to spin it. It only draws while the
 // garage is showing.
 import * as THREE from "three";
@@ -257,12 +257,12 @@ function buildRoom(scene: THREE.Scene): void {
   }
   box(0.9, 0.06, 6.4, silver, -W / 2 + 0.48, 1.23, BACK + 4.9);
 
-  // right wall: a rack of slick race tyres, stacked four high
-  const tyre = new THREE.CylinderGeometry(0.36, 0.36, 0.3, 24);
+  // right wall: a rack of slick race tires, stacked four high
+  const tire = new THREE.CylinderGeometry(0.36, 0.36, 0.3, 24);
   const rubber = new THREE.MeshStandardMaterial({ color: "#1b1b1b", roughness: 0.85 });
   for (let i = 0; i < 6; i++)
     for (let k = 0; k < 4; k++) {
-      const t = new THREE.Mesh(tyre, rubber);
+      const t = new THREE.Mesh(tire, rubber);
       t.position.set(W / 2 - 0.6, 0.16 + k * 0.31, BACK + 2 + i * 1.0);
       room.add(t);
     }

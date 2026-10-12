@@ -1,6 +1,6 @@
 // The race screen: martinsvale under the lights in 3D, the field of eight, your car on the keys (or
 // the touch pedals, or a gamepad), two views (right behind the car, or in the seat), the HUD, the
-// radio, sparks and tyre smoke, and the results. The race itself runs in session.ts.
+// radio, sparks and tire smoke, and the results. The race itself runs in session.ts.
 import * as THREE from "three";
 import { loadCar } from "../carModel";
 import { earn } from "../garage";
@@ -582,7 +582,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
       } else if (e.type === "pit-in" && e.car === s.player) {
         radio.say("crew-pit-in");
       } else if (e.type === "pit-stopped" && e.car === s.player) {
-        radio.say("crew-four-tyres");
+        radio.say("crew-four-tires");
       } else if (e.type === "pit-out" && e.car === s.player) {
         radio.say("crew-pit-out");
         warned = { half: false, gone: false };
@@ -602,10 +602,10 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     }
     if (mine.wear > 0.45 && !warned.half) {
       warned.half = true;
-      radio.say("crew-tyres-half");
+      radio.say("crew-tires-half");
     } else if (mine.wear > 0.72 && !warned.gone && s.laps - s.crossed[s.player] > 3) {
       warned.gone = true;
-      radio.say("crew-tyres-gone");
+      radio.say("crew-tires-gone");
     }
     const pos = order(s).indexOf(s.player) + 1;
     const now = performance.now();
@@ -642,13 +642,13 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     $("ck-gear").textContent = String(me.gear);
     ($("ck-rpm") as HTMLElement).style.width = `${clamp((me.rpm - 3000) / 6600, 0, 1) * 100}%`;
     ($("ck-wheel") as HTMLElement).style.transform = `rotate(${me.steer * 120}deg)`;
-    // the tyre monitor: how much of each tyre is left, and how hot it is
-    me.tyres.forEach((t, i) => {
+    // the tire monitor: how much of each tire is left, and how hot it is
+    me.tires.forEach((t, i) => {
       const left = Math.round((1 - t.wear) * 100);
-      const tyre = $(`tt-${i}`);
-      tyre.style.setProperty("--left", `${left}%`);
-      tyre.dataset.wear = left > 60 ? "good" : left > 30 ? "used" : "gone";
-      tyre.dataset.heat = t.temp < 0.8 ? "cold" : t.temp > 1.12 ? "hot" : "ok";
+      const tire = $(`tt-${i}`);
+      tire.style.setProperty("--left", `${left}%`);
+      tire.dataset.wear = left > 60 ? "good" : left > 30 ? "used" : "gone";
+      tire.dataset.heat = t.temp < 0.8 ? "cold" : t.temp > 1.12 ? "hot" : "ok";
       $(`tv-${i}`).innerHTML = `<b>${left}%</b><small>${Math.round(120 + t.temp * 95)}°F</small>`;
     });
     $("hud-limiter").classList.toggle("on", me.limiter);

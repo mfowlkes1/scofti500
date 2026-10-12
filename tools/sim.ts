@@ -1,4 +1,4 @@
-// Runs a whole race with no screen and prints how it went: lap times, tyre wear, pit stops, wall
+// Runs a whole race with no screen and prints how it went: lap times, tire wear, pit stops, wall
 // hits, bumps. For tuning the physics and the drivers. Run: npx tsx tools/sim.ts [laps]
 import { STOCK } from "../src/race/physics";
 import { createSession, order, stepSession, type Entry } from "../src/race/session";
@@ -31,7 +31,7 @@ while (sess.finishOrder.length < 8 && sess.t < laps * 40 + 200) {
   for (const e of sess.events) {
     if (e.type === "lap" && e.car === 0) {
       const c = sess.cars[0];
-      console.log(`lap ${sess.crossed[0]}: ${sess.lastLap[0].toFixed(2)}s wear ${c.wear.toFixed(2)} [${c.tyres.map((t) => `${t.wear.toFixed(2)}/${t.temp.toFixed(2)}`).join(" ")}] pos ${order(sess).indexOf(0) + 1}`);
+      console.log(`lap ${sess.crossed[0]}: ${sess.lastLap[0].toFixed(2)}s wear ${c.wear.toFixed(2)} [${c.tires.map((t) => `${t.wear.toFixed(2)}/${t.temp.toFixed(2)}`).join(" ")}] pos ${order(sess).indexOf(0) + 1}`);
     } else if (e.type !== "lap") console.log(`${sess.t.toFixed(1)}s`, JSON.stringify(e));
   }
   sess.events.length = 0;

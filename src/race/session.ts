@@ -1,5 +1,5 @@
 // One race, in numbers: the field rolls off double file behind the pace car, goes green at the
-// line, races the laps, and takes the checkered flag. Rivals pit when their tyres are gone and
+// line, races the laps, and takes the checkered flag. Rivals pit when their tires are gone and
 // there are enough laps left; you pit when you ask to. No 3D here: the race screen draws it, and
 // scripts can run whole races with it.
 import { canStartPit, drive, gridSlot, newDriver, startPit, type Driver } from "./ai";
@@ -56,7 +56,7 @@ export type Session = {
 };
 
 export const PACE_SPEED = 21;
-const PIT_TIME = 13.5; // a rival crew's four-tyre stop
+const PIT_TIME = 13.5; // a rival crew's four-tire stop
 // Your stop: the crew gets it done in 16 s on their own (a second less per pit crew upgrade); every
 // tap on the air gun takes another 0.16 s off, so a fast thumb gets you out in about 7.5 s. Taps
 // past 12 a second don't count.
@@ -142,7 +142,7 @@ export function stepSession(sess: Session, playerInput: Input | null, dt: number
     const entry = sess.entries[i];
     // pit stops start down at the end of the backstretch
     if (sess.phase === "green" && drv.mode === "race" && canStartPit(car) && lapsLeft(i) > 1) {
-      // rivals pit when their tyres are going, or to answer your stop so nobody's left on old tyres
+      // rivals pit when their tires are going, or to answer your stop so nobody's left on old tires
       const answering = sess.answerAt[i] >= 0 && sess.crossed[i] >= sess.answerAt[i] && lapsLeft(i) >= 3 && car.wear > 0.12;
       const wants = i === sess.player ? sess.pitCall : (car.wear > 0.66 + (i % 3) * 0.05 && lapsLeft(i) >= 8) || answering;
       if (wants) {

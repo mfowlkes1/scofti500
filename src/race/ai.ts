@@ -3,7 +3,7 @@
 // turn, down to the apex, wide out) at a speed plan worked out from grip: brake late, carry speed,
 // and pass when there's room.
 import { frame, gap, HALF, L, LINE_S, PIT, R, S, bankAt, wrap } from "./track";
-import { G, STOCK, WHEELBASE, freshTyres, speedOf, steerLock, tyreGrip, type CarState, type Input, type Spec } from "./physics";
+import { G, STOCK, WHEELBASE, freshTires, speedOf, steerLock, tireGrip, type CarState, type Input, type Spec } from "./physics";
 
 // ---- the racing line and how fast it can be driven ----
 
@@ -141,7 +141,7 @@ export function drive(drv: Driver, ctx: Context): Input {
   if (drv.mode === "pit") return pit(drv, ctx, c, v);
 
   // ---- racing ----
-  const gripRatio = Math.sqrt((tyreGrip(c) * ctx.spec.grip) / STOCK.grip);
+  const gripRatio = Math.sqrt((tireGrip(c) * ctx.spec.grip) / STOCK.grip);
   const powerEdge = Math.pow(ctx.spec.power / STOCK.power, 0.15);
   let target = planSpeed(c.s + v * 0.18) * gripRatio * drv.skill * powerEdge;
   if (drv.mode === "cool") target = Math.min(target, 24);
@@ -192,7 +192,7 @@ function pace(drv: Driver, ctx: Context, c: CarState, v: number): Input {
 }
 
 // ---- pit stops ----
-// Down off turn 4, onto pit road at the limiter, into the box, four tyres, and back out
+// Down off turn 4, onto pit road at the limiter, into the box, four tires, and back out
 // past the end of the pit wall into turn 1.
 
 const IN_FROM = L - 95; // where the dive to pit road starts (middle of turns 3-4)
@@ -221,7 +221,7 @@ function pit(drv: Driver, ctx: Context, c: CarState, v: number): Input {
     drv.stopped += ctx.dt;
     if (drv.service <= 0) {
       c.held = false;
-      freshTyres(c, 0.4);
+      freshTires(c, 0.4);
       drv.pitPhase = "out";
     }
     return { steer: 0, throttle: 0.3, brake: 1 };

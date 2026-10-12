@@ -33,7 +33,7 @@ The cast lineup below is the earlier draft, kept for later.
 | **tela** | the champion. last car to beat | #1 | 1 | white + grey camo, pink number ring | Snowline Racing |
 
 Pack cars (no character, fill the field to ~16): invented teams with a wink, kid clean, e.g.
-Lucky Biscuit #22 (red/cream), Gas-N-Go-Go #31 (orange/blue), Big Rig Tyre Co #44 (yellow/black),
+Lucky Biscuit #22 (red/cream), Gas-N-Go-Go #31 (orange/blue), Big Rig Tire Co #44 (yellow/black),
 Possum Pete's BBQ #57 (brown/orange), Hot Lap Pizza #63 (red/green), Cloud Nine Mattress #9 (sky blue/white).
 
 ## the crew (the voices in your ear)

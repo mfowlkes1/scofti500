@@ -1,5 +1,5 @@
 // The race's sounds, all made in code (Web Audio) like offroad's: your V8 (pitch from the rpm, gears
-// and all), the rest of the field roaring past, tyre squeal, the wall scraping, thumps when cars
+// and all), the rest of the field roaring past, tire squeal, the wall scraping, thumps when cars
 // touch, and the crowd. Recordings can replace any of them later.
 
 export type RaceAudio = {
@@ -87,7 +87,7 @@ export function startAudio(): RaceAudio | null {
     return { o, mult };
   });
 
-  // ---- tyres squealing ----
+  // ---- tires squealing ----
   const squeal = ctx.createGain();
   squeal.gain.value = 0;
   const sqF = ctx.createBiquadFilter();

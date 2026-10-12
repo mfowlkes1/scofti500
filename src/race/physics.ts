@@ -1,15 +1,15 @@
 // How a stock car drives, in numbers (no 3D here, so a script can run whole races to tune it).
-// Michael (2026-10-12): "as realistic as possible", with tyre wear "and all that".
+// Michael (2026-10-12): "as realistic as possible", with tire wear "and all that".
 //
 // The model, per car, in world meters and seconds:
-// - Grip is a friction circle. The tyres can give so much acceleration in total (more in the banked
+// - Grip is a friction circle. The tires can give so much acceleration in total (more in the banked
 //   turns), shared between braking/driving and cornering. Brake hard in a turn and there's less left
 //   to turn with.
 // - Steering sets how fast the car rotates. The velocity follows the nose only as fast as the
 //   remaining grip allows, so too fast into a turn and the car slides up the track toward the wall.
 // - The engine is power-limited (~ 600 hp at the wheels); air drag grows with the square of speed;
 //   drafting behind a car cuts it.
-// - Tyres wear with every meter, much faster while sliding, and lose grip as they go. Cold tyres
+// - Tires wear with every meter, much faster while sliding, and lose grip as they go. Cold tires
 //   (the start, out of the pits) have less grip until they warm up.
 // - Walls and other cars push back: rubbin' is racin', but a hard hit off-center spins you.
 import { frame, gap, heightAt, HALF, INFIELD, inPitRoad, L, PIT, project, surfaceAt, bankAt, wrap, type Surface } from "./track";
@@ -22,11 +22,11 @@ export const CAR_W = 2.0;
 export type Spec = {
   /** at the wheels, watts */
   power: number;
-  /** how hard the brakes can stop, m/s² (the tyres still have the last word) */
+  /** how hard the brakes can stop, m/s² (the tires still have the last word) */
   brake: number;
-  /** tyre grip, as a friction coefficient */
+  /** tire grip, as a friction coefficient */
   grip: number;
-  /** how fast the tyres wear (1 = stock) */
+  /** how fast the tires wear (1 = stock) */
   wear: number;
 };
 
@@ -41,7 +41,7 @@ export type CarState = {
   h: number;
   vx: number;
   vz: number;
-  /** extra spin from hits, rad/s, fades as the tyres catch it */
+  /** extra spin from hits, rad/s, fades as the tires catch it */
   spin: number;
   /** the steering as it is, after the wheel has turned (-1 left .. 1 right) */
   steer: number;
@@ -49,11 +49,11 @@ export type CarState = {
   brake: number;
   s: number;
   d: number;
-  /** each tyre: left front, right front, left rear, right rear */
-  tyres: Tyre[];
-  /** the tyres overall, for grip: 0 new .. 1 gone (the most worn tyre counts most) */
+  /** each tire: left front, right front, left rear, right rear */
+  tires: Tire[];
+  /** the tires overall, for grip: 0 new .. 1 gone (the most worn tire counts most) */
   wear: number;
-  /** tyre warmth overall, 0 cold .. 1 working */
+  /** tire warmth overall, 0 cold .. 1 working */
   temp: number;
   /** last step's slide (m/s sideways), for smoke and squeal */
   slide: number;
@@ -75,13 +75,13 @@ export type CarState = {
   soft: boolean;
 };
 
-/** one tyre: wear 0 new .. 1 gone, warmth 0 cold .. 1 working (past ~1.15 it's overheating) */
-export type Tyre = { wear: number; temp: number };
-export const TYRE_NAMES = ["LF", "RF", "LR", "RR"];
+/** one tire: wear 0 new .. 1 gone, warmth 0 cold .. 1 working (past ~1.15 it's overheating) */
+export type Tire = { wear: number; temp: number };
+export const TIRE_NAMES = ["LF", "RF", "LR", "RR"];
 
-/** four new tyres, cold (out of the pits) or warm (the start, after the pace laps) */
-export function freshTyres(c: CarState, temp: number): void {
-  c.tyres = [0, 1, 2, 3].map(() => ({ wear: 0, temp }));
+/** four new tires, cold (out of the pits) or warm (the start, after the pace laps) */
+export function freshTires(c: CarState, temp: number): void {
+  c.tires = [0, 1, 2, 3].map(() => ({ wear: 0, temp }));
   c.wear = 0;
   c.temp = temp;
 }
@@ -100,7 +100,7 @@ export function newCar(s: number, d: number, speed: number): CarState {
     brake: 0,
     s: wrap(s),
     d,
-    tyres: [0, 1, 2, 3].map(() => ({ wear: 0, temp: 0.75 })),
+    tires: [0, 1, 2, 3].map(() => ({ wear: 0, temp: 0.75 })),
     wear: 0,
     temp: 0.75,
     slide: 0,
@@ -118,23 +118,23 @@ export function newCar(s: number, d: number, speed: number): CarState {
 
 export const speedOf = (c: CarState) => Math.hypot(c.vx, c.vz);
 
-/** how much grip the tyres have left: worn tyres fall away (8% down at half worn, 20% when gone),
+/** how much grip the tires have left: worn tires fall away (8% down at half worn, 20% when gone),
  * cold ones are down up to 9% */
-export function tyreGrip(c: CarState): number {
+export function tireGrip(c: CarState): number {
   return (0.91 + 0.09 * Math.min(1, c.temp)) * (1 - 0.2 * Math.pow(c.wear, 1.35));
 }
 
 const SURFACE_GRIP: Record<Surface, number> = { track: 1, apron: 0.9, pit: 0.95, grass: 0.42 };
 const SURFACE_DRAG: Record<Surface, number> = { track: 0.12, apron: 0.18, pit: 0.15, grass: 2.6 };
 
-/** the most a tyre can corner with at s, m/s² (the banking helps) */
+/** the most a tire can corner with at s, m/s² (the banking helps) */
 export function gripLimit(spec: Spec, c: CarState, s: number, d: number, surface: Surface): number {
-  const mu = spec.grip * tyreGrip(c) * SURFACE_GRIP[surface];
+  const mu = spec.grip * tireGrip(c) * SURFACE_GRIP[surface];
   const tb = Math.tan(surface === "track" ? bankAt(s) : 0);
   return (G * (mu + tb)) / Math.max(0.3, 1 - mu * tb);
 }
 
-/** the steering lock at this speed: full lock asks a bit more than fresh tyres can give, so a
+/** the steering lock at this speed: full lock asks a bit more than fresh tires can give, so a
  * stab of the wheel slides, but it never needs more than full lock to make the turn */
 export function steerLock(v: number): number {
   const a = G * (STOCK.grip + 0.21) * 1.32;
@@ -143,7 +143,7 @@ export function steerLock(v: number): number {
 
 // the gearbox: top speed of each gear (m/s); rpm runs 3500..9400 across it
 const GEARS = [19, 31, 43, 58];
-// tyre wear: tuned so a hard-driven set is about done after 20 laps
+// tire wear: tuned so a hard-driven set is about done after 20 laps
 const WEAR_SCALE = 0.95;
 const DRAG = 2.0e-4; // per meter: a_drag = DRAG * v²  (top speed ~ 70 m/s with no draft)
 
@@ -171,7 +171,7 @@ export function step(c: CarState, input: Input, spec: Spec, dt: number): void {
   const surface = surfaceAt(c.s, c.d);
   c.surface = surface;
   const aMax = gripLimit(spec, c, c.s, c.d, surface);
-  const muFlat = spec.grip * tyreGrip(c) * SURFACE_GRIP[surface];
+  const muFlat = spec.grip * tireGrip(c) * SURFACE_GRIP[surface];
 
   // ---- along the car: engine, brakes, drag ----
   let drive = 0;
@@ -180,22 +180,22 @@ export function step(c: CarState, input: Input, spec: Spec, dt: number): void {
   if (vLong < 0.5) braking = Math.min(braking, Math.max(0, vLong) / dt);
   if (c.limiter && vLong > PIT.speed) drive = 0;
   const drag = DRAG * (1 - c.draft) * v * v + SURFACE_DRAG[surface] * Math.min(1, v);
-  // the tyres can only push so hard in total
-  const tyreLong = Math.min(aMax, drive + braking);
-  const latAvail = Math.sqrt(Math.max(0, aMax * aMax - tyreLong * tyreLong));
+  // the tires can only push so hard in total
+  const tireLong = Math.min(aMax, drive + braking);
+  const latAvail = Math.sqrt(Math.max(0, aMax * aMax - tireLong * tireLong));
   vLong += (drive - braking - drag * Math.sign(vLong)) * dt;
   if (c.limiter && vLong > PIT.speed) vLong -= Math.min(vLong - PIT.speed, 6 * dt);
 
   // ---- turning ----
   const delta = c.steer * steerLock(Math.abs(vLong));
   let yaw = (vLong * Math.tan(delta)) / WHEELBASE;
-  // the tyres can't turn the car much faster than grip allows; past that it slides
+  // the tires can't turn the car much faster than grip allows; past that it slides
   const yawMax = (latAvail * 1.12) / Math.max(3, v) + 0.15;
   yaw = Math.max(-yawMax, Math.min(yawMax, yaw));
 
   // keep the old sideways speed in the frame of the car
   let vLat = c.vx * rx + c.vz * rz;
-  // a sliding car tries to straighten itself out (the tyres pull it back in line)
+  // a sliding car tries to straighten itself out (the tires pull it back in line)
   const slip = Math.atan2(vLat, Math.max(1, Math.abs(vLong)));
   c.spin *= Math.exp(-dt * (0.8 + 2.4 * Math.min(1, latAvail / 12)));
   // preseason: knocked slow and sideways, the car straightens itself back down the track
@@ -237,7 +237,7 @@ export function step(c: CarState, input: Input, spec: Spec, dt: number): void {
   c.scrape = 0;
   wallCheck(c, prevD);
 
-  // ---- tyres: each one wears and warms with the work it does ----
+  // ---- tires: each one wears and warms with the work it does ----
   // Martinsvale is all left turns, so the right side carries the corners (the right front most);
   // braking leans on the fronts, the throttle on the rears, and sliding chews them all.
   const dist = v * dt;
@@ -250,7 +250,7 @@ export function step(c: CarState, input: Input, spec: Spec, dt: number): void {
   let worst = 0;
   let sumW = 0;
   let sumT = 0;
-  c.tyres.forEach((t, i) => {
+  c.tires.forEach((t, i) => {
     const front = i < 2;
     const right = i % 2 === 1;
     const outside = cornering < 0 ? right : !right;
@@ -328,8 +328,8 @@ function hitWall(c: CarState, depth: number, side: 1 | -1): void {
     const fz = Math.sin(c.h);
     const cross = fx * nz - fz * nx;
     c.spin += cross * Math.min(2.5, into * 0.18);
-    // and scuffs the tyres on that side
-    for (const i of side > 0 ? [1, 3] : [0, 2]) c.tyres[i].wear = Math.min(1, c.tyres[i].wear + into * 0.003);
+    // and scuffs the tires on that side
+    for (const i of side > 0 ? [1, 3] : [0, 2]) c.tires[i].wear = Math.min(1, c.tires[i].wear + into * 0.003);
   } else {
     c.scrape = Math.max(c.scrape, 0.3);
   }

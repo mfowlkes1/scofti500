@@ -13,7 +13,7 @@ Address: **scofti.com/arcade/scofti500**. Folder and slug: `scofti500` (Michael:
 **What Michael has said so far:** a stock car racing game. **A big oval, racing against other cars, having to brake and accelerate.** That's all that's decided. Ask him before you design anything else. Use plain chat and numbered options:
 1. race length: a quick arcade race, or laps with a counter ("lap 12 of 20")?
 2. who drives: scofti and zyra like offroad, the cast as rival drivers, or a pick of anyone?
-3. the feel: realistic (drafting, tyre wear) or arcade (boost, bumping)? Drafting (tuck in behind, slingshot past) is the classic stock car trick, so suggest it.
+3. the feel: realistic (drafting, tire wear) or arcade (boost, bumping)? Drafting (tuck in behind, slingshot past) is the classic stock car trick, so suggest it.
 4. pit stops: none, quick and automatic, or a tap-fast mini-game?
 5. wrecks: none, spin-outs, or big pileups to dodge?
 6. what you chase: wins, best time, a season with points, or money and upgrades like offroad?
@@ -81,7 +81,7 @@ The rest of the cast is Scofti's own: clyde, gem, metis, deekdeek, al, chickadee
 
 ## what the earlier games learned
 
-- **Michael's reference sheets → Meshy multi-image → GLB.** Meshy key: Windows user env `MESHY_API_KEY`. Split moving parts out in code (offroad cut the tyres out so they spin). Shrink with `npx gltf-transform optimize in.glb out.glb --compress meshopt --texture-compress webp --texture-size 2048 --simplify-ratio 0.5`. Noses often need a turn.
+- **Michael's reference sheets → Meshy multi-image → GLB.** Meshy key: Windows user env `MESHY_API_KEY`. Split moving parts out in code (offroad cut the tires out so they spin). Shrink with `npx gltf-transform optimize in.glb out.glb --compress meshopt --texture-compress webp --texture-size 2048 --simplify-ratio 0.5`. Noses often need a turn.
 - **One thumb, one skill.**
 - **Tune with a quick simulation first** (pure-number physics in its own file, run with `node file.ts`), then confirm with a Playwright bot playing the real game. Winter games did this for every event.
 - **Check that the money rewards skill.** In offroad, holding the gas in a hole once paid more than a clean win.

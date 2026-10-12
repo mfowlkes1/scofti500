@@ -234,7 +234,7 @@ body[data-screen="race"] .welcome {
   text-shadow: 0 0 30px rgba(255, 255, 255, 0.6), 0 4px 0 #000;
 }
 
-/* bottom right: limiter, tyres, speed */
+/* bottom right: limiter, tires, speed */
 .hud-br {
   position: absolute;
   right: 16px;
@@ -256,9 +256,9 @@ body[data-screen="race"] .welcome {
   letter-spacing: 0.1em;
   color: var(--muted);
 }
-/* the tyre monitor: a little car from above, each tyre filled by how much is left (green, then
+/* the tire monitor: a little car from above, each tire filled by how much is left (green, then
    yellow, then red) and outlined by its heat (blue cold, orange hot), with its % and °F beside it */
-.hud-tyres {
+.hud-tires {
   padding: 8px 10px;
   background: rgba(8, 6, 18, 0.66);
   border-radius: 12px;
