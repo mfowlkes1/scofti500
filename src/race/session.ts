@@ -60,12 +60,15 @@ const YOUR_STOP = 16;
 const TAP = 0.16;
 const MAX_TAPS = 12;
 
-export function createSession(entries: Entry[], laps: number): Session {
+/** easy: preseason testing, where the walls and bumps slow you down but nobody wrecks */
+export function createSession(entries: Entry[], laps: number, easy = false): Session {
   const cars: CarState[] = [];
   const drivers: Driver[] = [];
   entries.forEach((e, pos) => {
     const g = gridSlot(pos);
-    cars.push(newCar(g.s, g.d, PACE_SPEED));
+    const car = newCar(g.s, g.d, PACE_SPEED);
+    car.soft = easy;
+    cars.push(car);
     const d = newDriver(e.skill, e.aggression, pos);
     d.file = g.d;
     d.slot = g.slot;

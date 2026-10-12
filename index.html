@@ -82,6 +82,11 @@
       <button type="button" data-laps="30">30 LAPS</button>
       <button type="button" data-laps="60">60 LAPS</button>
     </div>
+    <div class="laps-pick" id="mode-pick">
+      <button type="button" data-mode="easy">PRESEASON TESTING</button>
+      <button type="button" data-mode="real">RACE NIGHT</button>
+    </div>
+    <p id="mode-line" class="race-soon"></p>
     <button id="track-go" class="go-btn go-long" type="button">GO RACING ▶</button>
     <button class="back-btn" type="button" data-back>◀ BACK</button>
   </section>
@@ -113,6 +118,7 @@
         <button id="hud-cam" type="button" title="change view (C)">👁 VIEW</button>
         <button id="hud-pit" type="button" title="pit this time by (P)">PIT</button>
         <button id="hud-pause" type="button" title="pause (space)">❚❚</button>
+        <button id="hud-exit" type="button" title="leave the race, back to the pit garage">✕ EXIT</button>
       </div>
       <div class="hud-br">
         <div id="hud-limiter" class="hud-limiter">PIT LIMITER</div>
@@ -129,7 +135,7 @@
         </div>
         <div class="hud-speed"><b id="hud-speed">0</b><small>MPH · GEAR <span id="hud-gear">1</span></small></div>
       </div>
-      <p class="hud-keys">← → steer · ↑ gas · ↓ brake · C view · P pit · space pause</p>
+      <p class="hud-keys"><span class="hard-only">← → steer · ↑ gas · ↓ brake</span><span class="easy-only">← → steer · hold ↑ to go, let off to slow down</span> · C view · P pit · space pause</p>
     </div>
 
     <!-- your pit stop: the crew changes four tyres; tap the air gun to make it quicker -->

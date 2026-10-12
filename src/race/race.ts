@@ -7,6 +7,7 @@ import { earn } from "../garage";
 import { CARS, type Car } from "../roster";
 import { airGun, autopilot, createSession, mph, order, pitStop, progress, stepSession, type Entry, type Session } from "./session";
 import { STOCK, speedOf, type CarState, type Input, type Spec } from "./physics";
+import { planSpeed } from "./ai";
 import { RIVALS } from "./rivals";
 import { buildTrack, type TrackScene } from "./scene";
 import { slug } from "./lines";
@@ -14,7 +15,8 @@ import { createRadio, type Radio } from "./radio";
 import { startAudio, type RaceAudio } from "./sound";
 import { HALF, L, R, S, bankAt, frame, gap, heightAt } from "./track";
 
-export type RaceSetup = { car: Car; paintId: string; driver: string; spec: Spec; pitCrew: number; laps: number };
+/** easy: preseason testing. Walls and bumps only slow you down, a bit more grip, and the rivals take it easy */
+export type RaceSetup = { car: Car; paintId: string; driver: string; spec: Spec; pitCrew: number; laps: number; easy: boolean };
 export type RaceResult = { pos: number; field: number; led: number; best: number; payout: number };
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -162,6 +164,8 @@ export function createRace(opts: { onDone(again: boolean): void }) {
   $("hud-pause").addEventListener("click", () => setPaused(true));
   $("rp-resume").addEventListener("click", () => setPaused(false));
   $("rp-quit").addEventListener("click", () => finish(false));
+  // always on screen: straight back to the pit garage, no payout
+  $("hud-exit").addEventListener("click", () => finish(false));
   $("rr-garage").addEventListener("click", () => finish(false));
   $("rr-again").addEventListener("click", () => finish(true));
   document.addEventListener("visibilitychange", () => {
@@ -184,6 +188,14 @@ export function createRace(opts: { onDone(again: boolean): void }) {
       if (Math.abs(ax) > 0.08) steer = Math.sign(ax) * Math.pow((Math.abs(ax) - 0.08) / 0.92, 1.4);
       throttle = Math.max(throttle, gp.buttons[7]?.value ?? 0, gp.buttons[0]?.pressed ? 1 : 0);
       brake = Math.max(brake, gp.buttons[6]?.value ?? 0, gp.buttons[1]?.pressed ? 1 : 0);
+    }
+    // preseason: no brake pedal. Let off the gas and the car slows itself, just enough to make the
+    // corner coming up (and a little on the straights)
+    if (setup?.easy && sess && throttle < 0.1) {
+      const c = sess.cars[sess.player];
+      const v = Math.hypot(c.vx, c.vz);
+      const corner = planSpeed(c.s + v * 0.6) * 0.97;
+      brake = Math.max(brake, v > corner ? clamp((v - corner) / 4, 0.3, 1) : 0.15);
     }
     return { steer: clamp(steer, -1, 1), throttle, brake };
   }
@@ -257,6 +269,8 @@ export function createRace(opts: { onDone(again: boolean): void }) {
 
   async function start(s: RaceSetup): Promise<void> {
     setup = s;
+    // preseason has no brake pedal: lift to slow down
+    $("race-screen").classList.toggle("easy", s.easy);
     finishedAt = 0;
     paused = false;
     $("race-results").classList.remove("on");
@@ -270,14 +284,16 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     // the field: the rivals in grid order, you at the back
     const entries: Entry[] = RIVALS.map((r) => {
       const car = CARS.find((c) => c.id === r.carId)!;
+      if (s.easy) return { name: r.name, number: car.number, carId: r.carId, paintId: r.paint, spec: { ...STOCK, power: STOCK.power * 0.94 }, skill: r.skill * 0.95, aggression: r.aggression * 0.4 };
       return { name: r.name, number: car.number, carId: r.carId, paintId: r.paint, spec: STOCK, skill: r.skill, aggression: r.aggression };
     });
     // shuffle the rivals' starting spots a little each race
     for (let i = entries.length - 1; i > 0; i--) {
       if (Math.random() < 0.5) [entries[i], entries[i - 1]] = [entries[i - 1], entries[i]];
     }
-    entries.push({ name: s.driver, number: s.car.number, carId: s.car.id, paintId: s.paintId, spec: s.spec, skill: 1, aggression: 0.5, player: true });
-    sess = createSession(entries, s.laps);
+    const mySpec = s.easy ? { ...s.spec, grip: s.spec.grip * 1.06 } : s.spec;
+    entries.push({ name: s.driver, number: s.car.number, carId: s.car.id, paintId: s.paintId, spec: mySpec, skill: 1, aggression: 0.5, player: true });
+    sess = createSession(entries, s.laps, s.easy);
 
     trackReady ??= buildTrack(scene);
     track = await trackReady;

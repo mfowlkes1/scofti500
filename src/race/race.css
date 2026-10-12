@@ -630,7 +630,7 @@ body.in-seat .hud-speed {
 /* a phone held upright: a smaller order board, the map tucked in */
 @media (max-aspect-ratio: 1/1) {
   .hud-board {
-    top: 118px;
+    top: 146px;
   }
   .hud-board li {
     grid-template-columns: 14px 24px 74px 54px;
@@ -651,6 +651,11 @@ body.in-seat .hud-speed {
   }
   .hud-btns {
     top: 96px;
+    gap: 6px;
+  }
+  .hud-btns button {
+    padding: 6px 9px;
+    font-size: 13px;
   }
   .hud-radio {
     top: auto;
@@ -762,4 +767,20 @@ body.in-seat .hud-speed {
 }
 .hud-radio[data-who="driver"] {
   border-color: #ff8fd0;
+}
+#hud-exit {
+  background: rgba(150, 20, 20, 0.8);
+}
+
+/* preseason testing: no brake pedal, lift to slow down */
+.easy-only,
+#race-screen.easy .hard-only,
+#race-screen.easy .t-brake {
+  display: none;
+}
+#race-screen.easy .easy-only {
+  display: inline;
+}
+#race-screen.easy .t-gas {
+  width: 150px;
 }

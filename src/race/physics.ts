@@ -71,6 +71,8 @@ export type CarState = {
   held: boolean;
   /** stuck to the pit limiter */
   limiter: boolean;
+  /** preseason testing: walls and bumps slow you down but don't wreck you */
+  soft: boolean;
 };
 
 /** one tyre: wear 0 new .. 1 gone, warmth 0 cold .. 1 working (past ~1.15 it's overheating) */
@@ -110,6 +112,7 @@ export function newCar(s: number, d: number, speed: number): CarState {
     rpm: 5000,
     held: false,
     limiter: false,
+    soft: false,
   };
 }
 
@@ -295,7 +298,18 @@ function hitWall(c: CarState, depth: number, side: 1 | -1): void {
   c.z += nz * depth;
   c.d -= depth * side;
   const into = -(c.vx * nx + c.vz * nz);
-  if (into > 0) {
+  if (into > 0 && c.soft) {
+    // preseason: no bounce, no spin. The car slides along the wall, loses some speed, and gets
+    // turned back along the track
+    c.vx += nx * into;
+    c.vz += nz * into;
+    const keep = 1 - Math.min(0.3, into * 0.03);
+    c.vx *= keep;
+    c.vz *= keep;
+    c.spin = 0;
+    if (Math.hypot(c.vx, c.vz) > 2) c.h += angleTo(c.h, Math.atan2(c.vz, c.vx)) * 0.5;
+    c.scrape = Math.max(c.scrape, into + 0.5);
+  } else if (into > 0) {
     // bounce a little, and the scrape takes speed off
     c.vx += nx * into * 1.25;
     c.vz += nz * into * 1.25;
@@ -313,6 +327,13 @@ function hitWall(c: CarState, depth: number, side: 1 | -1): void {
   } else {
     c.scrape = Math.max(c.scrape, 0.3);
   }
+}
+
+function angleTo(from: number, to: number): number {
+  let a = (to - from) % (Math.PI * 2);
+  if (a > Math.PI) a -= Math.PI * 2;
+  if (a < -Math.PI) a += Math.PI * 2;
+  return a;
 }
 
 // ---- cars touching ----
@@ -362,8 +383,8 @@ export function collide(cars: CarState[]): void {
           }
           // off-center hits twist the car: the farther from the middle, the more
           const twist = Math.min(1.8, j2 * 0.11);
-          a.spin += twist * (oa / 1.6) * (Math.cos(a.h) * nz - Math.sin(a.h) * nx);
-          b.spin -= twist * (ob / 1.6) * (Math.cos(b.h) * nz - Math.sin(b.h) * nx);
+          a.spin += (a.soft ? 0.2 : 1) * twist * (oa / 1.6) * (Math.cos(a.h) * nz - Math.sin(a.h) * nx);
+          b.spin -= (b.soft ? 0.2 : 1) * twist * (ob / 1.6) * (Math.cos(b.h) * nz - Math.sin(b.h) * nx);
           a.bump = Math.max(a.bump, -rel);
           b.bump = Math.max(b.bump, -rel);
         }

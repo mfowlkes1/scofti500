@@ -270,6 +270,33 @@ for (const b of document.querySelectorAll<HTMLButtonElement>("#laps-pick button"
 }
 showLaps();
 
+// ---- preseason testing (easy: the walls only slow you down) or race night (the real thing) ----
+const MODE_KEY = "scofti500:mode";
+let easy = true;
+try {
+  easy = localStorage.getItem(MODE_KEY) !== "real";
+} catch {
+  // not remembered
+}
+function showMode(): void {
+  for (const b of document.querySelectorAll<HTMLButtonElement>("#mode-pick button")) b.classList.toggle("on", (b.dataset.mode === "easy") === easy);
+  $("mode-line").textContent = easy
+    ? "Walls just slow you down, no wrecks. Rivals take it easy."
+    : "The real thing: hit the wall and you'll spin. Rivals race hard.";
+}
+for (const b of document.querySelectorAll<HTMLButtonElement>("#mode-pick button")) {
+  b.addEventListener("click", () => {
+    easy = b.dataset.mode === "easy";
+    try {
+      localStorage.setItem(MODE_KEY, easy ? "easy" : "real");
+    } catch {
+      // not remembered
+    }
+    showMode();
+  });
+}
+showMode();
+
 const race = createRace({
   onDone: () => {
     showUpgrades();
@@ -279,7 +306,7 @@ const race = createRace({
 function goRacing(): void {
   const car = garageCar ?? cars.current();
   show("race");
-  race.start({ car, paintId: paintOf(car), driver: driver.name, spec: tuned(STOCK, car.id), pitCrew: levels(car.id).crew, laps });
+  race.start({ car, paintId: paintOf(car), driver: driver.name, spec: tuned(STOCK, car.id), pitCrew: levels(car.id).crew, laps, easy });
 }
 $("track-go").addEventListener("click", goRacing);
 addEventListener("keydown", (e) => {

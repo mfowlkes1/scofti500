@@ -13,7 +13,10 @@ const entries: Entry[] = Array.from({ length: 8 }, (_, i) => ({
   skill: 0.985 - i * 0.008,
   aggression: (i % 3) / 2,
 }));
-const sess = createSession(entries, laps);
+// EASY=1: preseason testing (soft walls, rivals easing off the way the race screen sets them)
+const easy = !!process.env.EASY;
+if (easy) for (const e of entries) Object.assign(e, { spec: { ...STOCK, power: STOCK.power * 0.94 }, skill: e.skill * 0.95, aggression: e.aggression * 0.4 });
+const sess = createSession(entries, laps, easy);
 const dt = 1 / 120;
 const walls = new Array(8).fill(0);
 const bumps = new Array(8).fill(0);
