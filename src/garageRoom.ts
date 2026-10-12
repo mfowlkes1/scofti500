@@ -17,7 +17,12 @@ const BACK = -9; // back wall z, from the turntable
 const CAR_HEIGHT = 1.35; // a stock car stands about 1.3 m; the turntable is 3.6 m across
 
 // which 3D model each car uses (art/meshy → public/models); a car without one shows its picture
-const MODELS: Record<string, string> = { "43-eighties": "car-43-eighties" };
+const MODELS: Record<string, string> = {
+  "17-modern": "car-17-modern",
+  "43-eighties": "car-43-eighties",
+  "3-muscle": "car-3-muscle",
+  "7-owl": "car-7-owl",
+};
 
 export type Garage = {
   show(on: boolean): void;
@@ -139,13 +144,20 @@ function paintModel(obj: THREE.Object3D, car: Car, paintId: string): void {
     // keep the model's own texture so the next colour starts from it, not from the last one
     const original = (m.userData.original ??= m.map) as THREE.Texture;
     const painted = paintedTexture(original.image as HTMLImageElement, car.key, paintId);
-    o.material = m.clone();
-    const mat = o.material as THREE.MeshStandardMaterial;
+    // car paint, not chrome: Meshy bakes lumpy bumps into the normal map and the bright garage lit every
+    // lump silver, so flatten the bumps, and turn the shine down so black stays black with small
+    // sharp highlights instead of a grey sheen
+    const mat = new THREE.MeshPhysicalMaterial({
+      normalMap: m.normalMap,
+      normalScale: new THREE.Vector2(0.15, 0.15),
+      metalness: 0,
+      roughness: 0.3,
+      specularIntensity: 0.3,
+      envMapIntensity: 0.12,
+      side: m.side,
+    });
+    o.material = mat;
     mat.userData.original = original;
-    // car paint, not a mirror: the white room made Meshy's shiny metal read as chrome
-    mat.metalness = Math.min(mat.metalness, 0.25);
-    mat.roughness = Math.max(mat.roughness, 0.3);
-    mat.envMapIntensity = 0.7;
     if (painted) {
       const t = new THREE.CanvasTexture(painted);
       t.colorSpace = THREE.SRGBColorSpace;

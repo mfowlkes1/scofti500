@@ -18,7 +18,7 @@ const REF = new URL("../reference/", import.meta.url);
 // underneath below. Meshy takes up to four views; these four show every side of the car.
 const SHEET_VIEWS = [
   { left: 0, top: 0, width: 840, height: 420 }, // front three-quarter
-  { left: 848, top: 40, width: 600, height: 330 }, // rear three-quarter
+  { left: 847, top: 40, width: 600, height: 330 }, // rear three-quarter (the muscle sheet is a pixel narrower)
   { left: 688, top: 410, width: 744, height: 186 }, // left side
   { left: 15, top: 450, width: 310, height: 190 }, // straight front
 ];
@@ -26,6 +26,17 @@ const SHEET_VIEWS = [
 const NO_BRANDS = "No car maker badges, no emblems, no sponsor logos, no other text.";
 
 const MODELS = {
+  "car-17-modern": {
+    sheet: "car-17-splatter-sheet.png",
+    // the 1536 x 1024 guyute sheet has its own layout
+    views: [
+      { left: 0, top: 0, width: 925, height: 400 }, // front three-quarter
+      { left: 945, top: 30, width: 591, height: 330 }, // rear three-quarter
+      { left: 775, top: 385, width: 710, height: 190 }, // left side
+      { left: 30, top: 435, width: 295, height: 195 }, // straight front
+    ],
+    texture: `Modern stock car with a low swept body, big rear wing and black wheels with yellow-rimmed tires. Black body covered in bright lime green splatter and brush streaks, black brush-lettered SCOFTI on the doors, hood and rear, big black number 17 with a white outline on both doors and the roof. Plain black grille with no badge. ${NO_BRANDS}`,
+  },
   "car-43-eighties": {
     sheet: "car-43-80s-sheet.png",
     views: SHEET_VIEWS,
