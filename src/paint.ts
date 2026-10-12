@@ -106,14 +106,20 @@ export async function paintedUrl(url: string, key: KeyHue, paintId: string, view
 }
 
 /** a 3D car's texture in this paint: a canvas to use as the new map, or null for stock */
-export function paintedTexture(source: CanvasImageSource & { width: number; height: number }, key: KeyHue, paintId: string): HTMLCanvasElement | null {
+export function paintedTexture(
+  source: CanvasImageSource & { width: number; height: number },
+  key: KeyHue,
+  paintId: string,
+  maxSize = 4096,
+): HTMLCanvasElement | null {
   const paint = PAINTS.find((p) => p.id === paintId);
   if (!paint || paint.id === "stock") return null;
   const c = document.createElement("canvas");
-  c.width = source.width;
-  c.height = source.height;
+  const k = Math.min(1, maxSize / Math.max(source.width, source.height));
+  c.width = Math.round(source.width * k);
+  c.height = Math.round(source.height * k);
   const g = c.getContext("2d", { willReadFrequently: true })!;
-  g.drawImage(source, 0, 0);
+  g.drawImage(source, 0, 0, c.width, c.height);
   const data = g.getImageData(0, 0, c.width, c.height);
   // no skip areas or number boxes: those are for the flat pictures
   recolour(data, paint, key, [], []);

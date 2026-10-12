@@ -1,6 +1,7 @@
 // The pit garage's money and upgrades, like scofti-offroad's garage: cash buys upgrades, and each car
-// keeps its own. Winnings come from races once the race is built; until then you start with enough
-// for a couple of upgrades. All saved on this device (scofti500:cash, scofti500:upgrades).
+// keeps its own. Races pay the cash (earn); you start with enough for a couple of upgrades. Engine
+// adds power, brakes stop harder, tyres grip more and wear slower, the pit crew changes tyres quicker.
+// All saved on this device (scofti500:cash, scofti500:upgrades).
 
 export type UpgradeId = "engine" | "brakes" | "tyres" | "crew";
 
@@ -56,4 +57,21 @@ export function buy(carId: string, id: UpgradeId): boolean {
   write(UPGRADES_KEY, all);
   write(CASH_KEY, cash() - cost);
   return true;
+}
+
+/** race winnings */
+export function earn(amount: number): void {
+  write(CASH_KEY, cash() + amount);
+}
+
+/** what the upgrades make of a car: the stock car's numbers, improved level by level */
+export function tuned<T extends { power: number; brake: number; grip: number; wear: number }>(stock: T, carId: string): T {
+  const lv = levels(carId);
+  return {
+    ...stock,
+    power: stock.power * (1 + 0.045 * lv.engine),
+    brake: stock.brake * (1 + 0.06 * lv.brakes),
+    grip: stock.grip * (1 + 0.018 * lv.tyres),
+    wear: stock.wear * (1 - 0.15 * lv.tyres),
+  };
 }

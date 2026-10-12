@@ -6,23 +6,14 @@
 // garage is showing.
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
-import { model } from "./models";
-import { paintedTexture, paintedUrl } from "./paint";
+import { loadCar } from "./carModel";
+import { paintedUrl } from "./paint";
 import { carUrl, type Car } from "./roster";
 
 const W = 24; // wall to wall (x)
 const D = 40; // back wall to front wall (z)
 const H = 11;
 const BACK = -9; // back wall z, from the turntable
-const CAR_HEIGHT = 1.35; // a stock car stands about 1.3 m; the turntable is 3.6 m across
-
-// which 3D model each car uses (art/meshy → public/models); a car without one shows its picture
-const MODELS: Record<string, string> = {
-  "17-modern": "car-17-modern",
-  "43-eighties": "car-43-eighties",
-  "3-muscle": "car-3-muscle",
-  "7-owl": "car-7-owl",
-};
 
 export type Garage = {
   show(on: boolean): void;
@@ -35,7 +26,7 @@ export function createGarage(canvas: HTMLCanvasElement): Garage {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color("#e9ecef");
@@ -56,13 +47,9 @@ export function createGarage(canvas: HTMLCanvasElement): Garage {
   async function setCar(car: Car, paintId: string): Promise<void> {
     const key = `${car.id}|${paintId}`;
     want = key;
-    const name = MODELS[car.id];
-    let obj: THREE.Object3D | null = null;
-    if (name) {
-      obj = await model(name, CAR_HEIGHT);
-      if (obj) paintModel(obj, car, paintId);
-    }
-    if (!obj) obj = await pictureStand(car, paintId);
+    // the garage lamps are bright enough to wash colours out (the hooter went pale yellow), so the
+    // paint sits darker in here
+    const obj = (await loadCar(car, paintId, { brightness: 0.5 })) ?? (await pictureStand(car, paintId));
     // a later pick arrived while this one loaded
     if (want !== key) return;
     if (carObj) table.remove(carObj);
@@ -133,44 +120,6 @@ export function createGarage(canvas: HTMLCanvasElement): Garage {
     },
     setCar: (car, paintId) => void setCar(car, paintId),
   };
-}
-
-// Repaint a model's textures in the picked colour (the same recolouring as the car pictures).
-function paintModel(obj: THREE.Object3D, car: Car, paintId: string): void {
-  obj.traverse((o) => {
-    if (!(o instanceof THREE.Mesh)) return;
-    const m = o.material as THREE.MeshStandardMaterial;
-    if (!m.map) return;
-    // keep the model's own texture so the next colour starts from it, not from the last one
-    const original = (m.userData.original ??= m.map) as THREE.Texture;
-    const painted = paintedTexture(original.image as HTMLImageElement, car.key, paintId);
-    // car paint, not chrome: Meshy bakes lumpy bumps into the normal map and the bright garage lit every
-    // lump silver, so flatten the bumps, and turn the shine down so black stays black with small
-    // sharp highlights instead of a grey sheen
-    const mat = new THREE.MeshPhysicalMaterial({
-      normalMap: m.normalMap,
-      normalScale: new THREE.Vector2(0.15, 0.15),
-      metalness: 0,
-      roughness: 0.42,
-      specularIntensity: 0.04,
-      envMapIntensity: 0.08,
-      // the garage lamps are bright enough to wash colours out (the hooter went pale yellow), so the
-      // paint sits a little darker
-      color: new THREE.Color(0.5, 0.5, 0.5),
-      side: m.side,
-    });
-    o.material = mat;
-    mat.userData.original = original;
-    if (painted) {
-      const t = new THREE.CanvasTexture(painted);
-      t.colorSpace = THREE.SRGBColorSpace;
-      t.flipY = original.flipY;
-      t.anisotropy = 4;
-      mat.map = t;
-    } else {
-      mat.map = original;
-    }
-  });
 }
 
 // A car with no 3D model yet: its picture on a stand on the turntable.

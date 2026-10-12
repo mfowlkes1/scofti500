@@ -2,15 +2,18 @@ import "@fontsource/lilita-one";
 import "@fontsource/permanent-marker";
 import "@fontsource/racing-sans-one";
 import "./style.css";
+import "./race/race.css";
 import { PAINTS, paintedUrl, savePaint, savedPaint } from "./paint";
-import { UPGRADES, MAX_LEVEL, buy, cash, levels, nextCost } from "./garage";
+import { UPGRADES, MAX_LEVEL, buy, cash, levels, nextCost, tuned } from "./garage";
 import { createGarage } from "./garageRoom";
 import { createPicker } from "./pick";
+import { STOCK } from "./race/physics";
+import { createRace } from "./race/race";
 import { CARS, DRIVERS, TRACKS, carUrl, faceUrl, type Car, type Driver } from "./roster";
 
-// Flow: title → PICK YOUR DRIVER → PICK YOUR CAR → PIT GARAGE → PICK YOUR TRACK (garage and track not built yet). Backspace and the on-screen
-// BACK go back; Escape belongs to the arcade.
-type Screen = "title" | "driver" | "car" | "garage" | "track";
+// Flow: title → PICK YOUR DRIVER → PICK YOUR CAR → PIT GARAGE → PICK YOUR TRACK → the race → back to
+// the pit garage. Backspace and the on-screen BACK go back; Escape belongs to the arcade.
+type Screen = "title" | "driver" | "car" | "garage" | "track" | "race";
 const BACK: Partial<Record<Screen, Screen>> = { driver: "title", car: "driver", garage: "car", track: "garage" };
 const $ = (id: string) => document.getElementById(id)!;
 
@@ -239,3 +242,46 @@ function showUpgrades(): void {
     }),
   );
 }
+
+// ---- the race: how many laps, then go ----
+const LAPS_KEY = "scofti500:laps";
+let laps = 30;
+try {
+  laps = Number(localStorage.getItem(LAPS_KEY)) || 30;
+} catch {
+  // not remembered
+}
+function showLaps(): void {
+  for (const b of document.querySelectorAll<HTMLButtonElement>("#laps-pick button")) b.classList.toggle("on", Number(b.dataset.laps) === laps);
+}
+for (const b of document.querySelectorAll<HTMLButtonElement>("#laps-pick button")) {
+  b.addEventListener("click", () => {
+    laps = Number(b.dataset.laps);
+    try {
+      localStorage.setItem(LAPS_KEY, String(laps));
+    } catch {
+      // not remembered
+    }
+    showLaps();
+  });
+}
+showLaps();
+
+const race = createRace({
+  onDone: () => {
+    showUpgrades();
+    show("garage");
+  },
+});
+function goRacing(): void {
+  const car = garageCar ?? cars.current();
+  show("race");
+  race.start({ car, paintId: paintOf(car), driver: driver.name, spec: tuned(STOCK, car.id), pitCrew: levels(car.id).crew, laps });
+}
+$("track-go").addEventListener("click", goRacing);
+addEventListener("keydown", (e) => {
+  if (screen === "track" && (e.key === "Enter" || e.key === " ")) {
+    e.preventDefault();
+    goRacing();
+  }
+});

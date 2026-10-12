@@ -76,8 +76,78 @@
     <p id="track-name" class="track-name"></p>
     <span id="track-kind" class="pick-role"></span>
     <p id="track-line" class="race-soon"></p>
-    <p class="race-soon">The race itself is coming next.</p>
+    <p class="under-lights">★ UNDER THE LIGHTS ★</p>
+    <div class="laps-pick" id="laps-pick">
+      <button type="button" data-laps="15">15 LAPS</button>
+      <button type="button" data-laps="30">30 LAPS</button>
+      <button type="button" data-laps="60">60 LAPS</button>
+    </div>
+    <button id="track-go" class="go-btn go-long" type="button">GO RACING ▶</button>
     <button class="back-btn" type="button" data-back>◀ BACK</button>
+  </section>
+
+  <section id="race-screen" class="screen">
+    <canvas id="race-canvas" class="race-canvas"></canvas>
+
+    <!-- in the seat: the roll cage, the window net and the dash -->
+    <div class="cockpit" aria-hidden="true">
+      <i class="ck-pillar ck-left"></i><i class="ck-pillar ck-right"></i><i class="ck-roof"></i>
+      <i class="ck-net"></i>
+      <div class="ck-dash">
+        <div class="ck-gauge"><span class="ck-rpm-bar"><i id="ck-rpm"></i></span><b id="ck-speed">0</b><small>MPH · <span id="ck-gear">1</span></small></div>
+        <svg id="ck-wheel" class="ck-wheel" viewBox="-50 -50 100 100"><circle r="44" fill="none" stroke="#111" stroke-width="9" /><circle r="44" fill="none" stroke="#2a2a2e" stroke-width="3" /><path d="M-40 4 L-12 8 L-8 18 L8 18 L12 8 L40 4" fill="none" stroke="#111" stroke-width="9" stroke-linejoin="round" /><rect x="-3" y="-47" width="6" height="8" fill="#c8161d" /><circle r="9" fill="#1a1a1d" /></svg>
+      </div>
+    </div>
+
+    <div class="hud">
+      <div class="hud-tl">
+        <div class="hud-pos"><b id="hud-pos">8</b><span id="hud-of">/8</span></div>
+        <div id="hud-lap" class="hud-lap">PACE LAP</div>
+        <div class="hud-times">LAST <b id="hud-last">--.--</b> BEST <b id="hud-best">--.--</b></div>
+      </div>
+      <ol id="hud-board" class="hud-board"></ol>
+      <canvas id="hud-map" class="hud-map" width="220" height="110"></canvas>
+      <div id="hud-radio" class="hud-radio"><b></b><span></span></div>
+      <div id="hud-flag" class="hud-flag"></div>
+      <div class="hud-btns">
+        <button id="hud-cam" type="button" title="change view (C)">👁 VIEW</button>
+        <button id="hud-pit" type="button" title="pit this time by (P)">PIT</button>
+        <button id="hud-pause" type="button" title="pause (space)">❚❚</button>
+      </div>
+      <div class="hud-br">
+        <div id="hud-limiter" class="hud-limiter">PIT LIMITER</div>
+        <div id="hud-tyres" class="hud-tyres"><span class="tyre-bar"><i></i></span><small>TYRES <b id="hud-tyre-pct">100%</b></small></div>
+        <div class="hud-speed"><b id="hud-speed">0</b><small>MPH · GEAR <span id="hud-gear">1</span></small></div>
+      </div>
+      <p class="hud-keys">← → steer · ↑ gas · ↓ brake · C view · P pit · space pause</p>
+    </div>
+
+    <!-- on a phone: steer with the left thumb, pedals under the right -->
+    <div class="touch">
+      <div id="t-steer" class="t-steer"><i id="t-knob" class="t-knob"></i><span>◀ STEER ▶</span></div>
+      <button id="t-brake" class="t-pedal t-brake" type="button">BRAKE</button>
+      <button id="t-gas" class="t-pedal t-gas" type="button">GAS</button>
+    </div>
+
+    <div id="race-load" class="race-overlay">
+      <p class="race-flag">MARTINSVALE</p>
+      <p class="race-soon">rolling out under the lights…</p>
+      <span class="load-bar"><i id="race-load-bar"></i></span>
+    </div>
+    <div id="race-pause" class="race-overlay">
+      <p class="race-flag">PAUSED</p>
+      <button id="rp-resume" class="go-btn" type="button">RESUME ▶</button>
+      <button id="rp-quit" class="back-btn" type="button">QUIT TO PIT GARAGE</button>
+    </div>
+    <div id="race-results" class="race-overlay">
+      <p id="rr-title" class="race-flag">CHECKERED FLAG</p>
+      <p class="rr-head"><b id="rr-pos">P1</b><span id="rr-cash">+$0</span></p>
+      <ol id="rr-table" class="rr-table"></ol>
+      <div class="rr-btns">
+        <button id="rr-again" class="go-btn go-long" type="button">RACE AGAIN ▶</button>
+        <button id="rr-garage" class="back-btn" type="button">◀ PIT GARAGE</button>
+      </div>
+    </div>
   </section>
 
   <script type="module" src="/src/main.ts"></script>
