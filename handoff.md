@@ -107,3 +107,30 @@ The rest of the cast is Scofti's own: clyde, gem, metis, deekdeek, al, chickadee
 ## how Michael works
 
 He's new to game making, so use plain words and give one clear recommendation. Ask questions in plain chat with numbered options; a bare number is his pick. Pop-up question boxes and plan-approval prompts get rejected. He prefers lowercase. He tests on his phone, one change at a time, and drops files (voices, music, art) on his Desktop. He reviews every push.
+
+## where it stands (2026-10-12, end of session)
+Built and pushed: title → driver → car + paint → 3D pit garage with upgrades → track screen (laps 15/30/60,
+PRESEASON TESTING or RACE NIGHT) → the race at martinsvale under the lights.
+- Race: friction-circle physics, per-tire wear and temperature with the TIRES monitor, drafting, 7 rival
+  drivers, air-gun pit stops (16 s with no taps, faster the more you tap), rivals answer your pit stop,
+  results by laps completed, prize money. ?simtest URL flag for scripted screenshots (window.__race,
+  window.__camPose).
+- Preseason testing (default): walls and bumps slow you but don't wreck you, no brake pedal (lift and
+  the car slows for the corner), easier rivals. Race night is the full thing.
+- Infield: team haulers, motorhome camps, pickups, fans, pit crews, two big video leaderboards
+  (src/race/infield.ts). Meshy models named hauler / motorhome / pickup in public/models replace the
+  hand-built ones automatically (art/meshy/infield.mjs makes them; failed: Meshy account out of credits).
+- Car decals: art/meshy/fix-lettering.mjs repaints SCOFTI and numbers on the 17, 43 and 3
+  (art/meshy/flat.mjs makes flat side/top/rear pictures to check them).
+- Voices: tools/voices.ts (ElevenLabs). Spotter, crew chief, a stand-in announcer ("Bill"),
+  Madhuvan (voice yj30vwTGJxSHezdAGsv9).
+
+Waiting on Michael / next up:
+- New announcer voice ID from ElevenLabs Voice Design (prompt was given). Then swap VOICES.announcer
+  in tools/voices.ts, delete the ann-*.mp3 files in art/voices and public/audio/radio, rerun the tool.
+- Maybe: make SCOFTI and the numbers white on dark paints (they vanish on black cars).
+- Meshy credits for real haulers and motorhomes (rerun art/meshy/infield.mjs, then optimize into public/models).
+- Rivals in the same car model share its baked-in number (two #17s).
+- Country music tracks from Michael. Voices for Allan and Si.
+- The game isn't on scofti.com yet (/arcade/scofti500 returns 404).
+- Spelling: American (tires). SCOFTI's I always has bars; the Permanent Marker font already draws them.
