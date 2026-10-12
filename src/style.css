@@ -27,6 +27,7 @@ button {
   display: none;
 }
 body[data-screen="title"] #title-screen,
+body[data-screen="garage"] #garage-screen,
 body[data-screen="track"] #track-screen {
   display: block;
 }
@@ -398,11 +399,13 @@ body[data-screen="car"] #car-screen {
 }
 
 /* ---- race (not built yet) ---- */
+#garage-screen,
 #track-screen {
   position: fixed;
   inset: 0;
   text-align: center;
 }
+body[data-screen="garage"] #garage-screen,
 body[data-screen="track"] #track-screen {
   display: grid;
   place-content: center;
@@ -441,4 +444,67 @@ body[data-screen="track"] #track-screen {
   max-width: 34ch;
   padding-inline: 16px;
   color: #fff;
+}
+
+/* the car picture turns: tap or swipe it to go round its views */
+.hero-box {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 0;
+}
+#car-img {
+  cursor: pointer;
+  touch-action: pan-y;
+  -webkit-user-drag: none;
+}
+#car-img.turn {
+  animation: turn 0.3s ease-out;
+}
+@keyframes turn {
+  from {
+    transform: skewX(-4deg) scaleX(0.6);
+    opacity: 0.2;
+  }
+}
+.view-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.view-dots {
+  display: flex;
+  gap: 6px;
+}
+.view-dots i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+}
+.view-dots i.on {
+  background: #fff;
+}
+@media (max-aspect-ratio: 1/1) {
+  .hero-box {
+    width: 92%;
+    justify-self: center;
+  }
+  #car-img {
+    width: 100%;
+  }
+}
+
+.garage-car {
+  width: min(86vw, 640px);
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+  border: 5px solid #fff;
+  border-radius: 14px;
+  box-shadow: 0 0 0 4px var(--night), 0 1.2rem 3rem rgba(0, 0, 0, 0.6);
+  transform: skewX(-4deg);
 }

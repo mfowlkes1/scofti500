@@ -38,7 +38,10 @@
       <h2 class="pick-title">PICK YOUR CAR</h2>
     </div>
     <div class="pick-stage">
-      <img id="car-img" class="hero-img" alt="" />
+      <div class="hero-box">
+        <img id="car-img" class="hero-img" alt="" title="Tap to turn the car" />
+        <div class="view-row"><span class="turn-hint">↻ tap to turn</span><span id="car-views" class="view-dots"></span></div>
+      </div>
       <div class="pick-info">
         <span id="car-role" class="pick-role"></span>
         <h3 id="car-name" class="pick-name"></h3>
@@ -48,10 +51,19 @@
           <span id="paint-name" class="paint-name"></span>
           <div id="car-paints" class="paints"></div>
         </div>
-        <button id="car-go" class="go-btn go-long" type="button">PICK YOUR TRACK ▶</button>
+        <button id="car-go" class="go-btn go-long" type="button">TO THE PIT GARAGE ▶</button>
       </div>
     </div>
     <div id="car-cards" class="pick-cards"></div>
+  </section>
+
+  <section id="garage-screen" class="screen">
+    <p class="race-flag">PIT GARAGE</p>
+    <img id="garage-car" class="garage-car" alt="" />
+    <span id="race-who"></span>
+    <p class="race-soon">The crew will tune your car here. Coming soon.</p>
+    <button id="garage-go" class="go-btn go-long" type="button">PICK YOUR TRACK ▶</button>
+    <button class="back-btn" type="button" data-back>◀ BACK</button>
   </section>
 
   <section id="track-screen" class="screen">
@@ -59,7 +71,6 @@
     <p id="track-name" class="track-name"></p>
     <span id="track-kind" class="pick-role"></span>
     <p id="track-line" class="race-soon"></p>
-    <span id="race-who"></span>
     <p class="race-soon">The race itself is coming next.</p>
     <button class="back-btn" type="button" data-back>◀ BACK</button>
   </section>

@@ -6,10 +6,10 @@ import { PAINTS, paintedUrl, savePaint, savedPaint } from "./paint";
 import { createPicker } from "./pick";
 import { CARS, DRIVERS, TRACKS, carUrl, faceUrl, type Car, type Driver } from "./roster";
 
-// Flow: title → PICK YOUR DRIVER → PICK YOUR CAR → PICK YOUR TRACK (not built yet). Backspace and the on-screen
+// Flow: title → PICK YOUR DRIVER → PICK YOUR CAR → PIT GARAGE → PICK YOUR TRACK (garage and track not built yet). Backspace and the on-screen
 // BACK go back; Escape belongs to the arcade.
-type Screen = "title" | "driver" | "car" | "track";
-const BACK: Partial<Record<Screen, Screen>> = { driver: "title", car: "driver", track: "car" };
+type Screen = "title" | "driver" | "car" | "garage" | "track";
+const BACK: Partial<Record<Screen, Screen>> = { driver: "title", car: "driver", garage: "car", track: "garage" };
 const $ = (id: string) => document.getElementById(id)!;
 
 let screen: Screen = "title";
@@ -37,6 +37,13 @@ const drivers = createPicker<Driver>({
   },
 });
 
+// the car being shown and which way round it is (tap the picture to turn it)
+let viewIndex = 0;
+let shownCar = CARS[0];
+let shownHero: HTMLImageElement | null = null;
+let shownCard: HTMLImageElement | null = null;
+let paintJob = 0;
+
 const cars = createPicker<Car>({
   prefix: "car",
   items: CARS,
@@ -49,22 +56,45 @@ const cars = createPicker<Car>({
   accent: (c) => c.accent,
   onShow: (c, hero, card) => showPaints(c, hero, card),
   onGo: (c) => {
-    const paint = PAINTS.find((p) => p.id === savedPaint(c.id))!;
+    const paint = PAINTS.find((p) => p.id === paintOf(c))!;
     const colour = paint.id === "stock" ? "" : ` in ${paint.label}`;
     $("race-who").textContent = `${driver.name} in the #${c.number} · ${c.name}${colour}`;
-    show("track");
+    ($("garage-car") as HTMLImageElement).src = shownCard?.src ?? carUrl(c);
+    show("garage");
   },
 });
 
+// the colours a car offers: stock only when the car starts in its own paint (no lime on the cars)
+function paintsFor(car: Car) {
+  return PAINTS.filter((p) => p.id !== "stock" || car.paint === "stock");
+}
+function paintOf(car: Car): string {
+  const id = savedPaint(car.id, car.paint);
+  return paintsFor(car).some((p) => p.id === id) ? id : car.paint;
+}
+
+// paint the small car cards in each car's colour from the start
+for (const [i, img] of [...document.querySelectorAll<HTMLImageElement>("#car-cards img")].entries()) {
+  const car = CARS[i];
+  paintedUrl(carUrl(car), car.key, paintOf(car)).then((url) => (img.src = url));
+}
+
 // the colour swatches under the car; each car remembers its own colour
 function showPaints(car: Car, hero: HTMLImageElement, card: HTMLImageElement): void {
+  // a new car starts from the front
+  if (car !== shownCar) viewIndex = 0;
+  shownCar = car;
+  shownHero = hero;
+  shownCard = card;
   const row = $("car-paints");
   row.style.setProperty("--stock", car.accent);
+  const options = paintsFor(car);
   row.replaceChildren(
-    ...PAINTS.map((p) => {
+    ...options.map((p) => {
       const b = document.createElement("button");
       b.type = "button";
       b.className = "swatch";
+      b.dataset.paint = p.id;
       b.title = p.label;
       b.setAttribute("aria-label", p.label);
       b.style.background = p.swatch;
@@ -79,18 +109,60 @@ function showPaints(car: Car, hero: HTMLImageElement, card: HTMLImageElement): v
   applyPaint(car, hero, card);
 }
 
-let paintJob = 0;
 async function applyPaint(car: Car, hero: HTMLImageElement, card: HTMLImageElement): Promise<void> {
-  const id = savedPaint(car.id);
-  const i = PAINTS.findIndex((p) => p.id === id);
-  for (const [j, s] of [...$("car-paints").children].entries()) s.classList.toggle("on", j === i);
-  $("paint-name").textContent = PAINTS[i].label;
+  const id = paintOf(car);
+  for (const s of $("car-paints").children) s.classList.toggle("on", (s as HTMLElement).dataset.paint === id);
+  $("paint-name").textContent = PAINTS.find((p) => p.id === id)!.label;
+  const view = car.views[viewIndex];
+  showViewDots(car);
   const job = ++paintJob;
-  const url = await paintedUrl(carUrl(car), car.key, id);
+  // hide the unpainted picture until the paint is ready, so the sheet's own colour never flashes
+  if (id !== "stock") hero.style.visibility = "hidden";
+  const [heroUrl, cardUrl] = await Promise.all([
+    paintedUrl(carUrl(car, view), car.key, id, view),
+    paintedUrl(carUrl(car), car.key, id),
+  ]);
   // a later pick won the race: leave the picture alone
   if (job !== paintJob) return;
-  hero.src = url;
-  card.src = url;
+  hero.src = heroUrl;
+  card.src = cardUrl;
+  hero.style.visibility = "";
+}
+
+// ---- turning the car: tap the picture (or swipe it) to go round its views ----
+
+function showViewDots(car: Car): void {
+  const dots = $("car-views");
+  dots.replaceChildren(
+    ...car.views.map((_, i) => {
+      const d = document.createElement("i");
+      d.classList.toggle("on", i === viewIndex);
+      return d;
+    }),
+  );
+}
+
+function turn(by: number): void {
+  if (!shownHero || !shownCard) return;
+  const n = shownCar.views.length;
+  viewIndex = (viewIndex + by + n) % n;
+  shownHero.classList.remove("turn");
+  void shownHero.offsetWidth;
+  shownHero.classList.add("turn");
+  applyPaint(shownCar, shownHero, shownCard);
+}
+
+{
+  const img = $("car-img");
+  let startX: number | null = null;
+  img.addEventListener("pointerdown", (e) => (startX = e.clientX));
+  img.addEventListener("pointerup", (e) => {
+    if (startX === null) return;
+    const dx = e.clientX - startX;
+    startX = null;
+    // a swipe turns the way you swiped; a tap goes round
+    turn(Math.abs(dx) > 30 ? (dx < 0 ? 1 : -1) : 1);
+  });
 }
 
 // one track so far; a picker comes when there are more
@@ -100,6 +172,7 @@ $("track-kind").textContent = track.kind;
 $("track-line").textContent = track.line;
 
 $("race-now").addEventListener("click", () => show("driver"));
+$("garage-go").addEventListener("click", () => show("track"));
 for (const b of document.querySelectorAll<HTMLButtonElement>("[data-back]")) {
   b.addEventListener("click", () => show(BACK[screen] ?? "title"));
 }
@@ -112,6 +185,9 @@ addEventListener("keydown", (e) => {
   } else if (screen === "title" && (e.key === "Enter" || e.key === " ")) {
     e.preventDefault();
     show("driver");
+  } else if (screen === "garage" && (e.key === "Enter" || e.key === " ")) {
+    e.preventDefault();
+    show("track");
   } else if (picker) {
     if (e.key === "ArrowLeft" || e.key === "ArrowUp") picker.step(-1);
     else if (e.key === "ArrowRight" || e.key === "ArrowDown") picker.step(1);

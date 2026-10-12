@@ -17,7 +17,6 @@ export type Paint = {
 
 export const PAINTS: Paint[] = [
   { id: "stock", label: "stock", swatch: "var(--stock)" },
-  { id: "lime", label: "lime", swatch: "#b6ff00", hsl: [78, 1, 0.5] },
   { id: "red", label: "red", swatch: "#e0201f", hsl: [0, 0.85, 0.48] },
   { id: "blue", label: "blue", swatch: "#1f62e8", hsl: [220, 0.85, 0.5] },
   { id: "yellow", label: "yellow", swatch: "#ffd400", hsl: [50, 1, 0.5] },
@@ -26,7 +25,7 @@ export const PAINTS: Paint[] = [
   { id: "purple", label: "purple", swatch: "#7b3fe0", hsl: [265, 0.75, 0.55] },
   { id: "pink", label: "pink", swatch: "#ff4fa3", hsl: [330, 1, 0.62] },
   { id: "white", label: "white", swatch: "#f2f2f2", hsl: [0, 0, 0.92] },
-  { id: "black", label: "black", swatch: "#1a1a1a", hsl: [0, 0, 0.14] },
+  { id: "black", label: "black", swatch: "#111", hsl: [0, 0, 0.07] },
   { id: "woods-camo", label: "woods camo", swatch: "radial-gradient(circle at 30% 30%, #565f34 0 22%, transparent 24%), radial-gradient(circle at 70% 65%, #705c3e 0 24%, transparent 26%), radial-gradient(circle at 25% 75%, #1e1e18 0 16%, transparent 18%), #34401f", camo: "woods" },
   { id: "white-camo", label: "white camo", swatch: "radial-gradient(circle at 30% 30%, #c4c8ce 0 22%, transparent 24%), radial-gradient(circle at 70% 65%, #969ba2 0 24%, transparent 26%), radial-gradient(circle at 25% 75%, #62666e 0 16%, transparent 18%), #eceef0", camo: "white" },
 ];
@@ -35,17 +34,21 @@ export const PAINTS: Paint[] = [
 export type KeyHue = {
   hue: number;
   width: number;
-  /** areas of the picture to leave alone (sky that matches the paint), as [x0, y0, x1, y1] fractions */
-  skip?: [number, number, number, number][];
+  /** per view: where a number painted in the key colour sits; dark paints turn it silver so it still reads */
+  numbers?: Record<number, [number, number, number, number][]>;
+  /** per view: areas of the picture to leave alone (sky that matches the paint), as [x0, y0, x1, y1] fractions */
+  skip?: Record<number, [number, number, number, number][]>;
 };
 
 const KEY = "scofti500:paint";
 
-export function savedPaint(carId: string): string {
+/** the car's saved colour, or its default if nothing (or a colour that no longer exists) is saved */
+export function savedPaint(carId: string, fallback: string): string {
   try {
-    return JSON.parse(localStorage.getItem(KEY) ?? "{}")[carId] ?? "stock";
+    const id = JSON.parse(localStorage.getItem(KEY) ?? "{}")[carId];
+    return PAINTS.some((p) => p.id === id) ? id : fallback;
   } catch {
-    return "stock";
+    return fallback;
   }
 }
 
@@ -79,7 +82,7 @@ function load(url: string): Promise<HTMLImageElement> {
 }
 
 /** the car picture in this paint, as an image URL (the original URL for stock) */
-export async function paintedUrl(url: string, key: KeyHue, paintId: string): Promise<string> {
+export async function paintedUrl(url: string, key: KeyHue, paintId: string, view = 0): Promise<string> {
   const paint = PAINTS.find((p) => p.id === paintId);
   if (!paint || paint.id === "stock") return url;
   const cacheKey = `${url}|${paintId}`;
@@ -93,7 +96,7 @@ export async function paintedUrl(url: string, key: KeyHue, paintId: string): Pro
   const g = c.getContext("2d", { willReadFrequently: true })!;
   g.drawImage(img, 0, 0);
   const data = g.getImageData(0, 0, c.width, c.height);
-  recolour(data, key, paint);
+  recolour(data, paint, key, key.skip?.[view] ?? [], key.numbers?.[view] ?? []);
   g.putImageData(data, 0, 0);
   const out = await new Promise<string>((res) =>
     c.toBlob((b) => res(b ? URL.createObjectURL(b) : url), "image/jpeg", 0.88),
@@ -107,26 +110,35 @@ const smooth = (a: number, b: number, x: number) => {
   return t * t * (3 - 2 * t);
 };
 
-function recolour(data: ImageData, key: KeyHue, paint: Paint): void {
+type Rect = [number, number, number, number];
+
+function recolour(data: ImageData, paint: Paint, key: KeyHue, skip: Rect[], numbers: Rect[]): void {
   const px = data.data;
   const w = data.width;
   const camo = paint.camo ? camoField(w, data.height, CAMOS[paint.camo]) : null;
   // the key paint's own typical lightness, so shading maps across
   const REF_L = 0.5;
   const h0 = data.height;
-  const skips = (key.skip ?? []).map(([x0, y0, x1, y1]) => [x0 * w, y0 * h0, x1 * w, y1 * h0]);
+  const toPx = (rs: Rect[]) => rs.map(([x0, y0, x1, y1]) => [x0 * w, y0 * h0, x1 * w, y1 * h0]);
+  const skips = toPx(skip);
+  const nums = toPx(numbers);
+  const dark = !camo && paint.hsl![2] < 0.3;
   for (let i = 0, n = 0; i < px.length; i += 4, n++) {
-    if (skips.length) {
-      const x = n % w;
-      const y = (n / w) | 0;
-      if (skips.some(([x0, y0, x1, y1]) => x >= x0 && x < x1 && y >= y0 && y < y1)) continue;
-    }
+    const x = n % w;
+    const y = (n / w) | 0;
+    const inside = (rs: number[][]) => rs.some(([x0, y0, x1, y1]) => x >= x0 && x < x1 && y >= y0 && y < y1);
+    if (skips.length && inside(skips)) continue;
     const [h, s, l] = rgbToHsl(px[i], px[i + 1], px[i + 2]);
     let dh = Math.abs(h - key.hue);
     if (dh > 180) dh = 360 - dh;
-    // how much this pixel is the car's paint: on-hue, coloured enough, not blown out or black
+    // how much this pixel is the car's paint: on-hue, coloured enough, not blown out or black.
+    // Black reaches further into the dark, muddy edges so no green fringe is left behind.
+    const width = dark ? key.width * 1.5 : key.width;
     const weight =
-      (1 - smooth(key.width * 0.6, key.width, dh)) * smooth(0.18, 0.4, s) * smooth(0.06, 0.16, l) * (1 - smooth(0.92, 0.99, l));
+      (1 - smooth(width * 0.6, width, dh)) *
+      (dark ? smooth(0.1, 0.25, s) : smooth(0.18, 0.4, s)) *
+      (dark ? smooth(0.02, 0.06, l) : smooth(0.06, 0.16, l)) *
+      (1 - smooth(0.92, 0.99, l));
     if (weight <= 0) continue;
     const shade = l / REF_L;
     let r: number, gg: number, b: number;
@@ -137,7 +149,15 @@ function recolour(data: ImageData, key: KeyHue, paint: Paint): void {
       b = cb * shade;
     } else {
       const [th, ts, tl] = paint.hsl!;
-      [r, gg, b] = hslToRgb(th, ts, Math.min(1, tl * shade));
+      if (dark && nums.length && inside(nums)) {
+        // a number painted in the key colour goes silver so it still reads on a black car
+        [r, gg, b] = hslToRgb(210, 0.06, Math.min(1, 0.74 * shade));
+      } else if (dark) {
+        // solid black: keep just a hint of the shine
+        [r, gg, b] = hslToRgb(th, ts, tl * (0.7 + 0.3 * shade));
+      } else {
+        [r, gg, b] = hslToRgb(th, ts, Math.min(1, tl * shade));
+      }
     }
     px[i] = px[i] + (Math.min(255, r) - px[i]) * weight;
     px[i + 1] = px[i + 1] + (Math.min(255, gg) - px[i + 1]) * weight;

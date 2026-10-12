@@ -64,10 +64,9 @@ export function createPicker<T extends PickerItem>(o: PickerOptions<T>): Picker<
     $(`${o.prefix}-name`).textContent = t.name;
     $(`${o.prefix}-sub`).textContent = o.sub(t);
     $(`${o.prefix}-line`).textContent = o.line(t);
-    const accent = o.accent?.(t) ?? "";
     for (const [i, c] of cards.entries()) {
       c.classList.toggle("on", i === cur);
-      c.style.setProperty("--accent", i === cur && accent ? accent : "");
+      c.style.setProperty("--accent", o.accent?.(o.items[i]) ?? "");
     }
     cards[cur].scrollIntoView({ block: "nearest", inline: "nearest" });
     o.onShow?.(t, img, cards[cur].querySelector("img")!);
