@@ -264,6 +264,11 @@ body[data-screen="race"] .welcome {
   top: auto;
   bottom: 30%;
 }
+.hud-flag[data-flag="wrong"] {
+  color: #ff3d3d;
+  text-shadow: 0 0 30px rgba(255, 61, 61, 0.8), 0 4px 0 #000;
+  animation: rec-blink 0.6s steps(2) infinite;
+}
 .hud-flag[data-flag="caution"] {
   color: #ffd400;
   text-shadow: 0 0 30px rgba(255, 212, 0, 0.7), 0 4px 0 #000;

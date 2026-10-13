@@ -481,6 +481,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
       steps++;
     }
     if (steps === most) acc = 0;
+    wrongWayCheck(dt);
     handleEvents();
     spotter();
     crews?.update(sess, dt);
@@ -1056,6 +1057,29 @@ export function createRace(opts: { onDone(again: boolean): void }) {
   let pitLap = 0;
   const pitLapOf = (s: Session) => (s.drivers[s.player].pitPhase === "stopped" ? (pitLap = Math.max(0, s.crossed[s.player])) : pitLap);
 
+  // ---- the wrong way (Michael, 2026-10-13): drive the wrong way for a couple of seconds and the car
+  // is swung back round to face down the track, slowing as it turns; WRONG WAY shows from the start ----
+  let wrongFor = 0;
+  function wrongWayCheck(dt: number): void {
+    const s = sess!;
+    const c = s.cars[s.player];
+    if (s.drivers[s.player].mode !== "race" || s.qualifying && s.finishOrder.length) return void (wrongFor = 0);
+    const f = frame(c.s);
+    const ahead = Math.cos(c.h) * f.tx + Math.sin(c.h) * f.tz;
+    const moving = Math.hypot(c.vx, c.vz) > 2;
+    if (ahead < -0.2 && moving) wrongFor += dt;
+    else if (ahead > 0.6 || !moving) wrongFor = Math.max(0, wrongFor - dt * 2);
+    if (wrongFor < 2) return;
+    // the correction: turn her round and take the speed off while she's turning
+    const want = Math.atan2(f.tz, f.tx);
+    c.h += angleTo(c.h, want) * Math.min(1, dt * 3);
+    c.spin = 0;
+    const k = Math.exp(-dt * 2.5);
+    c.vx *= k;
+    c.vz *= k;
+    if (Math.abs(angleTo(c.h, want)) < 0.25) wrongFor = 0;
+  }
+
   let boardKey = "";
   let boardUntil = 0;
   function hud(): void {
@@ -1100,7 +1124,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     });
     $("hud-limiter").classList.toggle("on", me.limiter);
     const flag = $("hud-flag");
-    const label = s.phase === "pace" ? "" : s.t < cautionUntil ? "CAUTION" : s.phase === "caution" ? "" : s.phase === "checkered" ? "CHECKERED" : whiteFlag() ? "WHITE FLAG" : s.t < greenUntil() ? "GREEN" : "";
+    const label = wrongFor > 0.6 ? "WRONG WAY" : s.phase === "pace" ? "" : s.t < cautionUntil ? "CAUTION" : s.phase === "caution" ? "" : s.phase === "checkered" ? "CHECKERED" : whiteFlag() ? "WHITE FLAG" : s.t < greenUntil() ? "GREEN" : "";
     flag.textContent = label;
     flag.dataset.flag = label.split(" ")[0].toLowerCase();
 
