@@ -4,6 +4,7 @@
 import * as THREE from "three";
 import { loadCar } from "../carModel";
 import { duckMusic } from "../music";
+import { playClip, type Clip } from "../voice";
 import { addNumber } from "../carNumber";
 import { CAR_HEIGHT } from "../carModel";
 import { chipAmount, earnChips } from "../chips";
@@ -1320,7 +1321,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
   // ---- the interview: Heather and your driver, before the results (Michael, 2026-10-13) ----
   let interviewDone = false;
   let interviewing = false;
-  let interviewClip: HTMLAudioElement | null = null;
+  let interviewClip: Clip | null = null;
   function interview(): void {
     if (interviewing) return;
     interviewing = true;
@@ -1338,7 +1339,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
       if (!interviewing) return;
       interviewing = false;
       interviewDone = true;
-      interviewClip?.pause();
+      interviewClip?.stop();
       duckMusic(false);
       $("race-interview").classList.remove("on");
       results();
@@ -1353,11 +1354,8 @@ export function createRace(opts: { onDone(again: boolean): void }) {
       $("iv-label").textContent = heather ? "HEATHER · TRACKSIDE" : (setup?.driver ?? "").toUpperCase();
       $("iv-text").textContent = line.text;
       duckMusic(true);
-      interviewClip = new Audio(`${import.meta.env.BASE_URL}audio/radio/${steps[k]}.mp3`);
-      const next = () => setTimeout(() => play(k + 1), 350);
-      interviewClip.onended = next;
-      interviewClip.onerror = () => setTimeout(() => play(k + 1), 2500 + line.text.length * 45);
-      void interviewClip.play().catch(() => setTimeout(() => play(k + 1), 2500 + line.text.length * 45));
+      interviewClip = playClip(`${import.meta.env.BASE_URL}audio/radio/${steps[k]}.mp3`);
+      void interviewClip.done.then((ok) => setTimeout(() => play(k + 1), ok ? 350 : 2500 + line.text.length * 45));
     };
     $("iv-skip").onclick = done;
     play(0);

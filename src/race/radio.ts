@@ -4,6 +4,7 @@
 // by the browser's own voice. Spotter calls cut in over everything; the rest wait their turn.
 
 import { LINES } from "./lines";
+import { playClip, type Clip } from "../voice";
 
 export type Who = "spotter" | "crew" | "announcer" | "driver" | "reporter";
 
@@ -47,7 +48,7 @@ export function createRadio(box: HTMLElement, onTalk: (talking: boolean) => void
   let muted = false;
   let hideAt = 0;
   let lastAt = 0; // when the last line ended
-  let current: HTMLAudioElement | null = null;
+  let current: Clip | null = null;
   // which lines have a recording (public/audio/radio/lines.json: a list of keys)
   let recorded: Promise<Set<string>> | null = null;
 
@@ -90,9 +91,9 @@ export function createRadio(box: HTMLElement, onTalk: (talking: boolean) => void
     };
     if (muted) return void setTimeout(done, 900 + line.text.length * 30);
     if (line.key && (await hasFile(line.key))) {
-      current = new Audio(`${import.meta.env.BASE_URL}audio/radio/${line.key}.mp3`);
-      current.onended = current.onerror = done;
-      void current.play().catch(done);
+      current = playClip(`${import.meta.env.BASE_URL}audio/radio/${line.key}.mp3`);
+      // (if it couldn't play, the caption still shows for a moment)
+      void current.done.then((ok) => (ok ? done() : setTimeout(done, 1500 + line.text.length * 40)));
       return;
     }
     if (!synth) return void setTimeout(done, 900 + line.text.length * 30);
@@ -120,7 +121,7 @@ export function createRadio(box: HTMLElement, onTalk: (talking: boolean) => void
         if (busy && speaking !== "driver") {
           playing++;
           synth?.cancel();
-          current?.pause();
+          current?.stop();
           busy = false;
         }
         queue.unshift({ who, text, key, label: line.label });
@@ -139,7 +140,7 @@ export function createRadio(box: HTMLElement, onTalk: (talking: boolean) => void
       onTalk(false);
       playing++;
       synth?.cancel();
-      current?.pause();
+      current?.stop();
       busy = false;
       box.classList.remove("on");
     },

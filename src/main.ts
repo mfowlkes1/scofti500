@@ -8,6 +8,7 @@ import { UPGRADES, MAX_LEVEL, buy, levels, nextCost, tuned } from "./garage";
 import { PACKS, buyPack, canBuy, chipAmount, chipSvg, chips, flagSvg } from "./chips";
 import { createGarage } from "./garageRoom";
 import { musicAway, musicForRace, musicOn, setMusic, startMusic } from "./music";
+import { playClip, voicesAway, type Clip } from "./voice";
 import { createPicker } from "./pick";
 import { LINES, slug } from "./race/lines";
 import { STOCK } from "./race/physics";
@@ -39,15 +40,14 @@ function show(next: Screen): void {
 
 // The drivers talk on the pick screens: hello when you look at one, then what they think of each car
 // and paint, in a speech bubble and out loud (their recordings from tools/voices.ts).
-let clip: HTMLAudioElement | null = null;
+let clip: Clip | null = null;
 let bubbleTimer = 0;
 function speak(d: Driver, what: string, bubble: HTMLElement): void {
   const key = `drv-${slug(d.name)}-${what}`;
   const line = LINES[key];
   if (!line) return;
-  clip?.pause();
-  clip = new Audio(`${import.meta.env.BASE_URL}audio/radio/${key}.mp3`);
-  void clip.play().catch(() => null);
+  clip?.stop();
+  clip = playClip(`${import.meta.env.BASE_URL}audio/radio/${key}.mp3`);
   for (const b of document.querySelectorAll(".say-bubble")) b.classList.remove("on");
   bubble.textContent = line.text;
   void bubble.offsetWidth;
@@ -70,6 +70,9 @@ musicBtn.addEventListener("click", () => {
 });
 
 $("version").textContent = VERSION;
+// pictures named in the page load from the game's own address (scofti.com serves it at /arcade/scofti500
+// with no slash on the end, so a plain "img/..." missed it; Heather showed as a broken image)
+for (const img of document.querySelectorAll<HTMLImageElement>("img[data-src]")) img.src = import.meta.env.BASE_URL + img.dataset.src;
 
 const lineupImgs = new Map<string, HTMLImageElement>();
 // (declared up here: the driver picker shows her colors as soon as it's made)
@@ -561,6 +564,7 @@ if (import.meta.env.MODE === "app") {
   void import("./app").then(({ setupApp }) =>
     setupApp(back, (gone) => {
       musicAway(gone);
+      voicesAway(gone);
       if (gone && screen === "race") race.pause();
     }),
   );
