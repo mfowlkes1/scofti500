@@ -284,7 +284,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     const tall = h > w;
-    camera.fov = camMode === "seat" ? (tall ? 92 : 72) : tall ? 76 : 60;
+    camera.fov = camMode === "seat" && !replaying ? (tall ? 92 : 72) : tall ? 76 : 60;
     camera.updateProjectionMatrix();
   }
   addEventListener("resize", resize);
@@ -1296,6 +1296,12 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     saved = new Float32Array(s.cars.length * PER);
     s.cars.forEach((c, i) => saved!.set([c.x, c.z, c.h, c.s, c.d, c.vx, c.vz], i * PER));
     replaying = true;
+    // the TV camera is out in the world, even if you were riding in the seat (Michael, 2026-10-13: from
+    // the seat the replay ran with the camera still bolted to your car, under the track)
+    scene.add(camera);
+    const me = views[s.player];
+    if (me.body) me.body.visible = true;
+    resize();
     clipAt = 0;
     clipT = clips[0].t - 5;
     radio.clear();
