@@ -1,4 +1,4 @@
-// The race screen: martinsvale under the lights in 3D, the field of eight, your car on the keys (or
+// The race screen: the track in 3D (martinsvale under the lights, or hotlanta in the sun), the field of eight, your car on the keys (or
 // the touch pedals, or a gamepad), two views (right behind the car, or in the seat), the HUD, the
 // radio, sparks and tire smoke, and the results. The race itself runs in session.ts.
 import * as THREE from "three";
@@ -11,13 +11,13 @@ import { planSpeed } from "./ai";
 import { RIVALS } from "./rivals";
 import { buildTrack, type TrackScene } from "./scene";
 import { buildCrews, type PitCrews } from "./crew";
-import { CHATTER_COUNT, slug } from "./lines";
+import { CHATTER_COUNT, LINES, slug } from "./lines";
 import { createRadio, type Radio } from "./radio";
 import { startAudio, type RaceAudio } from "./sound";
-import { HALF, L, R, S, bankAt, frame, gap, heightAt } from "./track";
+import { BOUNDS, HALF, L, TRACK, bankAt, frame, gap, heightAt, setTrack } from "./track";
 
 /** easy: preseason testing. Walls and bumps only slow you down, a bit more grip, and the rivals take it easy */
-export type RaceSetup = { car: Car; paintId: string; driver: string; spec: Spec; pitCrew: number; laps: number; easy: boolean };
+export type RaceSetup = { car: Car; paintId: string; driver: string; spec: Spec; pitCrew: number; laps: number; easy: boolean; track: string };
 export type RaceResult = { pos: number; field: number; led: number; best: number; payout: number };
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -45,7 +45,8 @@ export function createRace(opts: { onDone(again: boolean): void }) {
   const camera = new THREE.PerspectiveCamera(62, 1, 0.1, 3000);
   scene.add(camera);
   let track: TrackScene | null = null;
-  let trackReady: Promise<TrackScene> | null = null;
+  // each track's scene, built the first time it's raced and kept
+  const tracks = new Map<string, Promise<TrackScene>>();
   let crews: PitCrews | null = null;
 
   let sess: Session | null = null;
@@ -232,6 +233,8 @@ export function createRace(opts: { onDone(again: boolean): void }) {
 
   /** your driver's own line (only some drivers have a voice so far) */
   const me = (what: string) => `drv-${slug(setup?.driver ?? "")}-${what}`;
+  /** a line that names the track: this track's version when there is one */
+  const here = (key: string) => (LINES[`${key}-${TRACK.id}`] ? `${key}-${TRACK.id}` : key);
   let wallSaidAt = 0;
 
   function callPit(): void {
@@ -272,6 +275,10 @@ export function createRace(opts: { onDone(again: boolean): void }) {
 
   async function start(s: RaceSetup): Promise<void> {
     setup = s;
+    setTrack(s.track);
+    traceOutline();
+    $("load-track").textContent = TRACK.id.toUpperCase();
+    $("load-line").textContent = TRACK.night ? "rolling out under the lights…" : "rolling out into the heat…";
     // preseason has no brake pedal: lift to slow down
     $("race-screen").classList.toggle("easy", s.easy);
     finishedAt = 0;
@@ -298,8 +305,17 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     entries.push({ name: s.driver, number: s.car.number, carId: s.car.id, paintId: s.paintId, spec: mySpec, skill: 1, aggression: 0.5, player: true });
     sess = createSession(entries, s.laps, s.easy);
 
-    trackReady ??= buildTrack(scene);
-    track = await trackReady;
+    if (!tracks.has(TRACK.id))
+      tracks.set(
+        TRACK.id,
+        buildTrack().then((t) => {
+          scene.add(t.root);
+          return t;
+        }),
+      );
+    track = await tracks.get(TRACK.id)!;
+    for (const t of await Promise.all(tracks.values())) t.root.visible = t === track;
+    track.apply(scene);
     bar.style.width = "20%";
 
     for (const v of views) scene.remove(v.root);
@@ -338,7 +354,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     audio = startAudio();
     radio.clear();
     radio.mute(false);
-    radio.say("ann-welcome");
+    radio.say(here("ann-welcome"));
     radio.say("crew-pace");
     spot = { high: false, low: false, clearAt: 0 };
     warned = { half: false, gone: false };
@@ -612,7 +628,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     const name = (i: number) => s.entries[i].name;
     for (const e of s.events) {
       if (e.type === "green") {
-        radio.say("ann-green");
+        radio.say(here("ann-green"));
         radio.say("spot-green");
         radio.say(me("green"));
         audio?.roar();
@@ -622,12 +638,12 @@ export function createRace(opts: { onDone(again: boolean): void }) {
         radio.say(me("white"));
       } else if (e.type === "checkered") {
         const win = s.finishOrder[0];
-        radio.say(`ann-win-${slug(name(win))}`);
+        radio.say(here(`ann-win-${slug(name(win))}`));
         audio?.roar();
       } else if (e.type === "finish" && e.car === s.player) {
         finishedAt = performance.now();
         const p = e.pos;
-        radio.say(p === 1 ? "crew-win" : p <= 3 ? `crew-podium-${p}` : "crew-next-time");
+        radio.say(p === 1 ? here("crew-win") : p <= 3 ? `crew-podium-${p}` : "crew-next-time");
         radio.say(me(p === 1 ? "win" : p <= 3 ? "podium" : "thanks"));
       } else if (e.type === "lap" && e.car === s.player) {
         const left = s.laps - s.crossed[s.player];
@@ -635,7 +651,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
         const done = s.crossed[s.player];
         if (left > 1 && (left % 5 === 0 || left === 3)) radio.say(`crew-togo-${left}`);
         if (s.laps >= 10 && done === Math.floor(s.laps / 2)) {
-          radio.say("ann-halfway");
+          radio.say(here("ann-halfway"));
           radio.say("crew-halfway");
         radio.say(me("copy"));
         }
@@ -779,9 +795,12 @@ export function createRace(opts: { onDone(again: boolean): void }) {
   const mapCanvas = $("hud-map") as HTMLCanvasElement;
   const map = mapCanvas.getContext("2d")!;
   const outline: [number, number][] = [];
-  for (let s = 0; s < L; s += 6) {
-    const f = frame(s);
-    outline.push([f.x, f.z]);
+  function traceOutline(): void {
+    outline.length = 0;
+    for (let s = 0; s < L; s += 6) {
+      const f = frame(s);
+      outline.push([f.x, f.z]);
+    }
   }
 
   function hud(): void {
@@ -831,9 +850,9 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     // the mini map
     const W = mapCanvas.width;
     const H = mapCanvas.height;
-    const k = Math.min((W - 16) / (S + 2 * R + 20), (H - 16) / (2 * R + 20));
-    const px = (x: number) => W / 2 + x * k;
-    const pz = (z: number) => H / 2 + z * k;
+    const k = Math.min((W - 16) / (BOUNDS.maxX - BOUNDS.minX + 20), (H - 16) / (BOUNDS.maxZ - BOUNDS.minZ + 20));
+    const px = (x: number) => W / 2 + (x - (BOUNDS.minX + BOUNDS.maxX) / 2) * k;
+    const pz = (z: number) => H / 2 + (z - (BOUNDS.minZ + BOUNDS.maxZ) / 2) * k;
     map.clearRect(0, 0, W, H);
     map.lineWidth = 7;
     map.strokeStyle = "rgba(255,255,255,0.25)";

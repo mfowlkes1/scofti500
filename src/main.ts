@@ -221,11 +221,39 @@ function turn(by: number): void {
   });
 }
 
-// one track so far; a picker comes when there are more
-const track = TRACKS[0];
-$("track-name").textContent = track.name;
-$("track-kind").textContent = track.kind;
-$("track-line").textContent = track.line;
+// the tracks: a button for each, the one you raced last picked
+const TRACK_KEY = "scofti500:track";
+let track = TRACKS[0];
+try {
+  track = TRACKS.find((t) => t.id === localStorage.getItem(TRACK_KEY)) ?? track;
+} catch {
+  // not remembered
+}
+const trackButtons = TRACKS.map((t) => {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.textContent = t.name.toUpperCase();
+  b.addEventListener("click", () => {
+    track = t;
+    try {
+      localStorage.setItem(TRACK_KEY, t.id);
+    } catch {
+      // not remembered
+    }
+    showTrack();
+  });
+  $("track-pick").append(b);
+  return b;
+});
+function showTrack(): void {
+  trackButtons.forEach((b, i) => b.classList.toggle("on", TRACKS[i] === track));
+  $("track-name").textContent = track.name;
+  $("track-kind").textContent = track.kind;
+  $("track-line").textContent = track.line;
+  $("track-time").textContent = track.night ? "★ UNDER THE LIGHTS ★" : "★ SUNDAY AFTERNOON ★";
+  $("mode-real").textContent = track.night ? "RACE NIGHT" : "RACE DAY";
+}
+showTrack();
 
 $("race-now").addEventListener("click", () => show("driver"));
 $("garage-go").addEventListener("click", () => show("track"));
@@ -349,7 +377,7 @@ const race = createRace({
 function goRacing(): void {
   const car = garageCar ?? cars.current();
   show("race");
-  race.start({ car, paintId: paintOf(car), driver: driver.name, spec: tuned(STOCK, car.id), pitCrew: levels(car.id).crew, laps, easy });
+  race.start({ car, paintId: paintOf(car), driver: driver.name, spec: tuned(STOCK, car.id), pitCrew: levels(car.id).crew, laps, easy, track: track.id });
 }
 $("track-go").addEventListener("click", goRacing);
 addEventListener("keydown", (e) => {

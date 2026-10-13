@@ -1,8 +1,8 @@
 // The drivers: the rivals, and your car whenever it's driving itself (the pace laps, a pit stop).
-// They use the same physics as you. Each follows a racing line round martinsvale (wide into the
+// They use the same physics as you. Each follows a racing line round the track (wide into the
 // turn, down to the apex, wide out) at a speed plan worked out from grip: brake late, carry speed,
 // and pass when there's room.
-import { frame, gap, HALF, L, LINE_S, PIT, R, S, bankAt, wrap } from "./track";
+import { frame, gap, HALF, L, LINE_S, PIT, TURNS, bankAt, onTrack, wrap } from "./track";
 import { G, STOCK, WHEELBASE, freshTires, speedOf, steerLock, tireGrip, type CarState, type Input, type Spec } from "./physics";
 
 // ---- the racing line and how fast it can be driven ----
@@ -13,11 +13,7 @@ const LEAD = 26; // how far before a turn the line starts down
 
 function lineD(s: number): number {
   s = wrap(s);
-  const turns: [number, number][] = [
-    [S, S + Math.PI * R],
-    [2 * S + Math.PI * R, L],
-  ];
-  for (const [a, b] of turns) {
+  for (const [a, b] of TURNS) {
     for (const off of [0, L, -L]) {
       const t = (s + off - (a - LEAD)) / (b - a + LEAD * 1.6);
       if (t > 0 && t < 1) {
@@ -30,10 +26,14 @@ function lineD(s: number): number {
   return HI;
 }
 
-const N = Math.ceil(L);
+// worked out again for each track
+let N = 0;
 const LINE: number[] = [];
 const PLAN: number[] = [];
-{
+onTrack(() => {
+  N = Math.ceil(L);
+  LINE.length = 0;
+  PLAN.length = 0;
   const pts = [];
   for (let i = 0; i < N; i++) {
     LINE.push(lineD(i));
@@ -66,7 +66,7 @@ const PLAN: number[] = [];
       PLAN[i] = Math.min(PLAN[i], Math.sqrt(next * next + 2 * brakeAt[i]));
     }
   }
-}
+});
 
 export const racingLine = (s: number) => LINE[Math.floor(wrap(s)) % N];
 export const planSpeed = (s: number) => PLAN[Math.floor(wrap(s)) % N];
@@ -113,7 +113,7 @@ function steerTo(c: CarState, s2: number, d2: number): number {
   // + when the point is to the right
   const sinA = (fx * dz - fz * dx) / ld;
   const delta = Math.atan((2 * WHEELBASE * sinA) / ld);
-  return clamp(delta / steerLock(Math.max(1, speedOf(c))), -1, 1);
+  return clamp(delta / steerLock(Math.max(1, speedOf(c)), c.s), -1, 1);
 }
 
 function pedals(v: number, target: number): { throttle: number; brake: number } {
@@ -185,7 +185,7 @@ function pace(drv: Driver, ctx: Context, c: CarState, v: number): Input {
   const slotS = ctx.paceS - drv.slot;
   const behind = gap(c.s, slotS);
   const f = frame(c.s);
-  const scale = f.arc ? (R + drv.file) / R : 1;
+  const scale = f.r ? (f.r + drv.file) / f.r : 1;
   const target = Math.max(0, ctx.paceV * scale + clamp(behind * 0.9, -6, 6));
   const ld = 6 + v * 0.35;
   return { steer: steerTo(c, c.s + ld, drv.file), ...pedals(v, target) };
@@ -195,8 +195,13 @@ function pace(drv: Driver, ctx: Context, c: CarState, v: number): Input {
 // Down off turn 4, onto pit road at the limiter, into the box, four tires, and back out
 // past the end of the pit wall into turn 1.
 
-const IN_FROM = L - 95; // where the dive to pit road starts (middle of turns 3-4)
-const LIMIT_AT = PIT.wallFrom - 14; // the limiter line
+// where the dive to pit road starts (in turns 3-4), and the limiter line
+let IN_FROM = 0;
+let LIMIT_AT = 0;
+onTrack(() => {
+  IN_FROM = L - PIT.dive;
+  LIMIT_AT = PIT.wallFrom - 14;
+});
 
 /** is this car where a pit stop can start (it starts down at the end of the backstretch) */
 export function canStartPit(c: CarState): boolean {

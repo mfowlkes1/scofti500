@@ -12,7 +12,7 @@
 // - Tires wear with every meter, much faster while sliding, and lose grip as they go. Cold tires
 //   (the start, out of the pits) have less grip until they warm up.
 // - Walls and other cars push back: rubbin' is racin', but a hard hit off-center spins you.
-import { frame, gap, heightAt, HALF, INFIELD, inPitRoad, L, PIT, project, surfaceAt, bankAt, wrap, type Surface } from "./track";
+import { frame, gap, heightAt, HALF, INFIELD, inPitRoad, L, PIT, TRACK, project, surfaceAt, bankAt, wrap, type Surface } from "./track";
 
 export const G = 9.81;
 export const WHEELBASE = 2.8;
@@ -135,9 +135,11 @@ export function gripLimit(spec: Spec, c: CarState, s: number, d: number, surface
 }
 
 /** the steering lock at this speed: full lock asks a bit more than fresh tires can give, so a
- * stab of the wheel slides, but it never needs more than full lock to make the turn */
-export function steerLock(v: number): number {
-  const a = G * (STOCK.grip + 0.21) * 1.32;
+ * stab of the wheel slides, but it never needs more than full lock to make the turn. Steep banking
+ * (Hotlanta) holds the car to much more, so there the lock opens up with the banking under it */
+export function steerLock(v: number, s?: number): number {
+  const tb = s === undefined ? 0 : Math.tan(bankAt(s));
+  const a = Math.max(G * (STOCK.grip + 0.21) * 1.32, (G * (STOCK.grip + tb)) / (1 - STOCK.grip * tb));
   return Math.min(0.5, Math.atan((a * WHEELBASE) / Math.max(1, v * v)));
 }
 
@@ -179,7 +181,7 @@ export function step(c: CarState, input: Input, spec: Spec, dt: number): void {
   let braking = c.brake * Math.min(spec.brake, aMax * 1.05);
   if (vLong < 0.5) braking = Math.min(braking, Math.max(0, vLong) / dt);
   if (c.limiter && vLong > PIT.speed) drive = 0;
-  const drag = DRAG * (1 - c.draft) * v * v + SURFACE_DRAG[surface] * Math.min(1, v);
+  const drag = DRAG * TRACK.drag * (1 - c.draft) * v * v + SURFACE_DRAG[surface] * Math.min(1, v);
   // the tires can only push so hard in total
   const tireLong = Math.min(aMax, drive + braking);
   const latAvail = Math.sqrt(Math.max(0, aMax * aMax - tireLong * tireLong));
@@ -187,7 +189,7 @@ export function step(c: CarState, input: Input, spec: Spec, dt: number): void {
   if (c.limiter && vLong > PIT.speed) vLong -= Math.min(vLong - PIT.speed, 6 * dt);
 
   // ---- turning ----
-  const delta = c.steer * steerLock(Math.abs(vLong));
+  const delta = c.steer * steerLock(Math.abs(vLong), c.s);
   let yaw = (vLong * Math.tan(delta)) / WHEELBASE;
   // the tires can't turn the car much faster than grip allows; past that it slides
   const yawMax = (latAvail * 1.12) / Math.max(3, v) + 0.15;
@@ -238,7 +240,7 @@ export function step(c: CarState, input: Input, spec: Spec, dt: number): void {
   wallCheck(c, prevD);
 
   // ---- tires: each one wears and warms with the work it does ----
-  // Martinsvale is all left turns, so the right side carries the corners (the right front most);
+  // the tracks are all left turns, so the right side carries the corners (the right front most);
   // braking leans on the fronts, the throttle on the rears, and sliding chews them all.
   const dist = v * dt;
   const cornering = yaw * v; // + turning right

@@ -1,13 +1,19 @@
-// Martinsvale under the lights, in 3D: concrete in the turns and asphalt on the straights with a
-// dark rubbered-in groove, the flat apron, pit road behind its wall, a white outside wall with a
-// catch fence, packed grandstands with camera flashes, light towers blazing round the outside, a
-// night sky, SCOFTI 500 painted on the infield grass and a scoring pylon showing the running order.
+// The track in 3D, built for whichever track is set (track.ts): asphalt with a dark rubbered-in
+// groove (Martinsvale's turns are concrete), the flat apron, pit road behind its wall, a white outside
+// wall with a catch fence, packed grandstands with camera flashes, SCOFTI 500 painted on the infield
+// grass and a scoring pylon showing the running order. At night (Martinsvale) light towers blaze
+// round the outside under a starry sky; by day (Hotlanta) it's sun and blue sky.
+// Each track's scene is built once and kept; the race shows the one it needs.
 import * as THREE from "three";
 import { racingLine } from "./ai";
 import { buildInfield } from "./infield";
-import { APRON, HALF, L, LINE_S, PIT, R, S, frame, heightAt } from "./track";
+import { APRON, HALF, L, LINE_S, PIT, R, TRACK, TURNS, frame, heightAt } from "./track";
 
 export type TrackScene = {
+  /** everything in the track's scene, to show or hide */
+  root: THREE.Group;
+  /** make this the track on screen: its sky and fog */
+  apply(scene: THREE.Scene): void;
   /** call each frame: flashes in the stands, the flag */
   update(t: number, flag: "green" | "white" | "checkered" | "yellow"): void;
   /** the scoring pylon: car numbers in running order */
@@ -200,7 +206,7 @@ function wallTexture(): THREE.CanvasTexture {
   g.fillText("500", 300, 58);
   g.fillStyle = "#111";
   g.font = "48px 'Lilita One'";
-  g.fillText("MARTINSVALE", 560, 58);
+  g.fillText(TRACK.id.toUpperCase(), 560, 58);
   return tex(c);
 }
 
@@ -270,9 +276,21 @@ function glowTexture(): THREE.CanvasTexture {
   return tex(c, false);
 }
 
-function skyTexture(): THREE.CanvasTexture {
+function skyTexture(night: boolean): THREE.CanvasTexture {
   const [c, g] = canvas(16, 512);
   const grad = g.createLinearGradient(0, 0, 0, 512);
+  if (!night) {
+    // a hot afternoon: deep blue overhead, hazy toward the horizon
+    grad.addColorStop(0, "#1f5fbf");
+    grad.addColorStop(0.35, "#4f8fdc");
+    grad.addColorStop(0.48, "#bcd6ee");
+    grad.addColorStop(0.5, "#e6eef2");
+    grad.addColorStop(0.52, "#8a8f78");
+    grad.addColorStop(1, "#4a5040");
+    g.fillStyle = grad;
+    g.fillRect(0, 0, 16, 512);
+    return tex(c, false);
+  }
   grad.addColorStop(0, "#03040b");
   grad.addColorStop(0.42, "#0a0b1e");
   grad.addColorStop(0.49, "#24183a");
@@ -300,23 +318,30 @@ function logoTexture(): THREE.CanvasTexture {
 
 // ---- the scene ----
 
-export async function buildTrack(scene: THREE.Scene): Promise<TrackScene> {
+/** build the current track's scene (call setTrack first) */
+export async function buildTrack(): Promise<TrackScene> {
   await Promise.all(
     ["64px 'Permanent Marker'", "italic 64px 'Racing Sans One'", "48px 'Lilita One'"].map((f) => document.fonts.load(f).catch(() => null)),
   );
+  const night = TRACK.night;
+  const scene = new THREE.Group();
   const add = (g: THREE.BufferGeometry, m: THREE.Material, shadows = true) => {
     const mesh = new THREE.Mesh(g, m);
     mesh.receiveShadow = shadows;
     scene.add(mesh);
     return mesh;
   };
+  // the big track's infield is bigger: things in it scale up
+  const big = Math.max(1, Math.min(2, R / 90));
+  // where the front stretch ends and the backstretch runs, from the turns
+  const [[t1a, t1b], [t3a, t3b]] = TURNS;
 
-  // sky and stars
-  scene.background = new THREE.Color("#05050c");
-  scene.fog = new THREE.Fog("#0b0a16", 320, 1100);
-  const sky = new THREE.Mesh(new THREE.SphereGeometry(1500, 32, 16), new THREE.MeshBasicMaterial({ map: skyTexture(), side: THREE.BackSide, fog: false, depthWrite: false }));
+  // sky, and stars at night
+  const background = new THREE.Color(night ? "#05050c" : "#8fb8e6");
+  const fog = night ? new THREE.Fog("#0b0a16", 320, 1100) : new THREE.Fog("#c7d9ea", 700, 2600);
+  const sky = new THREE.Mesh(new THREE.SphereGeometry(1500, 32, 16), new THREE.MeshBasicMaterial({ map: skyTexture(night), side: THREE.BackSide, fog: false, depthWrite: false }));
   scene.add(sky);
-  {
+  if (night) {
     const n = 900;
     const p = new Float32Array(n * 3);
     for (let i = 0; i < n; i++) {
@@ -330,26 +355,34 @@ export async function buildTrack(scene: THREE.Scene): Promise<TrackScene> {
   }
 
   // the ground round the track, and the infield
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(2400, 2400), new THREE.MeshStandardMaterial({ color: "#121318", roughness: 1 }));
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(2400, 2400), new THREE.MeshStandardMaterial({ color: night ? "#121318" : "#4d5638", roughness: 1 }));
   ground.rotation.x = -Math.PI / 2;
   ground.position.y = -0.06;
   ground.receiveShadow = true;
   scene.add(ground);
   const grassTex = grass();
-  grassTex.repeat.set(1, 1);
-  add(ribbon(0, L, -R, APRON, { step: 3, flat: true, lift: -0.02, u: 12, v: 12 }), new THREE.MeshStandardMaterial({ map: grassTex, roughness: 1 }));
+  grassTex.repeat.set(1 / 12, 1 / 12);
+  {
+    // the infield: everything inside the apron's edge
+    const edge: THREE.Vector2[] = [];
+    for (let k = 0; k < L; k += 3) {
+      const f = frame(k, APRON);
+      edge.push(new THREE.Vector2(f.x, -f.z));
+    }
+    const g = new THREE.ShapeGeometry(new THREE.Shape(edge));
+    g.rotateX(-Math.PI / 2);
+    g.translate(0, -0.02, 0);
+    add(g, new THREE.MeshStandardMaterial({ map: grassTex, roughness: 1 }));
+  }
 
-  // the racing surface: asphalt straights, concrete turns
+  // the racing surface: asphalt, and concrete in the turns at Martinsvale
   const asph = new THREE.MeshStandardMaterial({ map: asphalt(78), roughness: 0.92 });
-  const conc = new THREE.MeshStandardMaterial({ map: concrete(), roughness: 0.85 });
-  const cT1 = S;
-  const cT2 = S + Math.PI * R;
-  const cT3 = 2 * S + Math.PI * R;
+  const conc = TRACK.concreteTurns ? new THREE.MeshStandardMaterial({ map: concrete(), roughness: 0.85 }) : asph;
   for (const [a, b, m] of [
-    [0, cT1, asph],
-    [cT1, cT2, conc],
-    [cT2, cT3, asph],
-    [cT3, L, conc],
+    [0, t1a, asph],
+    [t1a, t1b, conc],
+    [t1b, t3a, asph],
+    [t3a, L, conc],
   ] as [number, number, THREE.Material][]) {
     add(ribbon(a, b, -HALF, HALF + 0.3, { step: 1.5, across: 4, u: 6, v: 6 }), m);
   }
@@ -368,10 +401,7 @@ export async function buildTrack(scene: THREE.Scene): Promise<TrackScene> {
     g.fillStyle = "#c8161d";
     g.fillRect(0, 0, 32, 16);
     const curb = new THREE.MeshStandardMaterial({ map: tex(c), roughness: 0.7 });
-    for (const [a, b] of [
-      [cT1, cT2],
-      [cT3, L],
-    ])
+    for (const [a, b] of TURNS)
       add(ribbon(a + 10, b - 10, APRON - 1.2, APRON, { step: 1, flat: true, lift: 0.04, u: 4 }), curb, false);
   }
   // start/finish: a checkered stripe across the track
@@ -416,7 +446,8 @@ export async function buildTrack(scene: THREE.Scene): Promise<TrackScene> {
   // pit road: its surface, the pit wall, the far wall and a box for each team
   const pitMat = new THREE.MeshStandardMaterial({ map: asphalt(92), roughness: 0.9 });
   add(ribbon(PIT.wallFrom - 14, PIT.wallTo + 14, PIT.inner - 0.4, APRON, { step: 2, flat: true, lift: 0.004, u: 6, v: 6 }), pitMat);
-  add(ribbon(L - 75, L, 0, 0, { step: 2, flat: true, lift: 0.004, u: 6, v: 6, dAt: (s) => [PIT.inner + ((L - s) / 75) * (APRON - PIT.inner - 1), APRON] }), pitMat);
+  const link = PIT.link + 5;
+  add(ribbon(L - link, L, 0, 0, { step: 2, flat: true, lift: 0.004, u: 6, v: 6, dAt: (s) => [PIT.inner + ((L - s) / link) * (APRON - PIT.inner - 1), APRON] }), pitMat);
   add(ribbon(0, PIT.wallFrom - 13, PIT.inner - 0.4, APRON, { step: 2, flat: true, lift: 0.004, u: 6, v: 6 }), pitMat);
   add(
     ribbon(PIT.wallTo + 13, PIT.wallTo + 80, 0, 0, {
@@ -471,13 +502,13 @@ export async function buildTrack(scene: THREE.Scene): Promise<TrackScene> {
       flashes.push(new THREE.Vector3(f.x, y0 + (y1 - y0) * k + 0.6, f.z));
     }
   };
-  stand(-20, S + 20, HALF + 6, HALF + 50, 3, 30); // the big front stretch stands
-  stand(S + 25, S + Math.PI * R - 25, HALF + 8, HALF + 34, 2.5, 17);
-  stand(S + Math.PI * R + 10, 2 * S + Math.PI * R - 10, HALF + 6, HALF + 30, 2.5, 15);
-  stand(2 * S + Math.PI * R + 25, L - 25, HALF + 8, HALF + 34, 2.5, 17);
+  stand(-20, t1a + 20, HALF + 6, HALF + 50, 3, 30); // the big front stretch stands
+  stand(t1a + 25, t1b - 25, HALF + 8, HALF + 34, 2.5, 17);
+  stand(t1b + 10, t3a - 10, HALF + 6, HALF + 30, 2.5, 15);
+  stand(t3a + 25, t3b - 25, HALF + 8, HALF + 34, 2.5, 17);
   // a press box on top of the front stretch stands, windows lit
   {
-    const f = frame(S / 2, HALF + 54);
+    const f = frame(LINE_S, HALF + 54);
     const press = new THREE.Mesh(new THREE.BoxGeometry(110, 8, 7), new THREE.MeshStandardMaterial({ color: "#20222a", roughness: 0.6 }));
     press.position.set(f.x, 34, f.z);
     scene.add(press);
@@ -516,16 +547,19 @@ export async function buildTrack(scene: THREE.Scene): Promise<TrackScene> {
     glow.position.lerp(new THREE.Vector3(0, h + 2, 0), 0.01);
     scene.add(glow);
   };
-  for (let i = 0; i < 18; i++) {
-    const s = (i / 18) * L + 20;
-    const f = frame(s, HALF + 58);
-    tower(f.x, f.z, 42);
+  // (only at night: a day race needs none)
+  if (night) {
+    for (let i = 0; i < 18; i++) {
+      const s = (i / 18) * L + 20;
+      const f = frame(s, HALF + 58);
+      tower(f.x, f.z, 42);
+    }
+    for (const x of [-60, 0, 60]) tower(x, 0, 30);
   }
-  for (const x of [-60, 0, 60]) tower(x, 0, 30);
 
   // SCOFTI 500 painted on the infield grass
   {
-    const logo = new THREE.Mesh(new THREE.PlaneGeometry(120, 45), new THREE.MeshStandardMaterial({ map: logoTexture(), transparent: true, roughness: 1, depthWrite: false }));
+    const logo = new THREE.Mesh(new THREE.PlaneGeometry(120 * big, 45 * big), new THREE.MeshStandardMaterial({ map: logoTexture(), transparent: true, roughness: 1, depthWrite: false }));
     logo.rotation.x = -Math.PI / 2;
     logo.position.set(0, 0.02, 6);
     scene.add(logo);
@@ -535,7 +569,7 @@ export async function buildTrack(scene: THREE.Scene): Promise<TrackScene> {
   const [pc, pg] = canvas(128, 1024);
   const pylonTex = tex(pc, false);
   {
-    const f = frame(S / 2 + 78, -32);
+    const f = frame(LINE_S + 78, -32);
     const tower = new THREE.Mesh(new THREE.BoxGeometry(3.2, 26, 3.2), new THREE.MeshStandardMaterial({ color: "#1a1b20", roughness: 0.6 }));
     tower.position.set(f.x, 13, f.z);
     scene.add(tower);
@@ -566,12 +600,12 @@ export async function buildTrack(scene: THREE.Scene): Promise<TrackScene> {
   }
 
   // the infield: haulers, motorhomes, fans and the big leaderboards
-  const infield = buildInfield(scene);
+  const infield = buildInfield(scene, night);
 
-  // the light: a cool sky glow, and the towers' glare as one big light that follows your car (for
-  // its shadows)
-  scene.add(new THREE.HemisphereLight("#b9c6ff", "#2a2a33", 1.1));
-  const sun = new THREE.DirectionalLight("#fff4e0", 2.2);
+  // the light: at night a cool sky glow, and the towers' glare as one big light that follows your
+  // car (for its shadows); by day a bright sky and a hot sun high in the southwest
+  scene.add(night ? new THREE.HemisphereLight("#b9c6ff", "#2a2a33", 1.1) : new THREE.HemisphereLight("#d6e6ff", "#6b6a52", 1.5));
+  const sun = new THREE.DirectionalLight(night ? "#fff4e0" : "#fff1d6", night ? 2.2 : 3.2);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
   const sc = sun.shadow.camera;
@@ -583,6 +617,11 @@ export async function buildTrack(scene: THREE.Scene): Promise<TrackScene> {
   scene.add(sun, sun.target);
 
   return {
+    root: scene,
+    apply(world) {
+      world.background = background;
+      world.fog = fog;
+    },
     board: infield.board,
     update(t, state) {
       infield.update(t);
@@ -632,7 +671,7 @@ export async function buildTrack(scene: THREE.Scene): Promise<TrackScene> {
       pylonTex.needsUpdate = true;
     },
     focus(x, z) {
-      sun.position.set(x + 30, 80, z + 20);
+      sun.position.set(x + (night ? 30 : -40), night ? 80 : 90, z + (night ? 20 : 35));
       sun.target.position.set(x, 0, z);
     },
   };

@@ -120,13 +120,16 @@ export const faceUrl = (d: Driver) => `${import.meta.env.BASE_URL}img/drivers/${
 export const fullUrl = (d: Driver) => `${import.meta.env.BASE_URL}img/drivers/${d.id}-full.jpg`;
 export const carUrl = (c: Car, view = 0) => `${import.meta.env.BASE_URL}img/cars/${c.id}${view ? `-${view}` : ""}.jpg`;
 
-// Tracks. Invented names only, never a real venue (Michael picked "martinsvale", 2026-10-12).
+// Tracks. Invented names only, never a real venue (Michael picked "martinsvale" and "Hotlanta",
+// 2026-10-12). Their shapes and numbers are in race/track.ts.
 export type Track = {
   id: string;
   name: string;
   /** shape and length, shown under the name */
   kind: string;
   line: string;
+  /** a night race under the lights, or a day race */
+  night: boolean;
 };
 
 export const TRACKS: Track[] = [
@@ -135,5 +138,13 @@ export const TRACKS: Track[] = [
     name: "martinsvale",
     kind: "paperclip · half a mile",
     line: "Two long straights, two tight hairpins. Flat out, stand on the brakes, bump your way round.",
+    night: true,
+  },
+  {
+    id: "hotlanta",
+    name: "hotlanta",
+    kind: "tri-oval · a mile and a half",
+    line: "Wide open and wicked fast. Run in the pack, ride the draft, slingshot past. Lift only when the tires go.",
+    night: false,
   },
 ];

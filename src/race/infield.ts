@@ -48,12 +48,13 @@ const SHIRTS = ["#d63a3a", "#f2f2f2", "#2f5fd0", "#f0c419", "#ff7a1a", "#3aa856"
 const SKIN = ["#f1c9a5", "#c68e5d", "#8d5a3b", "#e8b48a"];
 const TRUCK_PAINT = ["#f2f2f2", "#1b1c22", "#b3141b", "#1f4fb8", "#7d8088", "#c9a227", "#2d5a2d", "#5b2c1a"];
 
-/** the infield's turn ends: the middle of each half circle */
-const ENDS = [new THREE.Vector2(S / 2, 0), new THREE.Vector2(-S / 2, 0)];
-
-export function buildInfield(scene: THREE.Scene): Infield {
+export function buildInfield(scene: THREE.Object3D, night: boolean): Infield {
   const root = new THREE.Group();
   scene.add(root);
+  /** the infield's turn ends: the middle of each turn */
+  const ENDS = [new THREE.Vector2(S / 2, 0), new THREE.Vector2(-S / 2, 0)];
+  // the big track's infield is bigger: another ring of motorhomes, and bigger boards
+  const big = R > 100;
   const std = (color: THREE.ColorRepresentation, o: THREE.MeshStandardMaterialParameters = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.6, ...o });
   const box = (w: number, h: number, d: number, m: THREE.Material, x: number, y: number, z: number, parent: THREE.Object3D) => {
     const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
@@ -76,7 +77,8 @@ export function buildInfield(scene: THREE.Scene): Infield {
   };
   const glass = std("#0d1420", { roughness: 0.15, metalness: 0.4 });
   const chrome = std("#d8dce2", { roughness: 0.2, metalness: 0.9 });
-  const lit = new THREE.MeshBasicMaterial({ color: "#ffd99a" });
+  // lit windows at night; by day they're just glass catching the sky
+  const lit = night ? new THREE.MeshBasicMaterial({ color: "#ffd99a" }) : std("#9fb6cc", { roughness: 0.15, metalness: 0.3 });
 
   // people stand where they're put; some bounce (cheering), all as two instanced meshes
   const people: { x: number; y: number; z: number; color: string; bounce: number }[] = [];
@@ -237,6 +239,7 @@ export function buildInfield(scene: THREE.Scene): Infield {
     for (const [r, n, span] of [
       [25, 5, 0.42],
       [13, 2, 0.25],
+      ...(big ? [[48, 9, 0.42]] : []),
     ]) {
       for (let k = 0; k < n; k++) {
         const a = (-span + (k / (n - 1)) * span * 2) * Math.PI;
@@ -314,6 +317,7 @@ export function buildInfield(scene: THREE.Scene): Infield {
     // faces back down the straight that leads into this end
     g.position.set(end.x + out * 4, 0, 0);
     g.rotation.y = -out * Math.PI / 2;
+    if (big) g.scale.setScalar(1.6);
     root.add(g);
   }
 

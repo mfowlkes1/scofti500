@@ -77,6 +77,15 @@ Object.assign(lines, {
   "ann-halfway": { who: "announcer", text: "We are halfway home here at Martinsvale!" },
   "ann-white": { who: "announcer", text: "White flag! One lap to go!" },
 } satisfies Record<string, Line>);
+// Hotlanta's versions of the lines that name the track (the race picks "<key>-hotlanta" there)
+Object.assign(lines, {
+  "ann-welcome-hotlanta": { who: "announcer", text: "Good afternoon, race fans, and welcome to Hotlanta! It's a hot one today!" },
+  "ann-green-hotlanta": { who: "announcer", text: "Green flag! Here they come at Hotlanta!" },
+  "ann-halfway-hotlanta": { who: "announcer", text: "We are halfway home here at Hotlanta!" },
+  "crew-win-hotlanta": { who: "crew", text: "You won it! You won Hotlanta! Burn it down, kid!" },
+} satisfies Record<string, Line>);
+for (const r of RIVALS) lines[`ann-win-${slug(r.name)}-hotlanta`] = { who: "announcer", text: `Checkered flag! ${r.name} wins at Hotlanta!` };
+for (const name of ["Madhuvan", "Allan", "Si"]) lines[`ann-win-${slug(name)}-hotlanta`] = { who: "announcer", text: `Checkered flag! ${name} wins it at Hotlanta!` };
 // the announcer calls every lead change
 for (const r of RIVALS) lines[`ann-lead-${slug(r.name)}`] = { who: "announcer", text: `${r.name} takes the lead!` };
 for (const name of ["Madhuvan", "Allan", "Si"]) lines[`ann-lead-${slug(name)}`] = { who: "announcer", text: `${name} takes the lead! Listen to this crowd!` };

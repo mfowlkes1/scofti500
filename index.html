@@ -82,10 +82,11 @@
   <section id="track-screen" class="screen">
     <button class="back-btn track-back" type="button" data-back>◀ BACK</button>
     <p class="race-flag">PICK YOUR TRACK</p>
+    <div class="laps-pick" id="track-pick"></div>
     <p id="track-name" class="track-name"></p>
     <span id="track-kind" class="pick-role"></span>
     <p id="track-line" class="race-soon"></p>
-    <p class="under-lights">★ UNDER THE LIGHTS ★</p>
+    <p id="track-time" class="under-lights"></p>
     <div class="laps-pick" id="laps-pick">
       <button type="button" data-laps="15">15 LAPS</button>
       <button type="button" data-laps="30">30 LAPS</button>
@@ -93,7 +94,7 @@
     </div>
     <div class="laps-pick" id="mode-pick">
       <button type="button" data-mode="easy">PRESEASON TESTING</button>
-      <button type="button" data-mode="real">RACE NIGHT</button>
+      <button id="mode-real" type="button" data-mode="real">RACE NIGHT</button>
     </div>
     <p id="mode-line" class="race-soon"></p>
     <button id="track-go" class="go-btn go-long" type="button">GO RACING ▶</button>
@@ -166,8 +167,8 @@
     </div>
 
     <div id="race-load" class="race-overlay">
-      <p class="race-flag">MARTINSVALE</p>
-      <p class="race-soon">rolling out under the lights…</p>
+      <p id="load-track" class="race-flag">MARTINSVALE</p>
+      <p id="load-line" class="race-soon">rolling out under the lights…</p>
       <span class="load-bar"><i id="race-load-bar"></i></span>
     </div>
     <div id="race-pause" class="race-overlay">

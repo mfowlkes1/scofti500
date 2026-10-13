@@ -1,72 +1,229 @@
-// Martinsvale, in numbers: a half-mile paperclip (Michael, 2026-10-12: "race martinsvale under the
-// lights"). Two 240 m straights joined by two tight 180° turns, concrete in the turns, asphalt on the
-// straights, 12° of banking in the turns and none on the straights. Pit road runs inside the front
-// straight behind a low wall.
+// The tracks, in numbers. Every track is two big turns joined by a backstretch, and a front stretch
+// that's either straight (a paperclip, Martinsvale) or kinked out in the middle (a tri-oval, Hotlanta).
+// The rest of the race reads the current track from here (setTrack picks it), so the values below
+// are live: S, R, L and the rest change when the track does.
+//
+// Martinsvale (Michael, 2026-10-12: "race martinsvale under the lights"): a half-mile paperclip. Two
+// 240 m straights joined by two tight 180° turns, concrete in the turns, 12° of banking in them and
+// none on the straights.
+// Hotlanta (Michael, 2026-10-12: tri-oval, day, "Hotlanta"): about a mile and a half. Long, sweeping
+// 26° turns, 5° on the straights, and the start/finish line out on the tri-oval's kink. Flat out in
+// a pack and the draft is everything.
 //
 // Positions on the track are (s, d): s is meters along the centerline from the start of the front
-// straight (cars run counterclockwise seen from above, so every turn is a left), d is meters across
-// it, + toward the outside wall. World x/z: the front straight runs along +x at z = +R.
+// stretch (cars run counterclockwise seen from above, so every turn is a left), d is meters across
+// it, + toward the outside wall. World x/z: the front stretch runs along +x on the +z side, the turns'
+// centers are at (±S/2, 0), and the backstretch runs along -x at z = -R.
 
-export const S = 240; // straight length
-export const R = 58; // centerline radius of the turns
-export const L = 2 * S + 2 * Math.PI * R; // one lap, ~844 m
+export type TrackDef = {
+  id: string;
+  /** the backstretch, and the distance between the two turns' centers */
+  S: number;
+  /** centerline radius of the turns */
+  R: number;
+  bankDeg: number;
+  /** banking on the straights */
+  straightBankDeg: number;
+  /** a tri-oval: the kink in the front stretch, its radius and how far it turns */
+  dogleg?: { r: number; deg: number };
+  /** pit road: the pit wall (s), the limiter (m/s), where the AI starts down for it (m before the
+   * line s = 0) and where the entry lane leaves the apron (m before s = 0) */
+  pit: { wallFrom: number; wallTo: number; speed: number; dive: number; link: number };
+  /** air drag (1 = Martinsvale): the big track's cars carry a draggier aero package */
+  drag: number;
+  night: boolean;
+  concreteTurns: boolean;
+};
+
+export const TRACK_DEFS: Record<string, TrackDef> = {
+  martinsvale: {
+    id: "martinsvale",
+    S: 240,
+    R: 58,
+    bankDeg: 12,
+    straightBankDeg: 0,
+    pit: { wallFrom: 22, wallTo: 222, speed: 15.6, dive: 95, link: 70 },
+    drag: 1,
+    night: true,
+    concreteTurns: true,
+  },
+  hotlanta: {
+    id: "hotlanta",
+    S: 640,
+    R: 185,
+    bankDeg: 26,
+    straightBankDeg: 5,
+    dogleg: { r: 800, deg: 36 },
+    pit: { wallFrom: 60, wallTo: 380, speed: 24.6, dive: 260, link: 180 },
+    drag: 1,
+    night: false,
+    concreteTurns: false,
+  },
+};
+
 export const HALF = 8; // racing surface: d from -HALF to +HALF; the outside wall is at +HALF
 export const APRON = -12.5; // flat apron from here to -HALF
-export const LINE_S = S / 2; // start/finish line, the middle of the front straight
-export const BANK = (12 * Math.PI) / 180;
+/** inside limit: how far down the track a car can go at s (the pit wall and the infield fence) */
+export const INFIELD = -26;
 
-// pit road: inside the front straight, behind a wall
+// pit road: inside the front stretch, behind a wall. The cross-section is the same on every track;
+// where it runs along the track and the limiter come from the track.
 export const PIT = {
   wallFrom: 22, // the pit wall runs from here...
-  wallTo: 222, // ...to here, along the front straight
+  wallTo: 222, // ...to here, along the front stretch
   wallIn: -11.6, // its pit-road face (d)
   wallOut: -10.8, // its track face (d)
   lane: -13.4, // where cars drive down pit road
   box: -15.9, // where they stop in their box, out of the way
   inner: -17.5, // the far wall of pit road
-  speed: 15.6, // the limiter: 35 mph
-  stall: (i: number) => 46 + i * 20, // s of each team's box
+  speed: 15.6, // the limiter: 35 mph at Martinsvale
+  dive: 95,
+  link: 70,
+  stall: (i: number) => PIT.wallFrom + 24 + i * 20, // s of each team's box
 };
 
-export type Frame = { x: number; z: number; tx: number; tz: number; nx: number; nz: number; arc: number };
+export let TRACK: TrackDef = TRACK_DEFS.martinsvale;
+export let S = 0; // backstretch length
+export let R = 0; // turn radius
+export let L = 0; // one lap
+export let LINE_S = 0; // the start/finish line, the middle of the front stretch
+export let BANK = 0;
+export let STRAIGHT_BANK = 0;
+/** the two big turns, as [start, end] in s */
+export let TURNS: [number, number][] = [];
+/** how far the track reaches in x and z, for the map */
+export let BOUNDS = { minX: 0, maxX: 0, minZ: 0, maxZ: 0 };
 
-/** where (s, d) is in the world, the direction of travel there (tx, tz) and the outward normal
- * (nx, nz). arc is which turn (1 = turns 1-2, 2 = turns 3-4) or 0 on a straight. */
-export function frame(s: number, d = 0): Frame {
-  s = wrap(s);
-  if (s < S) {
-    // front straight, heading +x
-    return { x: s - S / 2, z: R + d, tx: 1, tz: 0, nx: 0, nz: 1, arc: 0 };
-  }
-  if (s < S + Math.PI * R) {
-    const phi = Math.PI / 2 - (s - S) / R;
-    const nx = Math.cos(phi);
-    const nz = Math.sin(phi);
-    return { x: S / 2 + (R + d) * nx, z: (R + d) * nz, tx: nz, tz: -nx, nx, nz, arc: 1 };
-  }
-  if (s < 2 * S + Math.PI * R) {
-    const u = s - S - Math.PI * R;
-    return { x: S / 2 - u, z: -(R + d), tx: -1, tz: 0, nx: 0, nz: -1, arc: 0 };
-  }
-  const phi = -Math.PI / 2 - (s - 2 * S - Math.PI * R) / R;
-  const nx = Math.cos(phi);
-  const nz = Math.sin(phi);
-  return { x: -S / 2 + (R + d) * nx, z: (R + d) * nz, tx: nz, tz: -nx, nx, nz, arc: 2 };
+// the centerline as pieces: straights (from a point, along a heading) and arcs (round a center,
+// phi going down as s goes up, so every turn is a left)
+type Piece =
+  | { kind: "line"; s0: number; len: number; x: number; z: number; tx: number; tz: number }
+  | { kind: "arc"; s0: number; len: number; cx: number; cz: number; r: number; phi0: number; arc: number };
+let pieces: Piece[] = [];
+
+const listeners: (() => void)[] = [];
+/** run fn now and again whenever the track changes (for anything worked out from the track) */
+export function onTrack(fn: () => void): void {
+  listeners.push(fn);
+  fn();
 }
 
-/** the (s, d) of a world point */
+export function setTrack(id: string): void {
+  const t = TRACK_DEFS[id] ?? TRACK_DEFS.martinsvale;
+  if (t === TRACK && pieces.length) return;
+  TRACK = t;
+  S = t.S;
+  R = t.R;
+  BANK = (t.bankDeg * Math.PI) / 180;
+  STRAIGHT_BANK = (t.straightBankDeg * Math.PI) / 180;
+  Object.assign(PIT, { wallFrom: t.pit.wallFrom, wallTo: t.pit.wallTo, speed: t.pit.speed, dive: t.pit.dive, link: t.pit.link });
+  pieces = [];
+  let s = 0;
+  const line = (x: number, z: number, tx: number, tz: number, len: number) => {
+    pieces.push({ kind: "line", s0: s, len, x, z, tx, tz });
+    s += len;
+  };
+  const arc = (cx: number, cz: number, r: number, phi0: number, sweep: number, id: number) => {
+    pieces.push({ kind: "arc", s0: s, len: r * sweep, cx, cz, r, phi0, arc: id });
+    s += r * sweep;
+  };
+  const dl = t.dogleg;
+  // h: half the kink's turn; the big turns give up that much each
+  const h = dl ? (dl.deg * Math.PI) / 360 : 0;
+  if (dl) {
+    // the front stretch: up to the kink, round it, and down to turn 1, each straight tangent to both
+    const sh = Math.sin(h);
+    const ch = Math.cos(h);
+    const zd = R * ch - dl.r * ch + ((S / 2 + (R - dl.r) * sh) * sh) / ch; // the kink's center
+    const ex = S / 2 + R * sh; // where turn 1 starts (and, mirrored, where turn 4 ends)
+    const ez = R * ch;
+    const px = dl.r * sh; // where the kink ends (and, mirrored, starts)
+    const pz = zd + dl.r * ch;
+    const a = (ex - px) * ch + (pz - ez) * sh;
+    line(-ex, ez, ch, sh, a);
+    arc(0, zd, dl.r, Math.PI / 2 + h, 2 * h, 3);
+    line(px, pz, ch, -sh, a);
+    LINE_S = a + dl.r * h;
+  } else {
+    line(-S / 2, R, 1, 0, S);
+    LINE_S = S / 2;
+  }
+  const t1 = s;
+  arc(S / 2, 0, R, Math.PI / 2 - h, Math.PI - h, 1);
+  line(S / 2, -R, -1, 0, S);
+  const t3 = s;
+  arc(-S / 2, 0, R, -Math.PI / 2, Math.PI - h, 2);
+  L = s;
+  TURNS = [
+    [t1, t1 + R * (Math.PI - h)],
+    [t3, L],
+  ];
+  BOUNDS = { minX: Infinity, maxX: -Infinity, minZ: Infinity, maxZ: -Infinity };
+  for (let k = 0; k < L; k += 4) {
+    const f = frame(k);
+    BOUNDS.minX = Math.min(BOUNDS.minX, f.x);
+    BOUNDS.maxX = Math.max(BOUNDS.maxX, f.x);
+    BOUNDS.minZ = Math.min(BOUNDS.minZ, f.z);
+    BOUNDS.maxZ = Math.max(BOUNDS.maxZ, f.z);
+  }
+  for (const fn of listeners) fn();
+}
+
+export type Frame = { x: number; z: number; tx: number; tz: number; nx: number; nz: number; arc: number; r: number };
+
+/** where (s, d) is in the world, the direction of travel there (tx, tz) and the outward normal
+ * (nx, nz). arc is which turn (1 = turns 1-2, 2 = turns 3-4, 3 = a tri-oval's kink) or 0 on a
+ * straight, and r its radius (0 on a straight). */
+export function frame(s: number, d = 0): Frame {
+  s = wrap(s);
+  let p = pieces[pieces.length - 1];
+  for (const q of pieces) {
+    if (s < q.s0 + q.len) {
+      p = q;
+      break;
+    }
+  }
+  const u = s - p.s0;
+  if (p.kind === "line") {
+    // the outward normal is to the right of the heading
+    const nx = -p.tz;
+    const nz = p.tx;
+    return { x: p.x + p.tx * u + nx * d, z: p.z + p.tz * u + nz * d, tx: p.tx, tz: p.tz, nx, nz, arc: 0, r: 0 };
+  }
+  const phi = p.phi0 - u / p.r;
+  const nx = Math.cos(phi);
+  const nz = Math.sin(phi);
+  return { x: p.cx + (p.r + d) * nx, z: p.cz + (p.r + d) * nz, tx: nz, tz: -nx, nx, nz, arc: p.arc, r: p.r };
+}
+
+/** the (s, d) of a world point: the closest piece it lies alongside */
 export function project(x: number, z: number): { s: number; d: number } {
-  if (x >= -S / 2 && x <= S / 2) {
-    if (z >= 0) return { s: x + S / 2, d: z - R };
-    return { s: S + Math.PI * R + (S / 2 - x), d: -z - R };
+  let best = { s: 0, d: Infinity };
+  let bestScore = Infinity;
+  for (const p of pieces) {
+    let u: number;
+    let d: number;
+    if (p.kind === "line") {
+      u = (x - p.x) * p.tx + (z - p.z) * p.tz;
+      d = (x - p.x) * -p.tz + (z - p.z) * p.tx;
+    } else {
+      const phi = Math.atan2(z - p.cz, x - p.cx);
+      // how far round from the start, 0..2π, then back into -π..π about the piece's middle
+      let a = (((p.phi0 - phi) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+      const mid = p.len / p.r / 2;
+      if (a - mid > Math.PI) a -= 2 * Math.PI;
+      u = a * p.r;
+      d = Math.hypot(x - p.cx, z - p.cz) - p.r;
+    }
+    if (u < -0.5 || u > p.len + 0.5) continue;
+    // a hair past a piece's end still counts (the pieces meet smoothly), but the piece it's really on wins
+    const score = Math.abs(d) + (u < 0 || u > p.len ? 1e-3 : 0);
+    if (score < bestScore) {
+      bestScore = score;
+      best = { s: wrap(p.s0 + u), d };
+    }
   }
-  if (x > S / 2) {
-    const phi = Math.atan2(z, x - S / 2);
-    return { s: S + (Math.PI / 2 - phi) * R, d: Math.hypot(x - S / 2, z) - R };
-  }
-  const phi = Math.atan2(z, x + S / 2);
-  const t = (((-Math.PI / 2 - phi) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-  return { s: 2 * S + Math.PI * R + t * R, d: Math.hypot(x + S / 2, z) - R };
+  return best;
 }
 
 export const wrap = (s: number) => ((s % L) + L) % L;
@@ -87,16 +244,14 @@ const smooth = (e0: number, e1: number, x: number) => {
 export function turnAmount(s: number): number {
   s = wrap(s);
   const ramp = 30;
-  const t1a = S;
-  const t1b = S + Math.PI * R;
-  const t2a = 2 * S + Math.PI * R;
-  const t2b = L;
   const into = (a: number, b: number, x: number) => smooth(a - ramp, a + ramp * 0.5, x) * (1 - smooth(b - ramp * 0.5, b + ramp, x));
-  // turns 3-4 wrap past the line at s = L
-  return Math.max(into(t1a, t1b, s), into(t2a, t2b, s), into(t2a, t2b, s + L));
+  let k = 0;
+  // turns 3-4 end at the line, s = L, so look a lap either way too
+  for (const [a, b] of TURNS) k = Math.max(k, into(a, b, s), into(a, b, s + L), into(a, b, s - L));
+  return k;
 }
 
-export const bankAt = (s: number) => BANK * turnAmount(s);
+export const bankAt = (s: number) => STRAIGHT_BANK + (BANK - STRAIGHT_BANK) * turnAmount(s);
 
 /** height of the surface: the banked track rises toward the wall; the apron and infield are flat */
 export function heightAt(s: number, d: number): number {
@@ -111,7 +266,7 @@ export function surfaceAt(s: number, d: number): Surface {
   if (d >= -HALF) return "track";
   if (d >= APRON) return "apron";
   if (inPitRoad(s, d)) return "pit";
-  // pit road's entry and exit cut across the apron and grass at the ends of the front straight
+  // pit road's entry and exit cut across the apron and grass at the ends of the front stretch
   if (onPitLink(s, d)) return "pit";
   return "grass";
 }
@@ -124,10 +279,9 @@ export function inPitRoad(s: number, d: number): boolean {
 
 function onPitLink(s: number, d: number): boolean {
   s = wrap(s);
-  const into = s > L - 70 || s < PIT.wallFrom;
+  const into = s > L - PIT.link || s < PIT.wallFrom;
   const out = s > PIT.wallTo && s < PIT.wallTo + 70;
   return (into || out) && d < APRON && d > PIT.inner - 1;
 }
 
-/** inside limit: how far down the track a car can go at s (the pit wall and the infield fence) */
-export const INFIELD = -26;
+setTrack("martinsvale");
