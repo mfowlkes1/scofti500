@@ -25,7 +25,8 @@ export type Radio = {
   mute(on: boolean): void;
 };
 
-export function createRadio(box: HTMLElement): Radio {
+/** onTalk: called with true as a line starts and false once the radio goes quiet */
+export function createRadio(box: HTMLElement, onTalk: (talking: boolean) => void = () => {}): Radio {
   const synth = "speechSynthesis" in window ? window.speechSynthesis : null;
   let voices: SpeechSynthesisVoice[] = [];
   const loadVoices = () => {
@@ -74,11 +75,13 @@ export function createRadio(box: HTMLElement): Radio {
     busy = true;
     const id = ++playing;
     speaking = line.who;
+    onTalk(true);
     show(line.who, line.text, line.label);
     const done = () => {
       if (id !== playing) return;
       busy = false;
       lastAt = performance.now();
+      if (!queue.length) onTalk(false);
       void next();
     };
     if (muted) return void setTimeout(done, 900 + line.text.length * 30);
@@ -129,6 +132,7 @@ export function createRadio(box: HTMLElement): Radio {
     clear() {
       queue.length = 0;
       lastAt = performance.now();
+      onTalk(false);
       playing++;
       synth?.cancel();
       current?.pause();

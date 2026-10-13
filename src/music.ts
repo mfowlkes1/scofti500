@@ -16,7 +16,7 @@ const SONGS = Object.entries(files)
   .map(([, url]) => url);
 
 const MENU = 0.95; // Michael, 2026-10-13: "can barely hear it"
-const RACE = 0.32;
+const RACE = 0.6; // up over the engines (Michael, 2026-10-13: "needs music to help drown it out")
 const FADE = 1.2; // seconds
 const KEY = "scofti500:music";
 
@@ -72,9 +72,22 @@ export function setMusic(want: boolean): void {
   if (player && (player.paused || !player.src)) next();
 }
 
+let ducked = false;
+/** while the radio talks the music dips with everything else */
+export function duckMusic(on: boolean): void {
+  if (on === ducked) return;
+  ducked = on;
+  if (!ctx || !gain) return;
+  const now = ctx.currentTime;
+  gain.gain.cancelScheduledValues(now);
+  gain.gain.setValueAtTime(gain.gain.value, now);
+  gain.gain.linearRampToValueAtTime(on ? level * 0.4 : level, now + (on ? 0.15 : 0.8));
+}
+
 /** in a race the music sits down under the engines */
 export function musicForRace(racing: boolean): void {
   level = racing ? RACE : MENU;
+  ducked = false;
   if (!ctx || !gain) return;
   const now = ctx.currentTime;
   gain.gain.cancelScheduledValues(now);

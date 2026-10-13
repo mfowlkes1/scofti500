@@ -8,6 +8,8 @@ export type RaceAudio = {
   /** the air gun on a lug nut: a short buzzing brrrt */
   airGun(): void;
   roar(): void;
+  /** the radio's talking: everything dips so the line comes through */
+  duck(on: boolean): void;
   pause(on: boolean): void;
   stop(): void;
 };
@@ -20,7 +22,14 @@ export function startAudio(): RaceAudio | null {
   const master = ctx.createGain();
   master.gain.value = 0;
   master.gain.linearRampToValueAtTime(0.9, ctx.currentTime + 1);
-  master.connect(ctx.destination);
+  // under the radio: the whole race dips while someone's talking
+  const under = ctx.createGain();
+  master.connect(under).connect(ctx.destination);
+  // how long the engine has sat flat out near the limiter (a big track's long straights and flat
+  // turns): past a couple of seconds it eases back and mellows, so the drone doesn't wear on you
+  // (Michael, 2026-10-13: "when this thing is maxed out and it stays like that, the sound is annoying")
+  let held = 0;
+  let lastSet = ctx.currentTime;
 
   const noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
   const nd = noiseBuf.getChannelData(0);
@@ -122,14 +131,18 @@ export function startAudio(): RaceAudio | null {
   return {
     set({ rpm, throttle, slide, scrape: sc, field: near, fieldPitch }) {
       const now = ctx.currentTime;
+      const dt = Math.min(0.2, now - lastSet);
+      lastSet = now;
+      held = throttle > 0.8 && rpm > 8300 ? held + dt : Math.max(0, held - dt * 3);
+      const cruise = Math.min(1, Math.max(0, (held - 2) / 3));
       // a V8 fires four times a revolution
       const fire = (rpm / 60) * 4;
       for (const { o, mult } of oscs) o.frequency.setTargetAtTime(fire * mult, now, 0.03);
-      engTone.frequency.setTargetAtTime(500 + throttle * 2600 + rpm * 0.12, now, 0.05);
-      eng.gain.setTargetAtTime(0.18 + throttle * 0.2, now, 0.08);
+      engTone.frequency.setTargetAtTime((500 + throttle * 2600 + rpm * 0.12) * (1 - 0.45 * cruise), now, 0.3);
+      eng.gain.setTargetAtTime((0.15 + throttle * 0.16) * (1 - 0.5 * cruise), now, 0.3);
       lope.frequency.setTargetAtTime(rpm / 120, now, 0.1);
       for (const { o, mult } of fieldOscs) o.frequency.setTargetAtTime(fieldPitch * mult, now, 0.08);
-      field.gain.setTargetAtTime(near * 0.28, now, 0.1);
+      field.gain.setTargetAtTime(near * 0.24 * (1 - 0.35 * cruise), now, 0.1);
       squeal.gain.setTargetAtTime(Math.min(0.16, Math.max(0, slide - 1.6) * 0.05), now, 0.05);
       scrape.gain.setTargetAtTime(Math.min(0.35, sc * 0.06), now, 0.03);
     },
@@ -189,6 +202,9 @@ export function startAudio(): RaceAudio | null {
       crowd.gain.setValueAtTime(crowd.gain.value, now);
       crowd.gain.linearRampToValueAtTime(0.22, now + 0.4);
       crowd.gain.setTargetAtTime(0.05, now + 2, 1.2);
+    },
+    duck(on) {
+      under.gain.setTargetAtTime(on ? 0.35 : 1, ctx.currentTime, on ? 0.08 : 0.4);
     },
     pause(on) {
       void (on ? ctx.suspend() : ctx.resume());

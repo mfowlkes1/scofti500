@@ -3,6 +3,7 @@
 // radio, sparks and tire smoke, and the results. The race itself runs in session.ts.
 import * as THREE from "three";
 import { loadCar } from "../carModel";
+import { duckMusic } from "../music";
 import { addNumber } from "../carNumber";
 import { earn } from "../garage";
 import { CARS, type Car } from "../roster";
@@ -56,7 +57,10 @@ export function createRace(opts: { onDone(again: boolean): void }) {
   let setup: RaceSetup | null = null;
   let views: CarView[] = [];
   let audio: RaceAudio | null = null;
-  const radio: Radio = createRadio($("hud-radio"));
+  const radio: Radio = createRadio($("hud-radio"), (talking) => {
+    audio?.duck(talking);
+    duckMusic(talking);
+  });
   let running = false;
   let paused = false;
   let finishedAt = 0;
