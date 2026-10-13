@@ -6,7 +6,7 @@ import { loadCar } from "../carModel";
 import { addNumber } from "../carNumber";
 import { earn } from "../garage";
 import { CARS, type Car } from "../roster";
-import { airGun, autopilot, createSession, mph, order, pitStop, progress, stepSession, type Entry, type Session } from "./session";
+import { airGun, autopilot, createQualifying, createSession, mph, order, pitStop, progress, qualifyingLap, stepSession, type Entry, type Session } from "./session";
 import { STOCK, speedOf, type CarState, type Input, type Spec } from "./physics";
 import { planSpeed } from "./ai";
 import { fieldOf } from "./rivals";
@@ -18,7 +18,8 @@ import { startAudio, type RaceAudio } from "./sound";
 import { BOUNDS, HALF, L, TRACK, bankAt, frame, gap, heightAt, setTrack } from "./track";
 
 /** easy: preseason testing. Walls and bumps only slow you down, a bit more grip, and the rivals take it easy */
-export type RaceSetup = { car: Car; paintId: string; driver: string; spec: Spec; pitCrew: number; laps: number; easy: boolean; track: string };
+/** grid: the starting order from qualifying (names); race night qualifies first when there's none */
+export type RaceSetup = { car: Car; paintId: string; driver: string; spec: Spec; pitCrew: number; laps: number; easy: boolean; track: string; grid?: string[] };
 export type RaceResult = { pos: number; field: number; led: number; best: number; payout: number };
 
 const $ = (id: string) => document.getElementById(id)!;
@@ -240,7 +241,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
   let wallSaidAt = 0;
 
   function callPit(): void {
-    if (!sess || sess.phase !== "green" || autopilot(sess)) return;
+    if (!sess || sess.phase !== "green" || autopilot(sess) || sess.qualifying) return;
     const left = sess.laps - Math.max(0, sess.crossed[sess.player]);
     if (left <= 1) return;
     sess.pitCall = !sess.pitCall;
@@ -291,19 +292,36 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     bar.style.width = "4%";
     resize();
 
+    // race night starts with qualifying: you alone, a warm-up lap and one timed lap (Michael,
+    // 2026-10-13). Its times set the grid; preseason testing just lines up and goes
+    const qualifying = !s.easy && !s.grid;
     // the field: the rivals in grid order (as many as the track takes), you at the back
-    const entries: Entry[] = fieldOf(TRACK.field).map((r) => {
+    const rivals: Entry[] = fieldOf(TRACK.field).map((r) => {
       const number = r.number;
       if (s.easy) return { name: r.name, number, carId: r.carId, paintId: r.paint, spec: { ...STOCK, power: STOCK.power * 0.94 }, skill: r.skill * 0.95, aggression: r.aggression * 0.4 };
       return { name: r.name, number, carId: r.carId, paintId: r.paint, spec: STOCK, skill: r.skill, aggression: r.aggression };
     });
-    // shuffle the rivals' starting spots a little each race
-    for (let i = entries.length - 1; i > 0; i--) {
-      if (Math.random() < 0.5) [entries[i], entries[i - 1]] = [entries[i - 1], entries[i]];
-    }
     const mySpec = s.easy ? { ...s.spec, grip: s.spec.grip * 1.06 } : s.spec;
-    entries.push({ name: s.driver, number: s.car.number, carId: s.car.id, paintId: s.paintId, spec: mySpec, skill: 1, aggression: 0.5, player: true });
-    sess = createSession(entries, s.laps, s.easy);
+    const me: Entry = { name: s.driver, number: s.car.number, carId: s.car.id, paintId: s.paintId, spec: mySpec, skill: 1, aggression: 0.5, player: true };
+    let entries: Entry[];
+    if (qualifying) {
+      entries = [me];
+      sess = createQualifying(me);
+    } else {
+      if (s.grid) {
+        // lined up the way they qualified
+        const all = [...rivals, me];
+        entries = s.grid.map((n) => all.find((e) => e.name === n)).filter((e): e is Entry => !!e);
+      } else {
+        // shuffle the rivals' starting spots a little each race, you at the back
+        entries = rivals;
+        for (let i = entries.length - 1; i > 0; i--) {
+          if (Math.random() < 0.5) [entries[i], entries[i - 1]] = [entries[i - 1], entries[i]];
+        }
+        entries.push(me);
+      }
+      sess = createSession(entries, s.laps, s.easy);
+    }
 
     if (!tracks.has(TRACK.id))
       tracks.set(
@@ -368,8 +386,11 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     audio = startAudio();
     radio.clear();
     radio.mute(false);
-    radio.say(here("ann-welcome"));
-    radio.say("crew-pace");
+    if (qualifying) radio.say("crew-qual-warm");
+    else {
+      radio.say(here("ann-welcome"));
+      radio.say("crew-pace");
+    }
     spot = { high: false, low: false, clearAt: 0 };
     warned = { half: false, gone: false };
     lastPos = sess.entries.length;
@@ -442,7 +463,10 @@ export function createRace(opts: { onDone(again: boolean): void }) {
       track!.board(running.map((i) => ({ number: sess!.entries[i].number, name: sess!.entries[i].name, me: i === sess!.player })), lap);
     }
     renderer.render(scene, camera);
-    if (finishedAt && t - finishedAt > 4500 && !$("race-results").classList.contains("on")) results();
+    if (finishedAt && t - finishedAt > (sess.qualifying ? 1500 : 4500) && !$("race-results").classList.contains("on")) {
+      if (sess.qualifying) qualified();
+      else results();
+    }
   }
 
   const whiteFlag = () => !!sess && sess.phase === "green" && Math.max(...sess.crossed) === sess.laps - 1;
@@ -639,6 +663,15 @@ export function createRace(opts: { onDone(again: boolean): void }) {
 
   function handleEvents(): void {
     const s = sess!;
+    if (s.qualifying) {
+      // over the line once: the clock's running. Twice: that's the lap
+      for (const e of s.events) {
+        if (e.type === "lap") radio.say("crew-qual-go");
+        else if (e.type === "finish") finishedAt = performance.now();
+      }
+      s.events.length = 0;
+      return;
+    }
     const name = (i: number) => s.entries[i].name;
     for (const e of s.events) {
       if (e.type === "green") {
@@ -825,7 +858,15 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     $("hud-pos").textContent = String(pos);
     $("hud-of").textContent = `/${s.cars.length}`;
     const lap = clamp(s.crossed[s.player] + 1, 1, s.laps);
-    $("hud-lap").textContent = s.phase === "pace" ? "PACE LAP" : `LAP ${lap}/${s.laps}`;
+    $("hud-lap").textContent = s.qualifying
+      ? s.finishOrder.length
+        ? "QUALIFIED"
+        : s.crossed[s.player] < 0
+          ? "WARM-UP LAP"
+          : "QUALIFYING LAP"
+      : s.phase === "pace"
+        ? "PACE LAP"
+        : `LAP ${lap}/${s.laps}`;
     $("hud-last").textContent = fmt(s.lastLap[s.player]);
     $("hud-best").textContent = fmt(s.bestLap[s.player]);
     $("hud-speed").textContent = String(Math.round(mph(me)));
@@ -890,9 +931,42 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     return greenAt + 4;
   };
 
+  // ---- qualifying's done: everyone's time, and where you start ----
+  function qualified(): void {
+    const s = sess!;
+    const mine = s.lastLap[s.player] || 999;
+    // the rivals each run their quick lap (no screen; well under a second)
+    const times = fieldOf(TRACK.field).map((r) => ({
+      name: r.name,
+      number: r.number,
+      time: qualifyingLap({ name: r.name, number: r.number, carId: r.carId, paintId: r.paint, spec: STOCK, skill: r.skill, aggression: r.aggression }),
+      me: false,
+    }));
+    times.push({ name: s.entries[s.player].name, number: s.entries[s.player].number, time: mine, me: true });
+    times.sort((a, b) => a.time - b.time);
+    const pos = times.findIndex((t) => t.me) + 1;
+    if (setup) setup = { ...setup, grid: times.map((t) => t.name) };
+    radio.clear();
+    if (pos === 1) radio.say("ann-pole");
+    radio.say(pos === 1 ? "crew-qual-pole" : pos <= 10 ? "crew-qual-top" : pos <= times.length * 0.6 ? "crew-qual-mid" : "crew-qual-back");
+    $("rr-title").textContent = pos === 1 ? "POLE POSITION" : "QUALIFYING";
+    $("rr-pos").textContent = `P${pos}`;
+    $("rr-cash").textContent = mine < 999 ? `${mine.toFixed(3)}s` : "no time";
+    $("rr-table").innerHTML = times
+      .map((t, k) => `<li class="${t.me ? "me" : ""}"><b>${k + 1}</b><i>#${t.number}</i><span>${t.name}</span><small>${t.time < 999 ? t.time.toFixed(3) : "--"}</small></li>`)
+      .join("");
+    $("rr-again").textContent = "GO RACING ▶";
+    $("race-results").classList.add("on");
+    // the sheet opens with you in view
+    $("rr-table").querySelector(".me")?.scrollIntoView({ block: "center" });
+  }
+
   // ---- the end ----
   function results(): void {
     const s = sess!;
+    // race again means qualify again
+    $("rr-again").textContent = "RACE AGAIN ▶";
+    if (setup) setup = { ...setup, grid: undefined };
     const ord = order(s);
     const pos = ord.indexOf(s.player) + 1;
     const scale = 0.4 + (s.laps / 30) * 0.6;

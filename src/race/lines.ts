@@ -86,6 +86,16 @@ Object.assign(lines, {
 } satisfies Record<string, Line>);
 for (const r of RIVALS) lines[`ann-win-${slug(r.name)}-hotlanta`] = { who: "announcer", text: `Checkered flag! ${r.name} wins at Hotlanta!` };
 for (const name of ["Madhuvan", "Allan", "Si"]) lines[`ann-win-${slug(name)}-hotlanta`] = { who: "announcer", text: `Checkered flag! ${name} wins it at Hotlanta!` };
+// qualifying (race night): the warm-up, the lap, and how it went
+Object.assign(lines, {
+  "crew-qual-warm": { who: "crew", text: "Warm-up lap. Get some heat in those tires. Then it's one lap, all you've got." },
+  "crew-qual-go": { who: "crew", text: "Green flag, you're on your lap! Make it count!" },
+  "crew-qual-pole": { who: "crew", text: "That's the pole! We're starting up front!" },
+  "crew-qual-top": { who: "crew", text: "Great lap! That's a top ten starting spot." },
+  "crew-qual-mid": { who: "crew", text: "Good lap. We'll start mid-pack and work our way up." },
+  "crew-qual-back": { who: "crew", text: "We'll be starting in the back. Plenty of time to pass 'em all." },
+  "ann-pole": { who: "announcer", text: "And that's the pole! What a lap!" },
+} satisfies Record<string, Line>);
 // the announcer calls every lead change
 for (const r of RIVALS) lines[`ann-lead-${slug(r.name)}`] = { who: "announcer", text: `${r.name} takes the lead!` };
 for (const name of ["Madhuvan", "Allan", "Si"]) lines[`ann-lead-${slug(name)}`] = { who: "announcer", text: `${name} takes the lead! Listen to this crowd!` };

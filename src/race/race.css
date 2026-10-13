@@ -592,6 +592,9 @@ body.in-seat .hud-speed {
   display: grid;
   gap: 4px;
   width: min(460px, 100%);
+  /* a full field scrolls */
+  max-height: 46vh;
+  overflow-y: auto;
   font: 700 14px/1 system-ui, sans-serif;
 }
 .rr-table li {

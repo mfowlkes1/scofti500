@@ -3,7 +3,7 @@
 // there are enough laps left; you pit when you ask to. No 3D here: the race screen draws it, and
 // scripts can run whole races with it.
 import { canStartPit, drive, gridSlot, newDriver, startPit, type Driver } from "./ai";
-import { collide, drafts, newCar, speedOf, step, type CarState, type Input, type Spec } from "./physics";
+import { collide, drafts, freshTires, newCar, speedOf, step, type CarState, type Input, type Spec } from "./physics";
 import { L, LINE_S, gap, wrap } from "./track";
 
 export type Entry = {
@@ -55,6 +55,8 @@ export type Session = {
   /** when you pit, the rivals answer: the lap each one comes in (-1: not planning to) */
   answerAt: number[];
   events: RaceEvent[];
+  /** a qualifying run: one car, a warm-up lap and then one timed lap */
+  qualifying: boolean;
 };
 
 export const PACE_SPEED = 21;
@@ -68,6 +70,32 @@ const MAX_TAPS = 12;
 
 /** easy: preseason testing, where the walls and bumps slow you down but nobody wrecks */
 export function createSession(entries: Entry[], laps: number, easy = false): Session {
+  return makeSession(entries, laps, easy, false);
+}
+
+/** qualifying (race night): one car, out on its own and already green. From rolling (just past the
+ * line, for the warm-up lap; or, for flying=true, at speed down the backstretch for the rivals'
+ * quick laps), the first time over the line starts the clock and the second stops it */
+export function createQualifying(entry: Entry, flying = false): Session {
+  const sess = makeSession([entry], 1, false, true);
+  const c = sess.cars[0];
+  const at = flying ? wrap(LINE_S - 420) : wrap(LINE_S + 25);
+  Object.assign(c, newCar(at, 0, flying ? 60 : 18));
+  if (flying) freshTires(c, 1);
+  sess.phase = "green";
+  sess.drivers[0].mode = "race";
+  return sess;
+}
+
+/** a rival's qualifying lap, run straight through with no screen: their time, a hair of luck either way */
+export function qualifyingLap(entry: Entry): number {
+  const sess = createQualifying(entry, true);
+  while (!sess.finishOrder.length && sess.t < 240) stepSession(sess, null, 1 / 120);
+  const lap = sess.lastLap[0] || 999;
+  return lap * (1 + (Math.random() - 0.5) * 0.006);
+}
+
+function makeSession(entries: Entry[], laps: number, easy: boolean, qualifying: boolean): Session {
   const cars: CarState[] = [];
   const drivers: Driver[] = [];
   entries.forEach((e, pos) => {
@@ -101,6 +129,7 @@ export function createSession(entries: Entry[], laps: number, easy = false): Ses
     stops: entries.map(() => 0),
     answerAt: entries.map(() => -1),
     events: [],
+    qualifying,
   };
 }
 
