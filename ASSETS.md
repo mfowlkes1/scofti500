@@ -16,7 +16,8 @@ Everything ships with the game; nothing loads from other sites.
   - crew chief: "Austin Knox" (Bj9UqZbhQsanLzgalpEG), ElevenLabs library
   - announcer: Michael's Voice Design announcer (fBRhBCYyrzF7JBCdE4Nt)
   - Reba: "SCOFTI CON daisy", Michael's Voice Design (VDCzHcQzuGC8lVW8vjyr)
-  - Raven, Lynx, Maia, Paige: voices still to pick (their lines are read by the browser's own voice until then)
+  - Raven: "Blue - Neutral, Vocal Fry, Commentator" (kfU9VUUMjY4PWNoUfZ45), ElevenLabs library
+  - Lynx, Maia, Paige: voices still to pick (their lines are read by the browser's own voice until then)
 - **Engine, field, tires, wall, crowd, air guns** (`src/race/sound.ts`): made in code with Web Audio.
 
 ## fonts (bundled through Fontsource, SIL Open Font License)
