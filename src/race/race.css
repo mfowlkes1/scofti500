@@ -1177,3 +1177,16 @@ body.replaying .replay-skip {
     opacity: 0;
   }
 }
+
+/* no running order on screen (Michael, 2026-10-13: "lose leaderboard"): your place is up top, and the
+   big boards and the pylon show the field */
+.hud-board {
+  display: none !important;
+}
+/* holding the pedals or the steering pad mustn't bring up the phone's magnifier or text selection */
+#race-screen,
+#race-screen * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
