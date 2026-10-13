@@ -1068,3 +1068,9 @@ body[data-screen="garage"] .welcome {
   height: min(30vh, 340px, 46vw);
   opacity: 0.9;
 }
+
+/* no speech bubbles on the pick screens (Michael, 2026-10-13: "lose the word bubbles"); the drivers
+   still say their lines out loud */
+.say-bubble {
+  display: none !important;
+}
