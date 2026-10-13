@@ -5,7 +5,7 @@ import "./style.css";
 import "./race/race.css";
 import { PAINTS, paintedUrl, savePaint, savedPaint } from "./paint";
 import { UPGRADES, MAX_LEVEL, buy, levels, nextCost, tuned } from "./garage";
-import { PACKS, buyPack, canBuy, chipAmount, chipSvg, chips } from "./chips";
+import { PACKS, buyPack, canBuy, chipAmount, chipSvg, chips, flagSvg } from "./chips";
 import { createGarage } from "./garageRoom";
 import { musicForRace, musicOn, setMusic, startMusic } from "./music";
 import { createPicker } from "./pick";
@@ -442,7 +442,7 @@ function openChips(): void {
       // a pile: more chips for the bigger packs, stacked in towers
       const towers = [[2], [3, 2], [4, 3, 4]][k] ?? [2];
       const pile = towers.map((n) => `<span class="tower">${Array.from({ length: n }, () => chipSvg(52)).join("")}</span>`).join("");
-      b.innerHTML = `${p.tag ? `<em>${p.tag}</em>` : ""}<span class="pile">${pile}</span><b>${p.name}</b>${chipAmount(p.chips)}<small>${canBuy() ? "FREE (TEST)" : "SOON"}</small>`;
+      b.innerHTML = `${p.tag ? `<em>${p.tag}</em>` : ""}<span class="pile">${flagSvg(p.flag, 58)}${pile}</span><b>${p.name}</b>${chipAmount(p.chips)}<small>${canBuy() ? "FREE (TEST)" : "SOON"}</small>`;
       b.addEventListener("click", () => {
         if (buyPack(p)) {
           $("chips-have").innerHTML = chipAmount(chips());

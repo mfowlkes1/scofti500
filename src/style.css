@@ -957,8 +957,8 @@ body[data-screen="garage"] .welcome {
   display: grid;
   justify-items: center;
   gap: 6px;
-  width: min(200px, 42vw);
-  padding: 18px 12px 14px;
+  width: min(220px, 44vw);
+  padding: 18px 10px 14px;
   color: #fff;
   font: 400 22px/1 "Racing Sans One", system-ui, sans-serif;
   background: rgba(11, 7, 22, 0.88);
@@ -968,7 +968,9 @@ body[data-screen="garage"] .welcome {
 }
 .pack b {
   font-weight: 400;
-  letter-spacing: 0.06em;
+  font-size: clamp(16px, 2.6vmin, 21px);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 .pack .chips-amt {
   font-size: 26px;
@@ -1004,6 +1006,12 @@ body[data-screen="garage"] .welcome {
 }
 .tower .chip + .chip {
   margin-bottom: -42px;
+}
+/* the pack's flag stands beside its chips */
+.pile .flag {
+  align-self: flex-start;
+  margin-right: 2px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6));
 }
 .tower + .tower {
   margin-left: -12px;

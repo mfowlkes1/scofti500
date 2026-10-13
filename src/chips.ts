@@ -11,13 +11,27 @@ const KEY = "scofti500:chips";
 const OLD_CASH = "scofti500:cash";
 export const STARTING_CHIPS = 250;
 
-export type Pack = { id: string; name: string; chips: number; tag?: string };
+// named for the flags, in race order: green starts it, white's the last lap, checkered wins it (Michael,
+// 2026-10-13: racing, not casino)
+export type Pack = { id: string; name: string; chips: number; flag: "green" | "white" | "checkered"; tag?: string };
 export const PACKS: Pack[] = [
-  { id: "stack", name: "STACK", chips: 500 },
-  { id: "rack", name: "RACK", chips: 1500, tag: "POPULAR" },
-  // racing names, not casino ones (Michael, 2026-10-13: "no high roller")
-  { id: "victory-lane", name: "VICTORY LANE", chips: 5000, tag: "BEST VALUE" },
+  { id: "green-flag", name: "GREEN FLAG", chips: 500, flag: "green" },
+  { id: "white-flag", name: "WHITE FLAG", chips: 1500, flag: "white", tag: "POPULAR" },
+  { id: "checkered-flag", name: "CHECKERED FLAG", chips: 5000, flag: "checkered", tag: "BEST VALUE" },
 ];
+
+/** a racing flag on a pole, as inline SVG */
+export function flagSvg(flag: Pack["flag"], size = 44): string {
+  let cloth: string;
+  if (flag === "checkered") {
+    const cells: string[] = [];
+    for (let y = 0; y < 4; y++) for (let x = 0; x < 5; x++) if ((x + y) % 2 === 0) cells.push(`<rect x="${12 + x * 7.2}" y="${8 + y * 7}" width="7.2" height="7" fill="#111"/>`);
+    cloth = `<path d="M12 8 Q30 2 48 8 V36 Q30 30 12 36 Z" fill="#fff"/>${cells.join("")}`;
+  } else {
+    cloth = `<path d="M12 8 Q30 2 48 8 V36 Q30 30 12 36 Z" fill="${flag === "green" ? "#19c43b" : "#fff"}"/>`;
+  }
+  return `<svg class="flag" width="${size}" height="${size}" viewBox="0 0 52 60" aria-hidden="true"><rect x="9" y="4" width="3" height="54" rx="1.5" fill="#c9cdd3"/>${cloth}<path d="M12 8 Q30 2 48 8 V36 Q30 30 12 36 Z" fill="none" stroke="#0b0716" stroke-width="2"/></svg>`;
+}
 
 export function chips(): number {
   try {
