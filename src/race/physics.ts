@@ -285,7 +285,11 @@ export function step(c: CarState, input: Input, spec: Spec, dt: number): void {
 
 /** the outside wall, the pit wall and pit road's far wall, and the infield fence */
 function wallCheck(c: CarState, prevD: number): void {
-  const hw = CAR_W / 2 + 0.05;
+  // how far the car reaches across the track from its middle: half its width pointing straight, more
+  // as it turns sideways (a car crossed up in the wall had its back end through it)
+  const t = frame(c.s);
+  const rel = c.h - Math.atan2(t.tz, t.tx);
+  const hw = Math.abs(Math.sin(rel)) * (CAR_LEN / 2) + Math.abs(Math.cos(rel)) * (CAR_W / 2) + 0.05;
   const s = c.s;
   let limitHi = HALF - hw;
   let limitLo = INFIELD;

@@ -201,7 +201,7 @@ export function drive(drv: Driver, ctx: Context): Input {
 
   const ld = 7 + v * 0.36;
   // a pack track keeps them a car's width more off the wall (riding it in a pack wrecks them)
-  const d2 = clamp(racingLine(c.s + ld) + drv.offset, -HALF + 1.3, HALF - (TRACK.field > 12 ? 2.2 : 1.2));
+  const d2 = clamp(racingLine(c.s + ld) + drv.offset, -HALF + 1.3, HALF - (TRACK.field > 12 ? 2.2 : 1.5));
   // a hair short of full lock, so a nudge in the turn doesn't tip it into a spin
   const steer = clamp(steerTo(c, c.s + ld, d2), pack ? -0.92 : -1, pack ? 0.92 : 1);
   const p = pedals(v, Math.min(target, cap));
