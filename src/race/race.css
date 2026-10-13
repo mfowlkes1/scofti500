@@ -772,15 +772,11 @@ body.in-seat .hud-speed {
   background: rgba(150, 20, 20, 0.8);
 }
 
-/* preseason testing: no brake pedal, lift to slow down */
-.easy-only,
-#race-screen.easy .hard-only,
-#race-screen.easy .t-brake {
+/* no brake pedal on either night: lift off the gas and the car slows for the corner (Michael,
+   2026-10-13: race night's controls the same as preseason's). The down key still brakes. */
+.t-brake {
   display: none;
 }
-#race-screen.easy .easy-only {
-  display: inline;
-}
-#race-screen.easy .t-gas {
+.t-gas {
   width: 150px;
 }

@@ -193,8 +193,8 @@ export function createRace(opts: { onDone(again: boolean): void }) {
       brake = Math.max(brake, gp.buttons[6]?.value ?? 0, gp.buttons[1]?.pressed ? 1 : 0);
     }
     // let off the gas and the car slows itself, just enough to make the corner coming up (and a little
-    // on the straights). Preseason has no brake pedal at all; race night keeps one for braking harder
-    // (Michael, 2026-10-12: "if you lift off gas it brakes too")
+    // on the straights). Both nights drive this way, with no brake pedal on screen (Michael,
+    // 2026-10-12/13); the down key and a gamepad trigger still brake harder
     if (sess && throttle < 0.1) {
       const c = sess.cars[sess.player];
       const v = Math.hypot(c.vx, c.vz);
@@ -279,8 +279,6 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     traceOutline();
     $("load-track").textContent = TRACK.id.toUpperCase();
     $("load-line").textContent = TRACK.night ? "rolling out under the lights…" : "rolling out into the heat…";
-    // preseason has no brake pedal: lift to slow down
-    $("race-screen").classList.toggle("easy", s.easy);
     finishedAt = 0;
     paused = false;
     $("race-results").classList.remove("on");
