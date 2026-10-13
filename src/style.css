@@ -743,3 +743,12 @@ body[data-screen="garage"] .welcome {
   }
 }
 
+
+/* the build number, tiny in the corner of the title */
+.version {
+  position: fixed;
+  right: max(10px, env(safe-area-inset-right));
+  bottom: max(8px, env(safe-area-inset-bottom));
+  font: 600 11px/1 system-ui, sans-serif;
+  color: rgba(255, 255, 255, 0.45);
+}

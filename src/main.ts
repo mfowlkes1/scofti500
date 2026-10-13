@@ -12,6 +12,11 @@ import { LINES, slug } from "./race/lines";
 import { STOCK } from "./race/physics";
 import { createRace } from "./race/race";
 import { CARS, DRIVERS, TRACKS, carUrl, faceUrl, fullUrl, type Car, type Driver } from "./roster";
+import { sendHome } from "./home";
+import { VERSION } from "./version";
+
+// on the raw vercel.app address? off to scofti.com
+sendHome();
 
 // Flow: title → PICK YOUR DRIVER → PICK YOUR CAR → PIT GARAGE → PICK YOUR TRACK → the race → back to
 // the pit garage. Backspace and the on-screen BACK go back; Escape belongs to the arcade.
@@ -59,6 +64,8 @@ musicBtn.addEventListener("click", () => {
   setMusic(!musicOn());
   musicBtn.classList.toggle("off", !musicOn());
 });
+
+$("version").textContent = VERSION;
 
 // ✕ back to the arcade shelf: /arcade/scofti500/ → /arcade/
 ($("to-arcade") as HTMLAnchorElement).href = import.meta.env.BASE_URL.replace(/scofti500\/?$/, "");
