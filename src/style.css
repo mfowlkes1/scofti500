@@ -889,6 +889,9 @@ body[data-screen="garage"] .welcome {
 .credits-title .academy-mark {
   color: #fff;
 }
+.credits-big {
+  font-size: 30px;
+}
 .credits-sub {
   color: var(--muted);
 }
