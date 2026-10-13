@@ -13,6 +13,7 @@ import { STOCK } from "./race/physics";
 import { createRace } from "./race/race";
 import { CARS, DRIVERS, TRACKS, carUrl, faceUrl, fullUrl, type Car, type Driver } from "./roster";
 import { sendHome } from "./home";
+import { SUIT_PAINTS, carPaintFor, ownSwatch, saveSuit, savedSuit, suitUrl } from "./suit";
 import { VERSION } from "./version";
 
 // on the raw vercel.app address? off to scofti.com
@@ -67,14 +68,18 @@ musicBtn.addEventListener("click", () => {
 
 $("version").textContent = VERSION;
 
+const lineupImgs = new Map<string, HTMLImageElement>();
+// (declared up here: the driver picker shows her colors as soon as it's made)
+let suitJob = 0;
 // the title: all the drivers lined up together, Reba in the middle (the first thing anyone sees)
 {
   const order = ["maia", "lynx", "reba", "raven", "paige"];
   const lined = [...order.map((id) => DRIVERS.find((d) => d.id === id)).filter((d): d is Driver => !!d), ...DRIVERS.filter((d) => !order.includes(d.id))];
   for (const d of lined) {
     const img = new Image();
-    img.src = fullUrl(d);
     img.alt = "";
+    lineupImgs.set(d.id, img);
+    void suitUrl(d, savedSuit(d)).then((url) => (img.src = url));
     $("lineup").append(img);
   }
 }
@@ -93,18 +98,69 @@ const drivers = createPicker<Driver>({
   role: (d) => d.role,
   sub: (d) => d.team,
   line: (d) => d.line,
-  // say hello as each one comes up
-  onShow: (d) => {
+  // say hello as each one comes up, and show her colors
+  onShow: (d, hero) => {
+    showSuits(d, hero);
     if (screen === "driver") speak(d, "hello", $("driver-say"));
   },
   onGo: (d) => {
     driver = d;
+    // her color goes on her car
+    paintCarsFor(d);
     // they come along to the car screen, small in the corner, and say their line as you pick them
     ($("car-driver") as HTMLImageElement).src = faceUrl(d);
     show("car");
     speak(d, "pick", $("car-say"));
   },
 });
+
+// ---- her colors: a swatch for each, her own first; the pick repaints her suit and her car ----
+function showSuits(d: Driver, hero: HTMLImageElement): void {
+  const row = $("driver-suits");
+  row.style.setProperty("--stock", ownSwatch(d));
+  row.replaceChildren(
+    ...SUIT_PAINTS.map((p) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "swatch";
+      b.dataset.paint = p.id;
+      const label = p.id === "stock" ? "her colors" : p.label;
+      b.title = label;
+      b.setAttribute("aria-label", label);
+      b.style.background = p.swatch;
+      if (p.id === "stock") b.textContent = "★";
+      b.addEventListener("click", () => {
+        saveSuit(d, p.id);
+        applySuit(d, hero);
+        paintCarsFor(d);
+        speak(d, `paint-${p.id}`, $("driver-say"));
+      });
+      return b;
+    }),
+  );
+  applySuit(d, hero);
+}
+
+async function applySuit(d: Driver, hero: HTMLImageElement): Promise<void> {
+  const id = savedSuit(d);
+  for (const s of $("driver-suits").children) s.classList.toggle("on", (s as HTMLElement).dataset.paint === id);
+  $("suit-name").textContent = id === "stock" ? "her colors" : SUIT_PAINTS.find((p) => p.id === id)!.label;
+  const job = ++suitJob;
+  // hold the picture back until the color's ready, so her old suit never flashes
+  if (id !== "stock") hero.style.visibility = "hidden";
+  const url = await suitUrl(d, id);
+  const lined = lineupImgs.get(d.id);
+  if (lined) lined.src = url;
+  if (job !== suitJob) return;
+  hero.src = url;
+  hero.style.visibility = "";
+}
+
+/** her color is her car's paint, whichever car she takes */
+function paintCarsFor(d: Driver): void {
+  const paint = carPaintFor(d, savedSuit(d));
+  for (const c of CARS) savePaint(c.id, paint);
+}
 
 // the car being shown and which way round it is (tap the picture to turn it)
 let viewIndex = 0;
