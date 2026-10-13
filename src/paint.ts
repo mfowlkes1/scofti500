@@ -96,7 +96,7 @@ export async function paintedUrl(url: string, key: KeyHue, paintId: string, view
   const g = c.getContext("2d", { willReadFrequently: true })!;
   g.drawImage(img, 0, 0);
   const data = g.getImageData(0, 0, c.width, c.height);
-  recolour(data, paint, key, key.skip?.[view] ?? [], key.numbers?.[view] ?? []);
+  recolour(data, paint, key, key.skip?.[view] ?? [], key.numbers?.[view] ?? [], floorLine(data));
   g.putImageData(data, 0, 0);
   const out = await new Promise<string>((res) =>
     c.toBlob((b) => res(b ? URL.createObjectURL(b) : url), "image/jpeg", 0.88),
@@ -134,7 +134,30 @@ const smooth = (a: number, b: number, x: number) => {
 
 type Rect = [number, number, number, number];
 
-function recolour(data: ImageData, paint: Paint, key: KeyHue, skip: Rect[], numbers: Rect[]): void {
+/** in a car picture, where the car meets the shiny floor in each column (the lowest really dark
+ * pixel: tire rubber, the shadow under it); below it is the car's reflection. -1: no car there */
+function floorLine(data: ImageData): number[] {
+  const { width: W, height: H, data: px } = data;
+  const raw = new Array<number>(W).fill(-1);
+  for (let x = 0; x < W; x++) {
+    for (let y = H - 1; y > H * 0.35; y--) {
+      const i = (y * W + x) * 4;
+      const l = (Math.max(px[i], px[i + 1], px[i + 2]) + Math.min(px[i], px[i + 1], px[i + 2])) / 510;
+      if (l < 0.1) {
+        raw[x] = y;
+        break;
+      }
+    }
+  }
+  // a little smoothing, so a stray dark pixel doesn't notch it
+  return raw.map((_, x) => {
+    const near = raw.slice(Math.max(0, x - 3), x + 4).filter((v) => v >= 0).sort((a, b) => a - b);
+    return near.length ? near[near.length >> 1] : -1;
+  });
+}
+
+/** floor: the car picture's floor line (floorLine); the reflection under it mirrors the camo above */
+function recolour(data: ImageData, paint: Paint, key: KeyHue, skip: Rect[], numbers: Rect[], floor?: number[]): void {
   const px = data.data;
   const w = data.width;
   const camo = paint.camo ? camoField(w, data.height, CAMOS[paint.camo]) : null;
@@ -150,6 +173,8 @@ function recolour(data: ImageData, paint: Paint, key: KeyHue, skip: Rect[], numb
     const y = (n / w) | 0;
     const inside = (rs: number[][]) => rs.some(([x0, y0, x1, y1]) => x >= x0 && x < x1 && y >= y0 && y < y1);
     if (skips.length && inside(skips)) continue;
+    // the floor where there's no car above it (the sunset's glow) is never the car's paint
+    if (floor && floor[x] < 0 && y > h0 * 0.5) continue;
     const [h, s, l] = rgbToHsl(px[i], px[i + 1], px[i + 2]);
     let dh = Math.abs(h - key.hue);
     if (dh > 180) dh = 360 - dh;
@@ -165,7 +190,11 @@ function recolour(data: ImageData, paint: Paint, key: KeyHue, skip: Rect[], numb
     const shade = l / REF_L;
     let r: number, gg: number, b: number;
     if (camo) {
-      const [cr, cg, cb] = camo[n];
+      // in the reflection, the camo is the car's own, upside down (Michael, 2026-10-13: the floor
+      // under a camo car was getting its own camo)
+      const f = floor?.[x] ?? -1;
+      const my = f >= 0 && y > f ? Math.max(0, 2 * f - y) : y;
+      const [cr, cg, cb] = camo[my * w + x];
       r = cr * shade;
       gg = cg * shade;
       b = cb * shade;
