@@ -189,6 +189,7 @@ const cars = createPicker<Car>({
     $("race-who").textContent = `${driver.name} in the #${c.number} · ${c.name}${colour}`;
     garageCar = c;
     garage.setCar(c, paintOf(c));
+    showGaragePaints(c);
     showUpgrades();
     show("garage");
   },
@@ -363,6 +364,39 @@ show("title");
 
 // ---- the pit garage's upgrades: each car keeps its own, paid for with cash ----
 const money = (n: number) => `$${n.toLocaleString()}`;
+// ---- the car's paint in the pit garage (Michael, 2026-10-13): her color to start, any paint here ----
+function showGaragePaints(car: Car): void {
+  const row = $("garage-paints");
+  row.style.setProperty("--stock", car.accent);
+  const mark = () => {
+    const id = paintOf(car);
+    for (const s of row.children) s.classList.toggle("on", (s as HTMLElement).dataset.paint === id);
+    $("garage-paint-name").textContent = "paint: " + PAINTS.find((p) => p.id === id)!.label;
+  };
+  row.replaceChildren(
+    ...paintsFor(car).map((p) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "swatch";
+      b.dataset.paint = p.id;
+      b.title = p.label;
+      b.setAttribute("aria-label", p.label);
+      b.style.background = p.swatch;
+      if (p.id === "stock") b.textContent = "★";
+      b.addEventListener("click", () => {
+        savePaint(car.id, p.id);
+        garage.setCar(car, p.id);
+        mark();
+        const label = p.id === "stock" ? "" : ` in ${p.label}`;
+        $("race-who").textContent = `${driver.name} in the #${car.number} · ${car.name}${label}`;
+        speak(driver, `paint-${p.id}`, $("car-say"));
+      });
+      return b;
+    }),
+  );
+  mark();
+}
+
 function showUpgrades(): void {
   const car = garageCar;
   if (!car) return;
