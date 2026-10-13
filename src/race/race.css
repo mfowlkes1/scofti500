@@ -1007,3 +1007,78 @@ body.in-seat .hud-speed {
     height: 30vh;
   }
 }
+
+/* the post-race interview: Heather and your driver side by side, a TV lower third under them */
+.interview {
+  background: radial-gradient(ellipse at 50% 30%, rgba(60, 20, 30, 0.75), rgba(8, 6, 18, 0.92));
+}
+.iv-bug {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  margin: 0;
+  padding: 4px 10px;
+  font: 800 13px/1 system-ui, sans-serif;
+  letter-spacing: 0.14em;
+  color: #fff;
+  background: #e0201f;
+  border-radius: 4px;
+}
+.iv-stage {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: clamp(0px, 2vw, 30px);
+  height: min(62vh, 560px);
+}
+.iv-stage img {
+  height: 100%;
+  width: auto;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.7)) brightness(0.8);
+  transition: filter 0.3s, transform 0.3s;
+}
+/* whoever's talking steps up into the light */
+.interview[data-talking="heather"] .iv-heather,
+.interview[data-talking="driver"] .iv-driver {
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.7)) brightness(1.05);
+  transform: scale(1.03);
+}
+.iv-bar {
+  width: min(720px, 94vw);
+  padding: 12px 18px 14px;
+  text-align: left;
+  background: rgba(8, 6, 18, 0.92);
+  border-top: 4px solid #e0201f;
+  border-radius: 0 0 10px 10px;
+}
+.iv-bar b {
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 3px 8px;
+  font: 800 12px/1 system-ui, sans-serif;
+  letter-spacing: 0.16em;
+  color: #fff;
+  background: #e0201f;
+  border-radius: 3px;
+}
+.interview[data-talking="driver"] .iv-bar b {
+  background: #b6ff00;
+  color: #0b0716;
+}
+.iv-bar span {
+  display: block;
+  font: 400 clamp(17px, 2.6vmin, 23px) / 1.3 "Lilita One", system-ui, sans-serif;
+  color: #fff;
+}
+.iv-who-line {
+  margin: 0;
+  font: 600 13px/1 system-ui, sans-serif;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.iv-skip {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+}

@@ -125,6 +125,55 @@ const HEATHER_UPDATES = [
 ];
 HEATHER_UPDATES.forEach((text, i) => (lines[`hea-update-${i + 1}`] = { who: "reporter", text }));
 export const HEATHER_UPDATE_COUNT = HEATHER_UPDATES.length;
+// the post-race interview: her question by how you finished, then her sign-off (a bit of nonsense)
+Object.assign(lines, {
+  "hea-q-win": { who: "reporter", text: "I'm here in victory lane with tonight's winner! Take us through that last lap. What was going through your head?" },
+  "hea-q-podium": { who: "reporter", text: "A podium finish tonight! You were right there at the end. How close did you get?" },
+  "hea-q-mid": { who: "reporter", text: "A solid run, but not the finish you wanted. What happened out there?" },
+  "hea-q-back": { who: "reporter", text: "A tough night at the office. Be honest with me. What went wrong?" },
+} satisfies Record<string, Line>);
+const HEATHER_WRAPS = [
+  "Well, there you have it, folks. Pure racing, pure attitude. Back to you in the booth!",
+  "Strong words from a strong driver. I'm Heather, trackside, and I need a shower. Back to you!",
+  "And that's why we love this series. Somebody get this girl a sponsor! Back to you!",
+  "I'll tell you what, the fans got their money's worth tonight. I'm Heather, signing off from pit road!",
+  "Fire, grit, and a little bit of chicken bone. That's racing, folks! Back to you in the booth.",
+];
+HEATHER_WRAPS.forEach((text, i) => (lines[`hea-wrap-${i + 1}`] = { who: "reporter", text }));
+export const HEATHER_WRAP_COUNT = HEATHER_WRAPS.length;
+// each driver's answer, in her own voice and attitude
+const INTERVIEW: Record<string, Record<"win" | "podium" | "mid" | "back", string>> = {
+  raven: {
+    win: "Ha! Honestly? I was thinking about the trophy. And how good it's gonna look on my shelf.",
+    podium: "Close enough to see her sweat. Next time, I'm not letting her off that easy.",
+    mid: "Car got a little loose and I lost some spots. It happens. I'll be laughing next week.",
+    back: "Everything that could go wrong, went wrong. But hey, I still looked good doing it.",
+  },
+  reba: {
+    win: "Nothing. I hit my marks and let them make the mistakes. They did.",
+    podium: "Close. Not close enough. I'll fix that.",
+    mid: "We didn't have the speed tonight. I'll find it.",
+    back: "A bad night. I don't plan on having another one.",
+  },
+  lynx: {
+    win: "Whoo! I was thinking don't crash, don't crash, don't crash. And I didn't! Mostly!",
+    podium: "So close! I could see the checkered flag waving at me! Next time it's mine!",
+    mid: "I had fun, I bumped some people, I'm sorry, kind of. Not really!",
+    back: "Okay, so that wall came out of nowhere. Totally the wall's fault.",
+  },
+  maia: {
+    win: "I was thinking get out of my way! And they did! Smart girls!",
+    podium: "Don't ask me how close. I'm still mad about it.",
+    mid: "Somebody put me in the wall and I want a word with her. A long word.",
+    back: "I don't want to talk about it. Okay, I'll talk about it. It was terrible!",
+  },
+  paige: {
+    win: "Honestly? I was picturing this exact moment. Cameras, lights, me. Perfect.",
+    podium: "Close enough for a great highlight reel. Not close enough for the trophy. Yet.",
+    mid: "Not my best night, but did you see that pass in turn three? Gorgeous.",
+    back: "Even the best shows have a bad episode. Tune in next week.",
+  },
+};
 // the announcer calls every lead change
 for (const r of RIVALS) lines[`ann-lead-${slug(r.name)}`] = { who: "announcer", text: `${r.name} takes the lead!` };
 for (const name of ["Raven", "Reba", "Lynx", "Maia", "Paige"]) lines[`ann-lead-${slug(name)}`] = { who: "announcer", text: `${name} takes the lead! Listen to this crowd!` };
@@ -427,6 +476,7 @@ for (const [driver, voice] of Object.entries(DRIVER_VOICES)) {
   CHATTER[driver].forEach((text, i) => (lines[`drv-${driver}-chat-${i + 1}`] = { who: "driver", text, label, voice }));
   lines[`drv-${driver}-copy`] = { who: "driver", text: COPY[driver], label, voice };
   if (BONES[driver]) lines[`drv-${driver}-bones`] = { who: "driver", text: BONES[driver], label, voice };
+  for (const [k, text] of Object.entries(INTERVIEW[driver] ?? {})) lines[`drv-${driver}-int-${k}`] = { who: "driver", text, label, voice, clean: true };
   const say = (key: string, text: string) => (lines[`drv-${driver}-${key}`] = { who: "driver", text, label, voice, clean: true });
   say("pick", "Let's go racing!");
   say("hello", HELLO[driver]);

@@ -14,7 +14,9 @@ import { planSpeed } from "./ai";
 import { fieldOf } from "./rivals";
 import { buildTrack, type TrackScene } from "./scene";
 import { buildCrews, type PitCrews } from "./crew";
-import { CHATTER_COUNT, HEATHER_UPDATE_COUNT, LINES, slug } from "./lines";
+import { CHATTER_COUNT, HEATHER_UPDATE_COUNT, HEATHER_WRAP_COUNT, LINES, slug } from "./lines";
+import { DRIVERS } from "../roster";
+import { savedSuit, suitUrl } from "../suit";
 import { createRadio, type Radio } from "./radio";
 import { startAudio, type RaceAudio } from "./sound";
 import { BOUNDS, HALF, L, TRACK, bankAt, frame, gap, heightAt, setTrack } from "./track";
@@ -296,6 +298,8 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     $("load-line").textContent = TRACK.night ? "rolling out under the lights…" : "rolling out into the heat…";
     finishedAt = 0;
     checkeredAt = 0;
+    interviewDone = false;
+    interviewing = false;
     paused = false;
     $("race-results").classList.remove("on");
     $("race-pause").classList.remove("on");
@@ -483,6 +487,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     if (!finishedAt && checkeredAt && !sess.qualifying && t - checkeredAt > 20000) finishedAt = t - 4500;
     if (finishedAt && t - finishedAt > (sess.qualifying ? 1500 : 4500) && !$("race-results").classList.contains("on")) {
       if (sess.qualifying) qualified();
+      else if (!interviewDone) interview();
       else results();
     }
   }
@@ -1122,6 +1127,52 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     $("race-results").classList.add("on");
     // the sheet opens with you in view
     $("rr-table").querySelector(".me")?.scrollIntoView({ block: "center" });
+  }
+
+  // ---- the interview: Heather and your driver, before the results (Michael, 2026-10-13) ----
+  let interviewDone = false;
+  let interviewing = false;
+  let interviewClip: HTMLAudioElement | null = null;
+  function interview(): void {
+    if (interviewing) return;
+    interviewing = true;
+    const s = sess!;
+    const pos = order(s).indexOf(s.player) + 1;
+    const how = pos === 1 ? "win" : pos <= 3 ? "podium" : pos <= Math.ceil(s.cars.length / 2) ? "mid" : "back";
+    const d = DRIVERS.find((x) => slug(x.name) === slug(setup?.driver ?? ""));
+    const meImg = $("iv-driver") as HTMLImageElement;
+    if (d) void suitUrl(d, savedSuit(d)).then((url) => (meImg.src = url));
+    $("iv-who").textContent = (setup?.driver ?? "").toUpperCase();
+    radio.clear();
+    $("race-interview").classList.add("on");
+    const steps = [`hea-q-${how}`, me(`int-${how}`), `hea-wrap-${1 + Math.floor(Math.random() * HEATHER_WRAP_COUNT)}`];
+    const done = () => {
+      if (!interviewing) return;
+      interviewing = false;
+      interviewDone = true;
+      interviewClip?.pause();
+      duckMusic(false);
+      $("race-interview").classList.remove("on");
+      results();
+    };
+    const play = (k: number) => {
+      if (!interviewing) return;
+      if (k >= steps.length) return void setTimeout(done, 900);
+      const line = LINES[steps[k]];
+      if (!line) return play(k + 1);
+      const heather = line.who === "reporter";
+      $("race-interview").dataset.talking = heather ? "heather" : "driver";
+      $("iv-label").textContent = heather ? "HEATHER · TRACKSIDE" : (setup?.driver ?? "").toUpperCase();
+      $("iv-text").textContent = line.text;
+      duckMusic(true);
+      interviewClip = new Audio(`${import.meta.env.BASE_URL}audio/radio/${steps[k]}.mp3`);
+      const next = () => setTimeout(() => play(k + 1), 350);
+      interviewClip.onended = next;
+      interviewClip.onerror = () => setTimeout(() => play(k + 1), 2500 + line.text.length * 45);
+      void interviewClip.play().catch(() => setTimeout(() => play(k + 1), 2500 + line.text.length * 45));
+    };
+    $("iv-skip").onclick = done;
+    play(0);
   }
 
   // ---- the end ----
