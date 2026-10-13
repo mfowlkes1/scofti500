@@ -13,6 +13,8 @@ export type Line = {
   voice?: string;
   /** not over the radio: no two-way-radio filter */
   clean?: boolean;
+  /** what the voice reads, when it gets the written words wrong (Si) */
+  spoken?: string;
 };
 
 const lines: Record<string, Line> = {
@@ -50,23 +52,101 @@ for (const r of RIVALS) {
 }
 for (const name of ["Madhuvan", "Allan", "Si"]) lines[`ann-win-${slug(name)}`] = { who: "announcer", text: `Checkered flag! ${name} wins it under the lights!` };
 
-// the drivers talk back. Madhuvan: "SCOFTI CON daisy", a sweet Southern voice Michael designed; Allan:
-// "Trey" and Si: "Adam - Robotic and Friendly", both from the ElevenLabs library (Michael, 2026-10-12)
+// ---- more radio: the crew chief, the spotter and the announcer talking you round ----
+Object.assign(lines, {
+  "crew-how-car": { who: "crew", text: "Talk to me. How's the car feel?" },
+  "crew-copy-good": { who: "crew", text: "Love to hear it. We won't touch a thing." },
+  "crew-copy-fix": { who: "crew", text: "Copy. We'll fix it on the next stop." },
+  "crew-closing": { who: "crew", text: "You're faster than the car in front. Reel 'em in." },
+  "crew-catching": { who: "crew", text: "Car behind's coming. Hit your marks." },
+  "crew-fastest": { who: "crew", text: "Fastest lap of the race! That's what I'm talkin' about!" },
+  "crew-halfway": { who: "crew", text: "Halfway. Car looks good, keep doing what you're doing." },
+  "crew-smooth": { who: "crew", text: "Breathe. Smooth is fast." },
+  "crew-go-get-em": { who: "crew", text: "Leader's right up the road. Go get 'em." },
+  "crew-passed-ok": { who: "crew", text: "That's alright. Plenty of laps left." },
+  "crew-great-stop": { who: "crew", text: "Great stop, boys! Great stop!" },
+  "crew-rubbing": { who: "crew", text: "Easy on the fenders. We need it in one piece." },
+  "crew-nice-move": { who: "crew", text: "Nice move!" },
+  "crew-lapped": { who: "crew", text: "Lapped cars coming up. Be patient." },
+  "spot-still-there": { who: "spotter", text: "Still there. Still there." },
+  "spot-clear-go": { who: "spotter", text: "You're clear! Go, go!" },
+  "spot-run": { who: "spotter", text: "Car behind's got a run on you." },
+  "spot-clean": { who: "spotter", text: "Clean pass. Good job." },
+  "spot-pit-road": { who: "spotter", text: "Pit road's clear, all the way down." },
+  "ann-green": { who: "announcer", text: "Green flag! Here they come at Martinsvale!" },
+  "ann-halfway": { who: "announcer", text: "We are halfway home here at Martinsvale!" },
+  "ann-white": { who: "announcer", text: "White flag! One lap to go!" },
+} satisfies Record<string, Line>);
+// the announcer calls every lead change
+for (const r of RIVALS) lines[`ann-lead-${slug(r.name)}`] = { who: "announcer", text: `${r.name} takes the lead!` };
+for (const name of ["Madhuvan", "Allan", "Si"]) lines[`ann-lead-${slug(name)}`] = { who: "announcer", text: `${name} takes the lead! Listen to this crowd!` };
+
+// ---- the drivers ----
+// Madhuvan: "SCOFTI CON daisy", a sweet Southern voice Michael designed; Allan: "Trey" and Si: "Adam -
+// Robotic and Friendly", both from the ElevenLabs library (Michael, 2026-10-12)
 const DRIVER_VOICES: Record<string, string> = { madhuvan: "VDCzHcQzuGC8lVW8vjyr", allan: "KHla1Z0y3pZPYrqfub7h", si: "Lo6JZOZvGYBxVhTFszLx" };
+// on the radio, the same words in each driver's voice
 const DRIVER_LINES: Record<string, string> = {
   green: "Here we go!",
   pit: "Copy. Coming in.",
   win: "Woo! That one's for the crew! Look at that infield!",
   podium: "Good run tonight. We'll be back.",
   wall: "I'm okay, I'm okay. Talk to me.",
+  "feel-good": "Car's great. Don't touch it.",
+  "feel-loose": "She's a little loose off the corners.",
+  "feel-tight": "Tight in the middle. Pushing up the track.",
+  "got-one": "Got 'em!",
+  passed: "Aw, they got me.",
+  lead: "We're leading? Let's go!",
+  tires: "Tires are falling off.",
+  draft: "Big draft here. Gonna slingshot 'em.",
+  white: "Last lap. Let's bring it home.",
+  thanks: "Thanks, guys. We'll get 'em next time.",
+  "pit-out": "Good stop, guys!",
+  fast: "Yeah! That one felt fast.",
+  rubbing: "Rubbin's racin'!",
+};
+// said on the pick screens, not over the radio: hello when you look at them, and what they think of
+// each car and paint
+const HELLO: Record<string, string> = {
+  madhuvan: "Hey there! Smile for the cameras... then I'm gone by turn three.",
+  allan: "Allan. Don't blink, you'll miss me.",
+  si: "Greetings! Si is ready. Bubble polished. Tires hungry.",
+};
+const CAR_TALK: Record<string, string> = {
+  "17-modern": "Ooh, the seventeen. Low, wide and mean.",
+  "43-eighties": "The forty-three! Old school. I love it.",
+  "3-muscle": "The number three. That thing is pure muscle.",
+  "7-owl": "The seven. Night owl. Spooky fast.",
+};
+const PAINT_TALK: Record<string, string> = {
+  stock: "Stock paint. The real deal.",
+  red: "Red. Fast and loud.",
+  blue: "Blue. Cool as ice.",
+  yellow: "Yellow! They'll see us coming.",
+  orange: "Orange. Like a traffic cone, only faster.",
+  green: "Green. The color of money.",
+  purple: "Purple. Royalty.",
+  pink: "Pink! Oh, I love that.",
+  white: "White. Clean and simple.",
+  black: "Black. All business.",
+  "woods-camo": "Woods camo. Huntin' season.",
+  "white-camo": "White camo. Now that's badass.",
 };
 for (const [driver, voice] of Object.entries(DRIVER_VOICES)) {
   const label = driver.toUpperCase();
-  for (const [k, text] of Object.entries(DRIVER_LINES)) lines[`drv-${driver}-${k}`] = { who: "driver", text, label, voice };
-  // said when you pick them, not on the radio
   const name = driver[0].toUpperCase() + driver.slice(1);
-  lines[`drv-${driver}-pick`] = { who: "driver", text: `${name}. Let's go racing.`, label, voice, clean: true };
+  for (const [k, text] of Object.entries(DRIVER_LINES)) lines[`drv-${driver}-${k}`] = { who: "driver", text, label, voice };
+  const say = (key: string, text: string) => (lines[`drv-${driver}-${key}`] = { who: "driver", text, label, voice, clean: true });
+  say("pick", `${name}. Let's go racing.`);
+  say("hello", HELLO[driver]);
+  for (const [car, text] of Object.entries(CAR_TALK)) say(`car-${car}`, text);
+  for (const [paint, text] of Object.entries(PAINT_TALK)) say(`paint-${paint}`, text);
 }
+
+// the voices read "Si" as "see"; it's said like "sigh" (Michael, 2026-10-12)
+const SAY_SI = "Sigh";
+for (const l of Object.values(lines)) if (/\bSi\b/.test(l.text)) l.spoken = l.text.replace(/\bSi\b/g, SAY_SI);
 
 export const LINES = lines;
 

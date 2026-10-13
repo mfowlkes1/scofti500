@@ -6,11 +6,12 @@ import "./race/race.css";
 import { PAINTS, paintedUrl, savePaint, savedPaint } from "./paint";
 import { UPGRADES, MAX_LEVEL, buy, cash, levels, nextCost, tuned } from "./garage";
 import { createGarage } from "./garageRoom";
+import { musicForRace, musicOn, setMusic, startMusic } from "./music";
 import { createPicker } from "./pick";
 import { LINES, slug } from "./race/lines";
 import { STOCK } from "./race/physics";
 import { createRace } from "./race/race";
-import { CARS, DRIVERS, TRACKS, carUrl, faceUrl, type Car, type Driver } from "./roster";
+import { CARS, DRIVERS, TRACKS, carUrl, faceUrl, fullUrl, type Car, type Driver } from "./roster";
 
 // Flow: title → PICK YOUR DRIVER → PICK YOUR CAR → PIT GARAGE → PICK YOUR TRACK → the race → back to
 // the pit garage. Backspace and the on-screen BACK go back; Escape belongs to the arcade.
@@ -25,7 +26,39 @@ function show(next: Screen): void {
   screen = next;
   document.body.dataset.screen = next;
   garage.show(next === "garage");
+  musicForRace(next === "race");
+  if (next === "driver") speak(drivers.current(), "hello", $("driver-say"));
 }
+
+// The drivers talk on the pick screens: hello when you look at one, then what they think of each car
+// and paint, in a speech bubble and out loud (their recordings from tools/voices.ts).
+let clip: HTMLAudioElement | null = null;
+let bubbleTimer = 0;
+function speak(d: Driver, what: string, bubble: HTMLElement): void {
+  const key = `drv-${slug(d.name)}-${what}`;
+  const line = LINES[key];
+  if (!line) return;
+  clip?.pause();
+  clip = new Audio(`${import.meta.env.BASE_URL}audio/radio/${key}.mp3`);
+  void clip.play().catch(() => null);
+  for (const b of document.querySelectorAll(".say-bubble")) b.classList.remove("on");
+  bubble.textContent = line.text;
+  void bubble.offsetWidth;
+  bubble.classList.add("on");
+  clearTimeout(bubbleTimer);
+  bubbleTimer = setTimeout(() => bubble.classList.remove("on"), 1800 + line.text.length * 55);
+}
+
+// the music starts on the first tap or key (browsers allow no sound before one); ♪ turns it off and on
+addEventListener("pointerdown", startMusic, { once: true });
+addEventListener("keydown", startMusic, { once: true });
+const musicBtn = $("music");
+musicBtn.classList.toggle("off", !musicOn());
+musicBtn.addEventListener("click", () => {
+  startMusic();
+  setMusic(!musicOn());
+  musicBtn.classList.toggle("off", !musicOn());
+});
 
 // ✕ back to the arcade shelf: /arcade/scofti500/ → /arcade/
 ($("to-arcade") as HTMLAnchorElement).href = import.meta.env.BASE_URL.replace(/scofti500\/?$/, "");
@@ -37,14 +70,20 @@ const drivers = createPicker<Driver>({
   items: DRIVERS,
   storageKey: "scofti500:driver",
   img: faceUrl,
+  hero: fullUrl,
   role: (d) => d.role,
   sub: (d) => d.team,
   line: (d) => d.line,
+  // say hello as each one comes up
+  onShow: (d) => {
+    if (screen === "driver") speak(d, "hello", $("driver-say"));
+  },
   onGo: (d) => {
     driver = d;
-    // she says her line as you pick her (only drivers with a voice so far)
-    if (LINES[`drv-${slug(d.name)}-pick`]) void new Audio(`${import.meta.env.BASE_URL}audio/radio/drv-${slug(d.name)}-pick.mp3`).play().catch(() => null);
+    // they come along to the car screen, small in the corner, and say their line as you pick them
+    ($("car-driver") as HTMLImageElement).src = faceUrl(d);
     show("car");
+    speak(d, "pick", $("car-say"));
   },
 });
 
@@ -65,7 +104,10 @@ const cars = createPicker<Car>({
   line: (c) => c.line,
   badge: (c) => c.number,
   accent: (c) => c.accent,
-  onShow: (c, hero, card) => showPaints(c, hero, card),
+  onShow: (c, hero, card) => {
+    showPaints(c, hero, card);
+    if (screen === "car") speak(driver, `car-${c.id}`, $("car-say"));
+  },
   onGo: (c) => {
     const paint = PAINTS.find((p) => p.id === paintOf(c))!;
     const colour = paint.id === "stock" ? "" : ` in ${paint.label}`;
@@ -115,6 +157,7 @@ function showPaints(car: Car, hero: HTMLImageElement, card: HTMLImageElement): v
       b.addEventListener("click", () => {
         savePaint(car.id, p.id);
         applyPaint(car, hero, card);
+        speak(driver, `paint-${p.id}`, $("car-say"));
       });
       return b;
     }),

@@ -83,7 +83,7 @@ export function createRadio(box: HTMLElement): Radio {
       return;
     }
     if (!synth) return void setTimeout(done, 900 + line.text.length * 30);
-    const u = new SpeechSynthesisUtterance(line.text);
+    const u = new SpeechSynthesisUtterance((line.key && LINES[line.key]?.spoken) || line.text);
     const v = VOICE[line.who];
     u.rate = v.rate;
     u.pitch = v.pitch;

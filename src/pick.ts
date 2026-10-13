@@ -12,6 +12,8 @@ export type PickerOptions<T extends PickerItem> = {
   items: T[];
   storageKey: string;
   img: (t: T) => string;
+  /** the big picture, when it isn't the small card's (a driver head to toe) */
+  hero?: (t: T) => string;
   role: (t: T) => string;
   sub: (t: T) => string;
   line: (t: T) => string;
@@ -36,7 +38,7 @@ export function createPicker<T extends PickerItem>(o: PickerOptions<T>): Picker<
   }
 
   // warm the art so switching is instant
-  for (const t of o.items) new Image().src = o.img(t);
+  for (const t of o.items) new Image().src = (o.hero ?? o.img)(t);
 
   const cards = o.items.map((t, i) => {
     const b = document.createElement("button");
@@ -55,7 +57,7 @@ export function createPicker<T extends PickerItem>(o: PickerOptions<T>): Picker<
   function refresh(): void {
     const t = o.items[cur];
     const img = $(`${o.prefix}-img`) as HTMLImageElement;
-    img.src = o.img(t);
+    img.src = (o.hero ?? o.img)(t);
     // replay the pop-in each time
     img.classList.remove("pop");
     void img.offsetWidth;

@@ -11,6 +11,7 @@
   <section id="title-screen" class="screen">
     <h1 class="title"><span class="mark">SCOFTI</span><span class="five" data-t="500"><span class="fill">500</span></span></h1>
     <a id="to-arcade" href="/arcade/" aria-label="Back to the arcade">✕</a>
+    <button id="music" type="button" aria-label="Music on or off">♪</button>
     <button id="race-now" class="go-btn" type="button">RACE NOW</button>
   </section>
 
@@ -20,7 +21,10 @@
       <h2 class="pick-title">PICK YOUR DRIVER</h2>
     </div>
     <div class="pick-stage">
-      <img id="driver-img" class="hero-img" alt="" />
+      <div class="driver-hero">
+        <img id="driver-img" class="hero-img" alt="" />
+        <p id="driver-say" class="say-bubble"></p>
+      </div>
       <div class="pick-info">
         <span id="driver-role" class="pick-role"></span>
         <h3 id="driver-name" class="pick-name"></h3>
@@ -41,6 +45,10 @@
       <div class="hero-box">
         <img id="car-img" class="hero-img" alt="" title="Tap to turn the car" />
         <div class="view-row"><span class="turn-hint">↻ tap to turn</span><span id="car-views" class="view-dots"></span></div>
+        <div class="driver-chip">
+          <img id="car-driver" alt="" />
+          <p id="car-say" class="say-bubble"></p>
+        </div>
       </div>
       <div class="pick-info">
         <span id="car-role" class="pick-role"></span>
@@ -72,6 +80,7 @@
   </section>
 
   <section id="track-screen" class="screen">
+    <button class="back-btn track-back" type="button" data-back>◀ BACK</button>
     <p class="race-flag">PICK YOUR TRACK</p>
     <p id="track-name" class="track-name"></p>
     <span id="track-kind" class="pick-role"></span>
@@ -88,7 +97,6 @@
     </div>
     <p id="mode-line" class="race-soon"></p>
     <button id="track-go" class="go-btn go-long" type="button">GO RACING ▶</button>
-    <button class="back-btn" type="button" data-back>◀ BACK</button>
   </section>
 
   <section id="race-screen" class="screen">

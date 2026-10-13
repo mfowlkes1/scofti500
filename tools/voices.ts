@@ -39,7 +39,7 @@ for (const key of wanted) {
       method: "POST",
       headers: { "xi-api-key": KEY, "Content-Type": "application/json", Accept: "audio/mpeg" },
       body: JSON.stringify({
-        text: line.text,
+        text: line.spoken ?? line.text,
         model_id: "eleven_multilingual_v2",
         voice_settings: { stability: v.stability, similarity_boost: 0.8, style: v.style, use_speaker_boost: true },
       }),

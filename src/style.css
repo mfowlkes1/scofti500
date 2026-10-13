@@ -116,7 +116,8 @@ body:not([data-screen="title"]) .welcome {
 }
 
 /* ✕ back to the arcade */
-#to-arcade {
+#to-arcade,
+#music {
   position: fixed;
   top: max(14px, env(safe-area-inset-top));
   right: max(14px, env(safe-area-inset-right));
@@ -130,6 +131,14 @@ body:not([data-screen="title"]) .welcome {
   background: rgba(0, 0, 0, 0.45);
   border: 2px solid rgba(255, 255, 255, 0.5);
   border-radius: 50%;
+}
+#music {
+  right: calc(max(14px, env(safe-area-inset-right)) + 54px);
+  padding: 0;
+}
+#music.off {
+  opacity: 0.45;
+  text-decoration: line-through;
 }
 
 /* the big green-flag button */
@@ -227,10 +236,70 @@ body[data-screen="car"] #car-screen {
   background: var(--night);
   transform: skewX(-4deg);
 }
-/* the driver is a portrait, the car a wide shot */
+/* the driver head to toe, the car a wide shot */
+.driver-hero {
+  position: relative;
+  justify-self: center;
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
 #driver-img {
-  width: min(100%, 520px);
+  width: auto;
+  max-width: 100%;
+  height: min(100%, 74vh);
+  object-fit: contain;
+}
+
+/* what the driver says, in a speech bubble */
+.say-bubble {
+  position: absolute;
+  top: 4%;
+  left: 72%;
+  width: max-content;
+  max-width: min(15em, 44vw);
+  margin: 0;
+  padding: 0.55em 0.85em;
+  font: 700 clamp(14px, 2.2vmin, 19px) / 1.25 system-ui, sans-serif;
+  color: var(--night);
+  background: #fff;
+  border-radius: 16px 16px 16px 4px;
+  box-shadow: 0 0 0 3px var(--night), 0 0.5rem 1.4rem rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transform: scale(0.7);
+  transform-origin: 0 100%;
+  transition: opacity 0.2s, transform 0.25s cubic-bezier(0.3, 1.6, 0.6, 1);
+  pointer-events: none;
+}
+.say-bubble.on {
+  opacity: 1;
+  transform: scale(1);
+}
+/* the driver, small, over the car: they talk about each car and paint */
+.hero-box {
+  position: relative;
+}
+.driver-chip {
+  position: absolute;
+  top: -12px;
+  left: -6px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  pointer-events: none;
+}
+#car-driver {
+  width: clamp(54px, 9vmin, 84px);
   aspect-ratio: 1;
+  object-fit: cover;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px var(--night), 0 0.4rem 1rem rgba(0, 0, 0, 0.5);
+}
+.driver-chip .say-bubble {
+  position: static;
+  margin-top: 6px;
 }
 #car-img {
   aspect-ratio: 2 / 1;
@@ -386,7 +455,10 @@ body[data-screen="car"] #car-screen {
     gap: 18px;
   }
   #driver-img {
-    width: min(70%, 420px);
+    height: min(44vh, 460px);
+  }
+  .say-bubble {
+    left: 58%;
   }
   #car-img {
     width: 92%;
@@ -405,9 +477,19 @@ body[data-screen="car"] #car-screen {
 }
 body[data-screen="track"] #track-screen {
   display: grid;
-  place-content: center;
+  /* safe: on a short screen it scrolls instead of cutting off the top and bottom */
+  place-content: safe center;
   gap: 14px;
   justify-items: center;
+  overflow-y: auto;
+  padding: 64px 16px 24px;
+}
+/* always in the top corner, however tall the page */
+.track-back {
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top));
+  left: max(16px, env(safe-area-inset-left));
+  z-index: 2;
 }
 .race-flag {
   margin: 0;

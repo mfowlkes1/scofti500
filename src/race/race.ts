@@ -343,6 +343,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     warned = { half: false, gone: false };
     lastPos = sess.entries.length;
     posSaidAt = 0;
+    chat = freshChat();
     // a fresh loop for every race, so a quick RACE AGAIN can never leave two running
     running = true;
     last = performance.now();
@@ -546,6 +547,28 @@ export function createRace(opts: { onDone(again: boolean): void }) {
   let warned = { half: false, gone: false };
   let lastPos = 8;
   let posSaidAt = 0;
+  // the rest of the radio chatter, with when each thing was last said so it never nags
+  const freshChat = () => ({
+    leader: -1,
+    leadAt: 0,
+    fastest: Infinity,
+    fastAt: 0,
+    alongside: 0,
+    stillSaid: false,
+    rubAt: 0,
+    draftFor: 0,
+    draftAt: 0,
+    droppedAt: 0,
+    trendAt: 0,
+    ahead: Infinity,
+    behind: Infinity,
+    closeAt: 0,
+    catchAt: 0,
+    goGetSaid: false,
+    lappedAt: 0,
+    stop: 99,
+  });
+  let chat = freshChat();
 
   function spotter(): void {
     if (!sess || sess.phase === "pace" || finishedAt) return;
@@ -561,13 +584,21 @@ export function createRace(opts: { onDone(again: boolean): void }) {
       }
     }
     const now = performance.now();
+    if ((high || low) && !chat.alongside) chat.alongside = now;
+    if (chat.alongside && (high || low) && now - chat.alongside > 3500 && !chat.stillSaid) {
+      chat.stillSaid = true;
+      radio.say("spot-still-there");
+    }
     if (high && low && !(spot.high && spot.low)) radio.say("spot-three-wide");
     else if (high && !spot.high && !low) radio.say("spot-car-high");
     else if (low && !spot.low && !high) radio.say("spot-car-low");
     if ((spot.high || spot.low) && !high && !low) spot.clearAt = now + 350;
     if (spot.clearAt && now > spot.clearAt && !high && !low) {
-      radio.say("spot-clear");
+      // after a long fight side by side, a bit more excited
+      radio.say(chat.stillSaid ? "spot-clear-go" : "spot-clear");
       spot.clearAt = 0;
+      chat.alongside = 0;
+      chat.stillSaid = false;
     }
     if (high || low) spot.clearAt = 0;
     spot.high = high;
@@ -579,11 +610,14 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     const name = (i: number) => s.entries[i].name;
     for (const e of s.events) {
       if (e.type === "green") {
+        radio.say("ann-green");
         radio.say("spot-green");
         radio.say(me("green"));
         audio?.roar();
       } else if (e.type === "white") {
+        radio.say("ann-white");
         radio.say("crew-white");
+        radio.say(me("white"));
       } else if (e.type === "checkered") {
         const win = s.finishOrder[0];
         radio.say(`ann-win-${slug(name(win))}`);
@@ -592,18 +626,45 @@ export function createRace(opts: { onDone(again: boolean): void }) {
         finishedAt = performance.now();
         const p = e.pos;
         radio.say(p === 1 ? "crew-win" : p <= 3 ? `crew-podium-${p}` : "crew-next-time");
-        if (p <= 3) radio.say(me(p === 1 ? "win" : "podium"));
-        if (p <= 3) radio.say(me(p === 1 ? "win" : "podium"));
+        radio.say(me(p === 1 ? "win" : p <= 3 ? "podium" : "thanks"));
       } else if (e.type === "lap" && e.car === s.player) {
         const left = s.laps - s.crossed[s.player];
         const pos = order(s).indexOf(s.player) + 1;
+        const done = s.crossed[s.player];
         if (left > 1 && (left % 5 === 0 || left === 3)) radio.say(`crew-togo-${left}`);
+        if (s.laps >= 10 && done === Math.floor(s.laps / 2)) {
+          radio.say("ann-halfway");
+          radio.say("crew-halfway");
+        }
+        // a couple of laps in, the crew chief asks how it feels: worn fronts push (tight), worn rears
+        // come round (loose)
+        if (done === Math.min(3, s.laps - 2) && done >= 2) {
+          const t = s.cars[s.player].tires;
+          const tilt = (t[0].wear + t[1].wear - t[2].wear - t[3].wear) / 2;
+          const feel = tilt > 0.012 ? "tight" : tilt < -0.012 ? "loose" : "good";
+          radio.say("crew-how-car");
+          radio.say(me(`feel-${feel}`));
+          radio.say(feel === "good" ? "crew-copy-good" : "crew-copy-fix");
+        }
+        // fastest lap of the race so far
+        const lap = s.lastLap[s.player];
+        const others = Math.min(...s.bestLap.filter((_, i) => i !== s.player));
+        if (done >= 2 && lap > 0 && lap === s.bestLap[s.player] && lap < others && lap < chat.fastest && performance.now() - chat.fastAt > 30000) {
+          chat.fastest = lap;
+          chat.fastAt = performance.now();
+          radio.say(me("fast"));
+          radio.say("crew-fastest");
+        }
       } else if (e.type === "pit-in" && e.car === s.player) {
         radio.say("crew-pit-in");
+        radio.say("spot-pit-road");
       } else if (e.type === "pit-stopped" && e.car === s.player) {
+        chat.stop = e.time;
         radio.say("crew-four-tires");
       } else if (e.type === "pit-out" && e.car === s.player) {
-        radio.say("crew-pit-out");
+        // a quick stop (lots of tapping) gets the crew fired up
+        radio.say(chat.stop < 11 ? "crew-great-stop" : "crew-pit-out");
+        radio.say(me("pit-out"));
         warned = { half: false, gone: false };
         $("hud-pit").classList.remove("on");
       } else if (e.type === "pit-in" && Math.random() < 0.4) {
@@ -618,21 +679,85 @@ export function createRace(opts: { onDone(again: boolean): void }) {
       wallSaidAt = performance.now();
       radio.say(me("wall"));
       radio.say("spot-wall");
+      radio.say("crew-smooth");
     }
     if (mine.wear > 0.45 && !warned.half) {
       warned.half = true;
       radio.say("crew-tires-half");
     } else if (mine.wear > 0.72 && !warned.gone && s.laps - s.crossed[s.player] > 3) {
       warned.gone = true;
+      radio.say(me("tires"));
       radio.say("crew-tires-gone");
     }
-    const pos = order(s).indexOf(s.player) + 1;
+    const ord = order(s);
+    const pos = ord.indexOf(s.player) + 1;
     const now = performance.now();
-    if (pos < lastPos && now - posSaidAt > 9000 && s.crossed[s.player] >= 0) {
+    const racing = !autopilot(s) && s.crossed[s.player] >= 0;
+    if (pos < lastPos && now - posSaidAt > 9000 && racing) {
       posSaidAt = now;
+      if (pos === 1) radio.say(me("lead"));
+      else if (Math.random() < 0.5) radio.say(me("got-one"));
+      else radio.say(Math.random() < 0.5 ? "spot-clean" : "crew-nice-move");
       radio.say(pos === 1 ? "crew-lead" : `crew-pos-${pos}`);
+    } else if (pos > lastPos && now - chat.droppedAt > 20000 && racing) {
+      chat.droppedAt = now;
+      radio.say(Math.random() < 0.5 ? me("passed") : "crew-passed-ok");
     }
     lastPos = pos;
+
+    // the announcer calls every new leader (the first one at the green goes without saying)
+    const leader = ord[0];
+    if (leader !== chat.leader) {
+      if (chat.leader >= 0 && now - chat.leadAt > 8000) radio.say(`ann-lead-${slug(name(leader))}`);
+      chat.leader = leader;
+      chat.leadAt = now;
+    }
+
+    // trading paint with another car
+    if (mine.bump > 1.5 && now - chat.rubAt > 15000) {
+      chat.rubAt = now;
+      radio.say(Math.random() < 0.5 ? me("rubbing") : "crew-rubbing");
+    }
+
+    // a long tow in the draft (about two and a half seconds)
+    chat.draftFor = mine.draft > 0.22 ? chat.draftFor + 1 : 0;
+    if (chat.draftFor > 150 && now - chat.draftAt > 45000) {
+      chat.draftAt = now;
+      radio.say(me("draft"));
+    }
+
+    // every few seconds: are we reeling in the car ahead, is the one behind reeling us in, and are
+    // there lapped cars up the road
+    if (now - chat.trendAt > 6000 && racing) {
+      chat.trendAt = now;
+      const at = progress(s, s.player);
+      const ahead = pos > 1 ? progress(s, ord[pos - 2]) - at : Infinity;
+      const behind = pos < ord.length ? at - progress(s, ord[pos]) : Infinity;
+      if (ahead < 70 && chat.ahead - ahead > 8 && now - chat.closeAt > 40000) {
+        chat.closeAt = now;
+        if (pos === 2 && !chat.goGetSaid) {
+          chat.goGetSaid = true;
+          radio.say("crew-go-get-em");
+        } else radio.say("crew-closing");
+      }
+      if (behind < 40 && chat.behind - behind > 6 && now - chat.catchAt > 40000) {
+        chat.catchAt = now;
+        radio.say(behind < 20 ? "spot-run" : "crew-catching");
+      }
+      chat.ahead = ahead;
+      chat.behind = behind;
+      if (now - chat.lappedAt > 60000) {
+        for (let i = 0; i < s.cars.length; i++) {
+          if (i === s.player || s.finishOrder.includes(i)) continue;
+          const g = gap(mine.s, s.cars[i].s);
+          if (g > 0 && g < 90 && at - progress(s, i) > L / 2) {
+            chat.lappedAt = now;
+            radio.say("crew-lapped");
+            break;
+          }
+        }
+      }
+    }
   }
 
   // ---- the HUD ----
