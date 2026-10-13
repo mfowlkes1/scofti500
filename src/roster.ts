@@ -36,13 +36,6 @@ export type Car = {
 
 export const DRIVERS: Driver[] = [
   {
-    id: "madhuvan",
-    name: "madhuvan",
-    team: "Scofti Racing",
-    role: "the closer",
-    line: "Smiles on the grid. Gone by turn three.",
-  },
-  {
     id: "raven",
     name: "raven",
     team: "Scofti Racing",

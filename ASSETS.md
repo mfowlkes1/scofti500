@@ -4,7 +4,7 @@ Everything ships with the game; nothing loads from other sites.
 
 ## art
 - **Car models** (`public/models/car-*.glb`): Meshy, made from Michael's car sheets (`art/reference/`), lettering repainted by `art/meshy/fix-lettering.mjs`. The car pictures in `public/img/cars/` are from the same sheets.
-- **Drivers** (`public/img/drivers/`): cut from Michael's character sheets (`art/reference/madhuvan-*`, `raven-sheet.png`, `reba-sheet.png`).
+- **Drivers** (`public/img/drivers/`): cut from Michael's character sheets (`raven-sheet.png`, `reba-sheet.png`).
 - **Title art and covers** (`public/img/welcome-*.jpg`, `cover.jpg`, `cover-portrait.jpg`): Michael's.
 - **Big-screen ads** (`public/img/promo/`): art from Scofti's own games (Offroad, Winter Games, Sloth Splash, Void Signal) and the ScofTV crew faces, copied from scofti-winter-games.
 - Everything else in 3D (the tracks, stands, infield, crews, campers) is built in code.
@@ -15,8 +15,8 @@ Everything ships with the game; nothing loads from other sites.
   - spotter: "Chris" (iP95p4xoKVk53GoZ742B), ElevenLabs library
   - crew chief: "Austin Knox" (Bj9UqZbhQsanLzgalpEG), ElevenLabs library
   - announcer: Michael's Voice Design announcer (fBRhBCYyrzF7JBCdE4Nt)
-  - Madhuvan: "SCOFTI CON daisy", Michael's Voice Design (VDCzHcQzuGC8lVW8vjyr)
-  - Raven, Reba: voices still to pick (their lines are read by the browser's own voice until then)
+  - Reba: "SCOFTI CON daisy", Michael's Voice Design (VDCzHcQzuGC8lVW8vjyr)
+  - Raven: voice still to pick (their lines are read by the browser's own voice until then)
 - **Engine, field, tires, wall, crowd, air guns** (`src/race/sound.ts`): made in code with Web Audio.
 
 ## fonts (bundled through Fontsource, SIL Open Font License)

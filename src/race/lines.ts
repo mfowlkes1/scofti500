@@ -50,7 +50,7 @@ for (const r of RIVALS) {
   lines[`crew-pitting-${id}`] = { who: "crew", text: `${r.name} is pitting.` };
   lines[`ann-win-${id}`] = { who: "announcer", text: `Checkered flag! ${r.name} wins at Martinsvale!` };
 }
-for (const name of ["Madhuvan", "Raven", "Reba"]) lines[`ann-win-${slug(name)}`] = { who: "announcer", text: `Checkered flag! ${name} wins it under the lights!` };
+for (const name of ["Raven", "Reba"]) lines[`ann-win-${slug(name)}`] = { who: "announcer", text: `Checkered flag! ${name} wins it under the lights!` };
 
 // ---- more radio: the crew chief, the spotter and the announcer talking you round ----
 Object.assign(lines, {
@@ -85,7 +85,7 @@ Object.assign(lines, {
   "crew-win-hotlanta": { who: "crew", text: "You won it! You won Hotlanta! Burn it down, kid!" },
 } satisfies Record<string, Line>);
 for (const r of RIVALS) lines[`ann-win-${slug(r.name)}-hotlanta`] = { who: "announcer", text: `Checkered flag! ${r.name} wins at Hotlanta!` };
-for (const name of ["Madhuvan", "Raven", "Reba"]) lines[`ann-win-${slug(name)}-hotlanta`] = { who: "announcer", text: `Checkered flag! ${name} wins it at Hotlanta!` };
+for (const name of ["Raven", "Reba"]) lines[`ann-win-${slug(name)}-hotlanta`] = { who: "announcer", text: `Checkered flag! ${name} wins it at Hotlanta!` };
 // qualifying (race night): the warm-up, the lap, and how it went
 Object.assign(lines, {
   "crew-qual-warm": { who: "crew", text: "Warm-up lap. Get some heat in those tires. Then it's one lap, all you've got." },
@@ -98,7 +98,7 @@ Object.assign(lines, {
 } satisfies Record<string, Line>);
 // the announcer calls every lead change
 for (const r of RIVALS) lines[`ann-lead-${slug(r.name)}`] = { who: "announcer", text: `${r.name} takes the lead!` };
-for (const name of ["Madhuvan", "Raven", "Reba"]) lines[`ann-lead-${slug(name)}`] = { who: "announcer", text: `${name} takes the lead! Listen to this crowd!` };
+for (const name of ["Raven", "Reba"]) lines[`ann-lead-${slug(name)}`] = { who: "announcer", text: `${name} takes the lead! Listen to this crowd!` };
 // the pack (Hotlanta's full field): who leads, who wins, who's pitting
 for (const r of PACK_RIVALS) {
   const id = slug(r.name);
@@ -108,10 +108,9 @@ for (const r of PACK_RIVALS) {
 }
 
 // ---- the drivers ----
-// Madhuvan: "SCOFTI CON daisy", a voice Michael designed (2026-10-12). Raven and Reba (Michael,
-// 2026-10-13, when the series went all women): voices still to pick; until then their lines aren't
-// recorded
-const DRIVER_VOICES: Record<string, string> = { madhuvan: "VDCzHcQzuGC8lVW8vjyr", raven: "", reba: "" };
+// The series is all women (Michael, 2026-10-13). Reba: "SCOFTI CON daisy", a voice Michael designed
+// (it was Madhuvan's, before she left). Raven: voice still to pick; until then her lines aren't recorded
+const DRIVER_VOICES: Record<string, string> = { raven: "", reba: "VDCzHcQzuGC8lVW8vjyr" };
 // on the radio, the same words in each driver's voice
 const DRIVER_LINES: Record<string, string> = {
   green: "Here we go!",
@@ -136,25 +135,18 @@ const DRIVER_LINES: Record<string, string> = {
 // said on the pick screens, not over the radio: hello when you look at them, and what they think of
 // each car and paint
 const HELLO: Record<string, string> = {
-  madhuvan: "Strap in, ladies. I don't race for second.",
   raven: "Hope you brought a fast car. You're gonna need it.",
   reba: "Don't get comfortable. I'm here to win.",
 };
-// each driver's own take on each car: Madhuvan a badass with a mean streak (Michael, 2026-10-13: "not
-// like an innocent girl"), Raven cocky and laughing at you, Reba the ice queen. The 7 is a nod to the old owl car, and
-// Madhuvan winks about it (Michael, 2026-10-12)
+// each driver's own take on each car: Raven cocky and laughing at you, Reba the ice queen; tough, never
+// sweet (Michael, 2026-10-13: "not like an innocent girl"). The 7 is a nod to the old owl car, and
+// Raven winks about it (Michael: a polite nod to Alan Kulwicki)
 const CAR_TALK: Record<string, Record<string, string>> = {
-  madhuvan: {
-    "17-modern": "The seventeen. Low, wide and mean. Just like me.",
-    "43-eighties": "The forty-three. Old school muscle. I'll make it scream.",
-    "3-muscle": "The three. All that muscle... let's see if it can handle me.",
-    "7-owl": "Number seven, the owl car. Hooters? I brought my own.",
-  },
   raven: {
     "17-modern": "The seventeen. Sleek and mean. I like it.",
     "43-eighties": "The forty-three. Old school. Let's teach the new kids something.",
     "3-muscle": "The three. That's a lot of motor. Good thing I can handle it.",
-    "7-owl": "The seven. Night owl. Funny, they call me that too.",
+    "7-owl": "Number seven, the owl car. Hooters? I brought my own.",
   },
   reba: {
     "17-modern": "The seventeen. Clean lines. I'll make it fast.",
@@ -166,18 +158,6 @@ const CAR_TALK: Record<string, Record<string, string>> = {
 // on the radio when it's been quiet a while, so your driver keeps talking all race (Michael,
 // 2026-10-12: "she needs to be talkative on the radio"), and how each one answers the crew chief
 const CHATTER: Record<string, string[]> = {
-  madhuvan: [
-    "This thing's a rocket. And I'm the one holding the match.",
-    "Somebody tell the girls up front I'm comin'. And I ain't slowing down.",
-    "Is it hot in here, or is it just me? ...It's me.",
-    "Every one of these girls is about to learn my name.",
-    "I don't lift. I don't brake. I don't apologize.",
-    "Wall's close. I like it close.",
-    "They can watch their mirrors all they want. I'm still coming.",
-    "Hold my line? I own this line.",
-    "That last corner? Flat out. Try and keep up.",
-    "Nice guys finish second. I'm not nice.",
-  ],
   raven: [
     "Ha! Did you see that? They never saw me coming.",
     "I'm just getting warmed up.",
@@ -199,20 +179,20 @@ const CHATTER: Record<string, string[]> = {
     "Let them race each other. I'm racing the clock.",
   ],
 };
-const COPY: Record<string, string> = { madhuvan: "Copy. Now let me drive.", raven: "Copy that.", reba: "Understood." };
+const COPY: Record<string, string> = { raven: "Copy that.", reba: "Understood." };
 export const CHATTER_COUNT: Record<string, number> = Object.fromEntries(Object.entries(CHATTER).map(([d, l]) => [d, l.length]));
 const PAINT_TALK: Record<string, string> = {
-  stock: "Stock paint. The real deal.",
-  red: "Red. Fast and loud.",
-  blue: "Blue. Cool as ice.",
-  yellow: "Yellow! They'll see us coming.",
-  orange: "Orange. Like a traffic cone, only faster.",
-  green: "Green. The color of money.",
-  purple: "Purple. Royalty.",
-  pink: "Pink! Oh, I love that.",
-  white: "White. Clean and simple.",
-  black: "Black. All business.",
-  "woods-camo": "Woods camo. Huntin' season.",
+  stock: "Stock. Let 'em know who's driving.",
+  red: "Red. So they know I'm dangerous.",
+  blue: "Blue. Cold as ice on a restart.",
+  yellow: "Yellow. They'll see me coming. Won't matter.",
+  orange: "Orange. Hot as hell.",
+  green: "Green. The color of my prize money.",
+  purple: "Purple. Royalty. Bow down.",
+  pink: "Pink. And I'll still beat every one of 'em.",
+  white: "White. Clean... for now.",
+  black: "Black. All business. No mercy.",
+  "woods-camo": "Woods camo. Huntin' season, and they're the deer.",
   "white-camo": "White camo. Now that's badass.",
 };
 // a driver's own words in place of the shared radio, paint and pick lines above
@@ -238,39 +218,6 @@ const OWN: Record<string, Record<string, string>> = {
     rubbing: "Ha! Rubbin's racin'!",
     white: "Last lap. Let's make it a good one.",
     pick: "Let's go racing!",
-  },
-  madhuvan: {
-    green: "Green flag. Time to go to work.",
-    pit: "Copy. Coming in hot.",
-    win: "That's how it's done. Somebody hand me that trophy.",
-    podium: "Podium. Not good enough. I'll be back for the win.",
-    wall: "I'm fine. The wall's not. Keep me going.",
-    "feel-good": "Car's perfect. Don't you dare touch it.",
-    "feel-loose": "Rear end's loose. Fix it. I'll keep it off the wall.",
-    "feel-tight": "She's tight in the middle. Free her up.",
-    "got-one": "Move over. Got 'em.",
-    passed: "Oh, hell no. I'm comin' back for that.",
-    lead: "Out front. Exactly where I belong.",
-    tires: "Tires are shot. I'm driving on nothing but attitude.",
-    draft: "Tucked in their draft. They won't know what hit 'em.",
-    white: "Last lap. Nobody's taking this from me.",
-    thanks: "Not my race. Next time, I take what's mine.",
-    "pit-out": "Good stop. Now watch me make it count.",
-    fast: "Now that was a fast lap. Write it down.",
-    rubbing: "They wanna lean on me? I lean back harder.",
-    pick: "Let's go to work.",
-    "paint-stock": "Stock. Let 'em know who's driving.",
-    "paint-red": "Red. So they know I'm dangerous.",
-    "paint-blue": "Blue. Cold as ice on a restart.",
-    "paint-yellow": "Yellow. They'll see me coming. Won't matter.",
-    "paint-orange": "Orange. Hot as hell.",
-    "paint-green": "Green. The color of my prize money.",
-    "paint-purple": "Purple. Royalty. Bow down.",
-    "paint-pink": "Pink. And I'll still beat every one of 'em.",
-    "paint-white": "White. Clean... for now.",
-    "paint-black": "Black. All business. No mercy.",
-    "paint-woods-camo": "Woods camo. Huntin' season, and they're the deer.",
-    "paint-white-camo": "White camo. Now that's badass.",
   },
 };
 for (const [driver, voice] of Object.entries(DRIVER_VOICES)) {
