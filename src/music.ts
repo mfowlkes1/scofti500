@@ -15,8 +15,8 @@ const SONGS = Object.entries(files)
   .filter(([path]) => /radio\/thunder--.+\.mp3$/.test(path))
   .map(([, url]) => url);
 
-const MENU = 0.45;
-const RACE = 0.14;
+const MENU = 0.95; // Michael, 2026-10-13: "can barely hear it"
+const RACE = 0.32;
 const FADE = 1.2; // seconds
 const KEY = "scofti500:music";
 

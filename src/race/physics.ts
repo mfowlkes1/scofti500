@@ -206,6 +206,13 @@ export function step(c: CarState, input: Input, spec: Spec, dt: number): void {
     c.h += angleTo(c.h, Math.atan2(t.tz, t.tx)) * Math.min(1, dt * 2.5);
     c.spin *= Math.exp(-dt * 6);
   }
+  // race night: a car stopped after a wreck (nose in the wall, say) swings round to face down the
+  // track, so the gas gets it going again (there's no reverse)
+  else if (!c.soft && v < 3 && !c.limiter && !inPitRoad(c.s, c.d) && c.d > PIT.wallIn) {
+    const t = frame(c.s, c.d);
+    c.h += angleTo(c.h, Math.atan2(t.tz, t.tx)) * Math.min(1, dt * 1.5);
+    c.spin *= Math.exp(-dt * 6);
+  }
   const settle = -Math.sin(slip) * 1.6 * Math.min(1, v / 10);
   const turn = (yaw + c.spin + settle * 0.35) * dt;
   c.h += turn;
