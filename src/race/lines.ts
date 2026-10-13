@@ -147,7 +147,7 @@ const CAR_TALK: Record<string, Record<string, string>> = {
     "17-modern": "The seventeen. Low, wide and mean. Just like me.",
     "43-eighties": "The forty-three. Old school muscle. I'll make it scream.",
     "3-muscle": "The three. All that muscle... let's see if it can handle me.",
-    "7-owl": "Number seven, the owl car. Hooters? Sugar, I brought my own.",
+    "7-owl": "Number seven, the owl car. Hooters? I brought my own.",
   },
   allan: {
     "17-modern": "Seventeen. Modern. Clean. I'll take it.",
@@ -173,7 +173,7 @@ const CHATTER: Record<string, string[]> = {
     "I don't lift. I don't brake. I don't apologize.",
     "Wall's close. I like it close.",
     "They can watch their mirrors all they want. I'm still coming.",
-    "Hold my line? Honey, I own this line.",
+    "Hold my line? I own this line.",
     "That last corner? Flat out. Try and keep up.",
     "Nice guys finish second. I'm not nice.",
   ],
