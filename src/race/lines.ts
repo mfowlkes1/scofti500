@@ -254,7 +254,7 @@ const PAINT_TALK: Record<string, string> = {
   green: "Green. The color of my prize money.",
   purple: "Purple. Royalty. Bow down.",
   pink: "Pink. And I'll still beat every one of 'em.",
-  white: "White. Clean... for now.",
+  white: "White. Pure as it gets.",
   black: "Black. All business. No mercy.",
   "woods-camo": "Woods camo. Huntin' season, and they're the deer.",
   "white-camo": "White camo. Now that's badass.",
