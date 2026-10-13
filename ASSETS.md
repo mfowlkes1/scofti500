@@ -17,7 +17,8 @@ Everything ships with the game; nothing loads from other sites.
   - announcer: Michael's Voice Design announcer (fBRhBCYyrzF7JBCdE4Nt)
   - Reba: "SCOFTI CON daisy", Michael's Voice Design (VDCzHcQzuGC8lVW8vjyr)
   - Raven: "Blue - Neutral, Vocal Fry, Commentator" (kfU9VUUMjY4PWNoUfZ45), ElevenLabs library
-  - Lynx, Maia, Paige: voices still to pick (their lines are read by the browser's own voice until then)
+  - Maia: "Eryn - Strong Female Military Commander" (wa4sQVgbDDzUDEzJwch3), ElevenLabs library
+  - Lynx, Paige: voices still to pick (their lines are read by the browser's own voice until then)
 - **Engine, field, tires, wall, crowd, air guns** (`src/race/sound.ts`): made in code with Web Audio.
 
 ## fonts (bundled through Fontsource, SIL Open Font License)
