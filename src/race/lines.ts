@@ -110,7 +110,7 @@ const DRIVER_LINES: Record<string, string> = {
 // each car and paint
 const HELLO: Record<string, string> = {
   madhuvan: "Hey there! Smile for the cameras... then I'm gone by turn three.",
-  allan: "Allan. Don't blink, you'll miss me.",
+  allan: "Allan. Your car sure does look nice... in my rearview mirror.",
   si: "Greetings! Si is ready. Bubble polished. Tires hungry.",
 };
 // each driver's own take on each car: Madhuvan cheeky, Allan few words, Si a friendly robot. The 7 is a
