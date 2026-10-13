@@ -50,8 +50,9 @@ for (const r of RIVALS) {
 }
 for (const name of ["Madhuvan", "Allan", "Si"]) lines[`ann-win-${slug(name)}`] = { who: "announcer", text: `Checkered flag! ${name} wins it under the lights!` };
 
-// the drivers talk back. Madhuvan: "SCOFTI CON daisy", a sweet Southern voice Michael designed (2026-10-12)
-const DRIVER_VOICES: Record<string, string> = { madhuvan: "VDCzHcQzuGC8lVW8vjyr" };
+// the drivers talk back. Madhuvan: "SCOFTI CON daisy", a sweet Southern voice Michael designed; Allan:
+// "Trey" and Si: "Adam - Robotic and Friendly", both from the ElevenLabs library (Michael, 2026-10-12)
+const DRIVER_VOICES: Record<string, string> = { madhuvan: "VDCzHcQzuGC8lVW8vjyr", allan: "KHla1Z0y3pZPYrqfub7h", si: "Lo6JZOZvGYBxVhTFszLx" };
 const DRIVER_LINES: Record<string, string> = {
   green: "Here we go!",
   pit: "Copy. Coming in.",
@@ -62,8 +63,9 @@ const DRIVER_LINES: Record<string, string> = {
 for (const [driver, voice] of Object.entries(DRIVER_VOICES)) {
   const label = driver.toUpperCase();
   for (const [k, text] of Object.entries(DRIVER_LINES)) lines[`drv-${driver}-${k}`] = { who: "driver", text, label, voice };
-  // said when you pick her, not on the radio
-  lines[`drv-${driver}-pick`] = { who: "driver", text: "Madhuvan. Let's go racing.", label, voice, clean: true };
+  // said when you pick them, not on the radio
+  const name = driver[0].toUpperCase() + driver.slice(1);
+  lines[`drv-${driver}-pick`] = { who: "driver", text: `${name}. Let's go racing.`, label, voice, clean: true };
 }
 
 export const LINES = lines;
