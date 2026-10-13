@@ -809,7 +809,7 @@ body.in-seat .hud-speed {
 /* a phone held upright: a smaller order board, the map tucked in */
 @media (max-aspect-ratio: 1/1) {
   .hud-board {
-    top: 146px;
+    top: 214px;
   }
   .hud-board li {
     grid-template-columns: 14px 24px 74px 54px;
@@ -836,9 +836,37 @@ body.in-seat .hud-speed {
     padding: 6px 9px;
     font-size: 13px;
   }
+  /* the radio sits up in the sky, under the top readouts, not over the middle of the road (Michael,
+     2026-10-13); Heather too, clear of the steering pad at the bottom */
   .hud-radio {
-    top: auto;
-    bottom: 42%;
+    top: 132px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: none;
+    transform: translateY(-12px);
+    padding: 6px 12px 8px;
+  }
+  .hud-radio.on {
+    transform: none;
+  }
+  .hud-radio span {
+    font-size: 15px;
+  }
+  .heather {
+    top: 124px;
+    bottom: auto;
+    align-items: flex-start;
+  }
+  .heather img {
+    height: 24vh;
+  }
+  .heather-bar {
+    margin: 26px 0 0;
+    padding: 8px 12px 10px 30px;
+  }
+  .heather-bar span {
+    font-size: 14px;
   }
 }
 .rr-table li small em {

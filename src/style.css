@@ -547,11 +547,17 @@ body[data-screen="car"] #car-screen {
     align-content: center;
     gap: 18px;
   }
-  #driver-img {
-    height: min(44vh, 460px);
+  .driver-hero {
+    height: auto;
   }
+  #driver-img {
+    height: min(38vh, 400px);
+  }
+  /* the speech bubble stays on the screen on a phone */
   .say-bubble {
-    left: 58%;
+    left: 52%;
+    max-width: min(12em, 44vw);
+    font-size: 13px;
   }
   #car-img {
     width: 92%;
