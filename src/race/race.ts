@@ -10,6 +10,7 @@ import { STOCK, speedOf, type CarState, type Input, type Spec } from "./physics"
 import { planSpeed } from "./ai";
 import { RIVALS } from "./rivals";
 import { buildTrack, type TrackScene } from "./scene";
+import { buildCrews, type PitCrews } from "./crew";
 import { slug } from "./lines";
 import { createRadio, type Radio } from "./radio";
 import { startAudio, type RaceAudio } from "./sound";
@@ -45,6 +46,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
   scene.add(camera);
   let track: TrackScene | null = null;
   let trackReady: Promise<TrackScene> | null = null;
+  let crews: PitCrews | null = null;
 
   let sess: Session | null = null;
   let setup: RaceSetup | null = null;
@@ -325,6 +327,8 @@ export function createRace(opts: { onDone(again: boolean): void }) {
       return { root, tilt, body, lastV: 0, lastH: 0, accel: 0, lean: 0 };
     });
     sess.cars.forEach((c, i) => (views[i].lastH = c.h));
+    crews ??= buildCrews(scene);
+    crews.setup(sess);
     placeCamera();
     camH = sess.cars[sess.player].h;
     $("race-load").classList.remove("on");
@@ -362,21 +366,24 @@ export function createRace(opts: { onDone(again: boolean): void }) {
   function frameLoop(t: number, id: number): void {
     if (!running || id !== loopId) return;
     requestAnimationFrame((t2) => frameLoop(t2, id));
-    const dt = SIMTEST ? 1 / 30 : Math.min(0.1, (t - last) / 1000 || 0);
+    // (window.__simSpeed fast-forwards it: that many times 1/30 s a frame)
+    const dt = SIMTEST ? ((window as unknown as { __simSpeed?: number }).__simSpeed ?? 1) / 30 : Math.min(0.1, (t - last) / 1000 || 0);
     last = t;
     if (!sess || paused) return;
     if (SIMTEST) (window as unknown as { __race: Session }).__race = sess;
     const input = readInput(dt);
     acc += dt;
     let steps = 0;
-    while (acc >= DT && steps < 10) {
+    const most = SIMTEST ? 400 : 10;
+    while (acc >= DT && steps < most) {
       stepSession(sess, input, DT, setup!.pitCrew);
       acc -= DT;
       steps++;
     }
-    if (steps === 10) acc = 0;
+    if (steps === most) acc = 0;
     handleEvents();
     spotter();
+    crews?.update(sess, dt);
     drawCars(dt);
     effects(dt);
     follow(dt);
@@ -423,7 +430,10 @@ export function createRace(opts: { onDone(again: boolean): void }) {
       v.lastH = c.h;
       // sit on the banking, lean out in the turns, squat and dive with the throttle and brakes
       const bank = c.d > -HALF - 0.5 ? bankAt(c.s) : 0;
-      v.tilt.rotation.set(-bank + clamp(v.lean, -0.06, 0.06), 0, clamp(v.accel * 0.0035, -0.035, 0.02));
+      // up on the jack in the pit box
+      const jack = crews ? crews.lift(i) : { y: 0, roll: 0 };
+      v.tilt.position.y = jack.y;
+      v.tilt.rotation.set(-bank + clamp(v.lean, -0.06, 0.06) - jack.roll, 0, clamp(v.accel * 0.0035, -0.035, 0.02));
     });
   }
 

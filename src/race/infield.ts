@@ -1,6 +1,6 @@
 // The infield on race night: the teams' haulers parked in a row off the backstretch in their team
 // colors, fans' motorhomes packed into both ends with awnings, string lights, flags and grills going,
-// pickups parked between them, people everywhere (crews at the pit carts, fans on the motorhome roofs),
+// pickups parked between them, people everywhere (fans on the motorhome roofs; the pit crews are in crew.ts),
 // and a giant video leaderboard at each end facing down the straights.
 // Built from simple shapes; if Meshy models turn up in public/models (hauler, motorhome, pickup) they
 // take the place of the hand-built ones.
@@ -9,7 +9,7 @@ import { model } from "../models";
 import { PAINTS } from "../paint";
 import { CARS } from "../roster";
 import { RIVALS } from "./rivals";
-import { PIT, R, S, frame } from "./track";
+import { R, S } from "./track";
 
 export type Infield = {
   update(t: number): void;
@@ -253,15 +253,6 @@ export function buildInfield(scene: THREE.Scene): Infield {
   }
   // pickups and a few people by the haulers
   for (let k = 0; k < 7; k++) pickup(-75 + k * 25, -(R - 44), 1.2 + rand() * 0.3);
-
-  // the pit crews behind the pit road wall, at their carts
-  for (let i = 0; i < 8; i++) {
-    const s = PIT.stall(i);
-    for (let k = 0; k < 4; k++) {
-      const f = frame(s - 3 + k * 2, PIT.inner - 2.3 - rand() * 1.5);
-      person(f.x, 0, f.z, i < 7 ? teams[i].color : "#111", 0);
-    }
-  }
 
   // ---- people: a body and a head each ----
   const bodies = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.19, 0.23, 1.2, 7).translate(0, 0.6, 0), std("#fff", { roughness: 0.9 }), people.length);
