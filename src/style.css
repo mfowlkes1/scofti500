@@ -70,6 +70,21 @@ body:not([data-screen="title"]) .welcome {
   -webkit-text-stroke: 0.06em var(--night);
   paint-order: stroke fill;
 }
+/* the series under the logo: SCOFTI in its brush font (it's ours), ACADEMY in the heading font */
+.academy {
+  display: block;
+  margin-top: 0.35em;
+  font: 400 clamp(22px, 5vmin, 48px) / 1 "Racing Sans One", system-ui, sans-serif;
+  letter-spacing: 0.08em;
+  color: #fff;
+  -webkit-text-stroke: 0.05em var(--night);
+  paint-order: stroke fill;
+}
+.academy-mark {
+  font-family: "Permanent Marker", cursive;
+  color: var(--lime);
+  letter-spacing: 0.02em;
+}
 /* 500, gnarly: hard slant, chrome lime with a horizon line, chunky 3D drop, white pinstripe, speed lines */
 .five {
   position: relative;
