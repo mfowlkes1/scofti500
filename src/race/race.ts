@@ -298,6 +298,12 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     $("load-line").textContent = TRACK.night ? "rolling out under the lights…" : "rolling out into the heat…";
     finishedAt = 0;
     checkeredAt = 0;
+    rec.length = 0;
+    recNext = 0;
+    moments.length = 0;
+    replayDone = false;
+    replaying = false;
+    document.body.classList.remove("replaying");
     interviewDone = false;
     interviewing = false;
     paused = false;
@@ -444,6 +450,17 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     const dt = SIMTEST ? ((window as unknown as { __simSpeed?: number }).__simSpeed ?? 1) / 30 : Math.min(0.1, (t - last) / 1000 || 0);
     last = t;
     if (!sess || paused) return;
+    if (replaying) {
+      // a replay can never strand you: if it goes wrong, straight on to the interview and results
+      try {
+        runReplay(dt);
+      } catch (err) {
+        console.warn("replay", err);
+        endReplay();
+      }
+      renderer.render(scene, camera);
+      return;
+    }
     if (SIMTEST) (window as unknown as { __race: Session }).__race = sess;
     const input = readInput(dt);
     acc += dt;
@@ -459,6 +476,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     spotter();
     crews?.update(sess, dt);
     drawCars(dt);
+    record();
     effects(dt);
     follow(dt);
     // ?simtest screenshots can put the camera anywhere: window.__camPose = [x, y, z, lookX, lookY, lookZ]
@@ -487,6 +505,16 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     if (!finishedAt && checkeredAt && !sess.qualifying && t - checkeredAt > 20000) finishedAt = t - 4500;
     if (finishedAt && t - finishedAt > (sess.qualifying ? 1500 : 4500) && !$("race-results").classList.contains("on")) {
       if (sess.qualifying) qualified();
+      else if (!replayDone) {
+        try {
+          startReplay();
+        } catch (err) {
+          console.warn("replay", err);
+          replayDone = true;
+          replaying = false;
+          document.body.classList.remove("replaying");
+        }
+      }
       else if (!interviewDone) interview();
       else results();
     }
@@ -763,6 +791,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
         radio.say("ann-caution");
         // Heather says who it was
         radio.say(`hea-caution-${slug(name(e.car))}`);
+        moment("wreck", e.car, `THE WRECK · ${name(e.car).toUpperCase()}`, 5);
         radio.say("crew-caution");
         cautionUntil = s.t + 3;
       } else if (e.type === "restart-soon") {
@@ -788,6 +817,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
         radio.say(here(`ann-win-${slug(name(win))}`));
         audio?.roar();
       } else if (e.type === "finish" && e.car === s.player) {
+        moment("finish", s.player, `THE FINISH · P${e.pos}`, 10);
         finishedAt = performance.now();
         const p = e.pos;
         radio.say(p === 1 ? here("crew-win") : p <= 3 ? `crew-podium-${p}` : "crew-next-time");
@@ -860,6 +890,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     const pos = ord.indexOf(s.player) + 1;
     const now = performance.now();
     const racing = !autopilot(s) && s.crossed[s.player] >= 0;
+    if (pos < lastPos && racing) moment("pass", s.player, pos === 1 ? "TAKING THE LEAD" : `UP TO P${pos}`, pos === 1 ? 4 : 2);
     if (pos < lastPos && now - posSaidAt > 9000 && racing) {
       posSaidAt = now;
       radio.say(me(pos === 1 ? "lead" : "got-one"));
@@ -876,6 +907,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     const leader = ord[0];
     if (leader !== chat.leader) {
       if (chat.leader >= 0 && now - chat.leadAt > 8000) radio.say(`ann-lead-${slug(name(leader))}`);
+      if (chat.leader >= 0 && leader !== s.player) moment("lead", leader, `LEAD CHANGE · ${name(leader).toUpperCase()}`, 1);
       chat.leader = leader;
       chat.leadAt = now;
     }
@@ -1015,6 +1047,8 @@ export function createRace(opts: { onDone(again: boolean): void }) {
   let pitLap = 0;
   const pitLapOf = (s: Session) => (s.drivers[s.player].pitPhase === "stopped" ? (pitLap = Math.max(0, s.crossed[s.player])) : pitLap);
 
+  let boardKey = "";
+  let boardUntil = 0;
   function hud(): void {
     const s = sess!;
     const me = s.cars[s.player];
@@ -1061,6 +1095,14 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     const leaderP = progress(s, ord[0]);
     const mine = ord.indexOf(s.player);
     const shown = ord.length <= 10 ? ord : ord.filter((_, k) => k < 5 || Math.abs(k - Math.max(mine, 6)) <= 1);
+    // the running order only shows at the moments that matter (Michael, 2026-10-13: not the whole time):
+    // the start, each lap you cross the line, when your place changes, and a caution; ~6 s each time
+    const key = `${s.crossed[s.player]}|${pos}|${s.phase}`;
+    if (key !== boardKey) {
+      boardKey = key;
+      boardUntil = performance.now() + 6000;
+    }
+    $("hud-board").classList.toggle("on", performance.now() < boardUntil || s.phase === "pace");
     $("hud-board").innerHTML = shown
       .map((i) => {
         const k = ord.indexOf(i);
@@ -1128,6 +1170,136 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     // the sheet opens with you in view
     $("rr-table").querySelector(".me")?.scrollIntoView({ block: "center" });
   }
+
+  // ---- the replays: the race is recorded as it goes (every car, about 15 times a second), the big
+  // moments are marked, and after the flag up to three of them play back from a TV camera, with a
+  // REPLAY bug and Heather over the top (Michael, 2026-10-13: "race replay clips") ----
+  const REC = 1 / 15; // seconds of race between snapshots
+  const PER = 7; // per car: x, z, h, s, d, vx, vz
+  const rec: { t: number; f: Float32Array }[] = [];
+  let recNext = 0;
+  type Moment = { t: number; car: number; title: string; weight: number };
+  const moments: Moment[] = [];
+  let replaying = false;
+  let replayDone = false;
+  let clips: Moment[] = [];
+  let clipAt = 0; // which clip
+  let clipT = 0; // race time being shown
+  let saved: Float32Array | null = null;
+
+  function record(): void {
+    const s = sess!;
+    if (s.qualifying || s.phase === "pace" || s.t < recNext) return;
+    recNext = s.t + REC;
+    const f = new Float32Array(s.cars.length * PER);
+    s.cars.forEach((c, i) => f.set([c.x, c.z, c.h, c.s, c.d, c.vx, c.vz], i * PER));
+    rec.push({ t: s.t, f });
+  }
+
+  function moment(kind: string, car: number, title: string, weight: number): void {
+    const s = sess!;
+    if (s.qualifying) return;
+    // one of each kind per few seconds is plenty
+    if (moments.some((m) => Math.abs(m.t - s.t) < 6 && m.title.split(" ")[0] === title.split(" ")[0])) return;
+    moments.push({ t: s.t, car, title, weight: weight + (kind === "pass" && car === s.player ? 1 : 0) });
+  }
+
+  /** put the cars where they were at race time t */
+  function pose(t: number): void {
+    const s = sess!;
+    if (!rec.length) return;
+    let lo = 0;
+    let hi = rec.length - 1;
+    while (hi - lo > 1) {
+      const mid = (lo + hi) >> 1;
+      if (rec[mid].t <= t) lo = mid;
+      else hi = mid;
+    }
+    const a = rec[lo];
+    const b = rec[hi];
+    const k = b.t > a.t ? Math.min(1, Math.max(0, (t - a.t) / (b.t - a.t))) : 0;
+    s.cars.forEach((c, i) => {
+      const o = i * PER;
+      const mix = (j: number) => a.f[o + j] + (b.f[o + j] - a.f[o + j]) * k;
+      c.x = mix(0);
+      c.z = mix(1);
+      c.h = a.f[o + 2] + angleTo(a.f[o + 2], b.f[o + 2]) * k;
+      c.s = mix(3);
+      c.d = mix(4);
+      c.vx = mix(5);
+      c.vz = mix(6);
+    });
+  }
+
+  function startReplay(): void {
+    const s = sess!;
+    // the finish always; then the biggest other moments, spread out, in race order
+    const fin = moments.filter((m) => m.title.startsWith("THE FINISH"));
+    const rest = moments.filter((m) => !m.title.startsWith("THE FINISH")).sort((a, b) => b.weight - a.weight);
+    const pick: Moment[] = [...fin.slice(-1)];
+    for (const m of rest) {
+      if (pick.length >= 3) break;
+      if (pick.every((p) => Math.abs(p.t - m.t) > 10)) pick.push(m);
+    }
+    clips = pick.filter((m) => m.t - 5 > (rec[0]?.t ?? 0)).sort((a, b) => a.t - b.t);
+    if (!clips.length || rec.length < 30) {
+      replayDone = true;
+      return;
+    }
+    // keep where everyone really is, for the results after
+    saved = new Float32Array(s.cars.length * PER);
+    s.cars.forEach((c, i) => saved!.set([c.x, c.z, c.h, c.s, c.d, c.vx, c.vz], i * PER));
+    replaying = true;
+    clipAt = 0;
+    clipT = clips[0].t - 5;
+    radio.clear();
+    audio?.duck(true);
+    document.body.classList.add("replaying");
+    $("replay-title").textContent = clips[0].title;
+    radio.say(`hea-replay-${1 + Math.floor(Math.random() * 3)}`);
+  }
+
+  function runReplay(dt: number): void {
+    const s = sess!;
+    const clip = clips[clipAt];
+    clipT += dt;
+    if (clipT > clip.t + 2.5) {
+      clipAt++;
+      if (clipAt >= clips.length) return endReplay();
+      clipT = clips[clipAt].t - 5;
+      $("replay-title").textContent = clips[clipAt].title;
+      // a quick flash between clips, like a TV wipe
+      const bug = $("replay-bug");
+      bug.classList.remove("wipe");
+      void bug.offsetWidth;
+      bug.classList.add("wipe");
+    }
+    pose(clipT);
+    drawCars(dt);
+    // the TV camera: up and out to the side of the car in the clip, swinging round as it goes by
+    const c = s.cars[clips[clipAt].car];
+    const f = frame(c.s);
+    const swing = (clipT - (clips[clipAt].t - 5)) / 7.5; // 0..1 through the clip
+    const side = -16 + swing * 6;
+    const back = 18 - swing * 26;
+    const y = heightAt(c.s, Math.min(c.d, HALF));
+    camera.position.set(c.x - f.tx * back + f.nx * side, y + 7, c.z - f.tz * back + f.nz * side);
+    camera.lookAt(c.x + f.tx * 4, y + 0.8, c.z + f.tz * 4);
+    track!.focus(c.x, c.z);
+    track!.update(performance.now() / 1000, "green");
+  }
+
+  function endReplay(): void {
+    const s = sess!;
+    replaying = false;
+    replayDone = true;
+    document.body.classList.remove("replaying");
+    audio?.duck(false);
+    if (saved) s.cars.forEach((c, i) => ([c.x, c.z, c.h, c.s, c.d, c.vx, c.vz] = saved!.subarray(i * PER, i * PER + PER)));
+    drawCars(0);
+    placeCamera();
+  }
+  $("replay-skip").addEventListener("click", () => replaying && endReplay());
 
   // ---- the interview: Heather and your driver, before the results (Michael, 2026-10-13) ----
   let interviewDone = false;

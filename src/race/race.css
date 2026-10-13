@@ -100,6 +100,13 @@ body[data-screen="race"] .welcome {
   gap: 3px;
   font: 700 13px/1 system-ui, sans-serif;
   text-shadow: none;
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: opacity 0.4s, transform 0.4s;
+}
+.hud-board.on {
+  opacity: 1;
+  transform: none;
 }
 .hud-board li {
   display: grid;
@@ -1081,4 +1088,64 @@ body.in-seat .hud-speed {
   position: absolute;
   right: 16px;
   bottom: 16px;
+}
+
+/* the replays: the HUD and dash step aside, a red REPLAY bug in the corner */
+.replay-bug,
+.replay-skip {
+  display: none;
+}
+body.replaying .hud > :not(#heather),
+body.replaying .cockpit,
+body.replaying .touch {
+  visibility: hidden;
+}
+body.replaying .replay-bug {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  display: grid;
+  gap: 4px;
+  z-index: 6;
+}
+body.replaying .replay-skip {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  display: block;
+  z-index: 6;
+}
+.replay-bug b {
+  justify-self: start;
+  padding: 6px 12px;
+  font: 400 clamp(20px, 3vmin, 30px) / 1 "Racing Sans One", system-ui, sans-serif;
+  letter-spacing: 0.06em;
+  color: #fff;
+  background: #e0201f;
+  border-radius: 4px;
+  box-shadow: 0 0 18px rgba(224, 32, 31, 0.6);
+  animation: rec-blink 1.4s steps(2) infinite;
+}
+.replay-bug span {
+  justify-self: start;
+  padding: 4px 10px;
+  font: 800 13px/1 system-ui, sans-serif;
+  letter-spacing: 0.14em;
+  color: #fff;
+  background: rgba(8, 6, 18, 0.85);
+  border-left: 4px solid #e0201f;
+}
+@keyframes rec-blink {
+  50% {
+    box-shadow: 0 0 4px rgba(224, 32, 31, 0.3);
+  }
+}
+.replay-bug.wipe {
+  animation: wipe 0.4s ease-out;
+}
+@keyframes wipe {
+  from {
+    transform: translateX(-30px);
+    opacity: 0;
+  }
 }

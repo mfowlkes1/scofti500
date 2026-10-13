@@ -125,6 +125,12 @@ const HEATHER_UPDATES = [
 ];
 HEATHER_UPDATES.forEach((text, i) => (lines[`hea-update-${i + 1}`] = { who: "reporter", text }));
 export const HEATHER_UPDATE_COUNT = HEATHER_UPDATES.length;
+// over the replays after the race
+Object.assign(lines, {
+  "hea-replay-1": { who: "reporter", text: "Let's take another look at the moments that made this race!" },
+  "hea-replay-2": { who: "reporter", text: "Before we go, you have to see these again." },
+  "hea-replay-3": { who: "reporter", text: "Roll the tape! Here's how it all went down." },
+} satisfies Record<string, Line>);
 // the post-race interview: her question by how you finished, then her sign-off (a bit of nonsense)
 Object.assign(lines, {
   "hea-q-win": { who: "reporter", text: "I'm here in victory lane with tonight's winner! Take us through that last lap. What was going through your head?" },

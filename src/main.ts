@@ -57,8 +57,10 @@ function speak(d: Driver, what: string, bubble: HTMLElement): void {
 }
 
 // the music starts on the first tap or key (browsers allow no sound before one); ♪ turns it off and on
-addEventListener("pointerdown", startMusic, { once: true });
-addEventListener("keydown", startMusic, { once: true });
+// (a full tap: pointerup and click count on phones, pointerdown doesn't; every tap until it's playing)
+addEventListener("pointerup", startMusic);
+addEventListener("click", startMusic);
+addEventListener("keydown", startMusic);
 const musicBtn = $("music");
 musicBtn.classList.toggle("off", !musicOn());
 musicBtn.addEventListener("click", () => {

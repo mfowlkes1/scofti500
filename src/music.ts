@@ -35,9 +35,16 @@ let on = (() => {
 
 export const musicOn = () => on;
 
-/** call from the first tap or key press: browsers only allow sound after one */
+/** call from a tap or key press: browsers only allow sound after one. On a phone that has to be a full
+ * tap (the finger coming up), not the finger going down, or the music stays silent (Michael, 2026-10-13:
+ * "no music on the phone"). Called again on later taps, it wakes the music if it's still asleep. */
 export function startMusic(): void {
-  if (ctx || !SONGS.length) return;
+  if (ctx) {
+    if (on && ctx.state !== "running") void ctx.resume();
+    if (on && player && (player.paused || !player.src)) next();
+    return;
+  }
+  if (!SONGS.length) return;
   ctx = new AudioContext();
   gain = ctx.createGain();
   gain.gain.value = 0;
