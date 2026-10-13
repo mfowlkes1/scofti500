@@ -49,6 +49,13 @@ export const DRIVERS: Driver[] = [
     role: "the ice queen",
     line: "Never smiles on the grid. Never misses a mark.",
   },
+  {
+    id: "foxy",
+    name: "foxy",
+    team: "Scofti Racing",
+    role: "the veteran",
+    line: "Twenty years of short tracks. Still the one to beat.",
+  },
 ];
 
 export const CARS: Car[] = [
