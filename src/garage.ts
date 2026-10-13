@@ -1,23 +1,23 @@
-// The pit garage's money and upgrades, like scofti-offroad's garage: cash buys upgrades, and each car
-// keeps its own. Races pay the cash (earn); you start with enough for a couple of upgrades. Engine
+// The pit garage's upgrades, like scofti-offroad's garage: SCOFTI Chips (chips.ts) buy them, and each
+// car keeps its own. Races pay the chips; you start with enough for a couple of upgrades. Engine
 // adds power, brakes stop harder, tires grip more and wear slower, the pit crew changes tires quicker.
-// All saved on this device (scofti500:cash, scofti500:upgrades).
+// Saved on this device (scofti500:upgrades).
+
+import { chips, spendChips } from "./chips";
 
 export type UpgradeId = "engine" | "brakes" | "tires" | "crew";
 
 export const UPGRADES: { id: UpgradeId; name: string; does: string; cost: number[] }[] = [
-  { id: "engine", name: "ENGINE", does: "faster down the straights", cost: [1000, 2500, 5000] },
-  { id: "brakes", name: "BRAKES", does: "brake later into the turns", cost: [800, 2000, 4000] },
-  { id: "tires", name: "TIRES", does: "more grip, wear slower", cost: [800, 2000, 4000] },
-  { id: "crew", name: "PIT CREW", does: "quicker pit stops", cost: [600, 1500, 3000] },
+  { id: "engine", name: "ENGINE", does: "faster down the straights", cost: [100, 250, 500] },
+  { id: "brakes", name: "BRAKES", does: "brake later into the turns", cost: [80, 200, 400] },
+  { id: "tires", name: "TIRES", does: "more grip, wear slower", cost: [80, 200, 400] },
+  { id: "crew", name: "PIT CREW", does: "quicker pit stops", cost: [60, 150, 300] },
 ];
 export const MAX_LEVEL = 3;
-export const STARTING_CASH = 2500;
 
 export type Levels = Record<UpgradeId, number>;
 const none = (): Levels => ({ engine: 0, brakes: 0, tires: 0, crew: 0 });
 
-const CASH_KEY = "scofti500:cash";
 const UPGRADES_KEY = "scofti500:upgrades";
 
 function read<T>(key: string, fallback: T): T {
@@ -37,7 +37,6 @@ function write(key: string, value: unknown): void {
   }
 }
 
-export const cash = (): number => read(CASH_KEY, STARTING_CASH);
 export const levels = (carId: string): Levels => ({ ...none(), ...read<Record<string, Levels>>(UPGRADES_KEY, {})[carId] });
 
 /** the price of the next level of an upgrade, or null when it's maxed */
@@ -46,22 +45,17 @@ export function nextCost(carId: string, id: UpgradeId): number | null {
   return lv >= MAX_LEVEL ? null : UPGRADES.find((u) => u.id === id)!.cost[lv];
 }
 
-/** buys the next level if there's cash for it; true when it went through */
+/** buys the next level if there are chips for it; true when it went through */
 export function buy(carId: string, id: UpgradeId): boolean {
   const cost = nextCost(carId, id);
-  if (cost === null || cash() < cost) return false;
+  if (cost === null || chips() < cost) return false;
   const all = read<Record<string, Levels>>(UPGRADES_KEY, {});
   const lv = levels(carId);
   lv[id]++;
   all[carId] = lv;
+  spendChips(cost);
   write(UPGRADES_KEY, all);
-  write(CASH_KEY, cash() - cost);
   return true;
-}
-
-/** race winnings */
-export function earn(amount: number): void {
-  write(CASH_KEY, cash() + amount);
 }
 
 /** what the upgrades make of a car: the stock car's numbers, improved level by level */

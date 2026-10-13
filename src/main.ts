@@ -4,7 +4,8 @@ import "@fontsource/racing-sans-one";
 import "./style.css";
 import "./race/race.css";
 import { PAINTS, paintedUrl, savePaint, savedPaint } from "./paint";
-import { UPGRADES, MAX_LEVEL, buy, cash, levels, nextCost, tuned } from "./garage";
+import { UPGRADES, MAX_LEVEL, buy, levels, nextCost, tuned } from "./garage";
+import { PACKS, buyPack, canBuy, chipAmount, chipSvg, chips } from "./chips";
 import { createGarage } from "./garageRoom";
 import { musicForRace, musicOn, setMusic, startMusic } from "./music";
 import { createPicker } from "./pick";
@@ -21,8 +22,8 @@ sendHome();
 
 // Flow: title → PICK YOUR DRIVER → PICK YOUR CAR → PIT GARAGE → PICK YOUR TRACK → the race → back to
 // the pit garage. Backspace and the on-screen BACK go back; Escape belongs to the arcade.
-type Screen = "title" | "driver" | "car" | "garage" | "track" | "race" | "credits";
-const BACK: Partial<Record<Screen, Screen>> = { driver: "title", car: "driver", garage: "car", track: "garage", credits: "title" };
+type Screen = "title" | "driver" | "car" | "garage" | "track" | "race" | "credits" | "chips";
+const BACK: Partial<Record<Screen, Screen>> = { driver: "title", car: "driver", garage: "car", track: "garage", credits: "title", chips: "garage" };
 const $ = (id: string) => document.getElementById(id)!;
 
 let screen: Screen = "title";
@@ -362,8 +363,7 @@ addEventListener("keydown", (e) => {
 
 show("title");
 
-// ---- the pit garage's upgrades: each car keeps its own, paid for with cash ----
-const money = (n: number) => `$${n.toLocaleString()}`;
+// ---- the pit garage's upgrades: each car keeps its own, paid for with SCOFTI Chips ----
 // ---- the car's paint in the pit garage (Michael, 2026-10-13): her color to start, any paint here ----
 function showGaragePaints(car: Car): void {
   const row = $("garage-paints");
@@ -400,7 +400,7 @@ function showGaragePaints(car: Car): void {
 function showUpgrades(): void {
   const car = garageCar;
   if (!car) return;
-  $("garage-cash").textContent = money(cash());
+  $("garage-cash").innerHTML = chipAmount(chips());
   const lv = levels(car.id);
   $("garage-upgrades").replaceChildren(
     ...UPGRADES.map((u) => {
@@ -416,16 +416,54 @@ function showUpgrades(): void {
         b.textContent = "MAX";
         b.disabled = true;
       } else {
-        b.textContent = money(cost);
-        b.disabled = cash() < cost;
+        b.innerHTML = chipAmount(cost);
+        // short on chips: it still works, it opens GET CHIPS
+        b.classList.toggle("short", chips() < cost);
         b.addEventListener("click", () => {
           if (buy(car.id, u.id)) showUpgrades();
+          else openChips();
         });
       }
       row.append(b);
       return row;
     }),
   );
+}
+
+// ---- GET CHIPS: the packs. On the web it's "coming soon in the app" (?chiptest hands them over) ----
+function openChips(): void {
+  $("chips-have").innerHTML = chipAmount(chips());
+  $("chips-note").textContent = canBuy() ? "TEST MODE: packs are free" : "Coming soon in the SCOFTI 500 app. For now, race to win more!";
+  $("chips-packs").replaceChildren(
+    ...PACKS.map((p, k) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "pack";
+      const pile = Array.from({ length: k + 2 }, () => chipSvg(46)).join("");
+      b.innerHTML = `${p.tag ? `<em>${p.tag}</em>` : ""}<span class="pile">${pile}</span><b>${p.name}</b>${chipAmount(p.chips)}<small>${canBuy() ? "FREE (TEST)" : "SOON"}</small>`;
+      b.addEventListener("click", () => {
+        if (buyPack(p)) {
+          $("chips-have").innerHTML = chipAmount(chips());
+          showUpgrades();
+        }
+      });
+      return b;
+    }),
+  );
+  show("chips");
+}
+$("chips-back").addEventListener("click", () => show("garage"));
+$("chips-race").addEventListener("click", () => show("track"));
+{
+  const lineup = $("chips-lineup");
+  for (const id of ["maia", "lynx", "reba", "raven", "paige"]) {
+    const d = DRIVERS.find((x) => x.id === id);
+    if (!d) continue;
+    const img = new Image();
+    img.alt = "";
+    void suitUrl(d, savedSuit(d)).then((url) => (img.src = url));
+    lineup.append(img);
+  }
 }
 
 // ---- the race: how many laps, then go ----

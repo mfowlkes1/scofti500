@@ -28,7 +28,8 @@ button {
 }
 body[data-screen="title"] #title-screen,
 body[data-screen="track"] #track-screen,
-body[data-screen="credits"] #credits-screen {
+body[data-screen="credits"] #credits-screen,
+body[data-screen="chips"] #chips-screen {
   display: block;
 }
 
@@ -780,6 +781,12 @@ body[data-screen="garage"] .welcome {
   border: 2px solid #fff;
   border-radius: 999px;
 }
+/* short on chips: still tappable (it opens GET CHIPS), just quieter */
+.buy.short {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.4);
+}
 .buy:disabled {
   color: rgba(255, 255, 255, 0.6);
   background: rgba(255, 255, 255, 0.12);
@@ -902,4 +909,102 @@ body[data-screen="garage"] .welcome {
   margin-top: 1.4em !important;
   color: var(--muted);
   font-size: 14px;
+}
+
+/* SCOFTI Chips: the chip icon sits in line with the number */
+.chips-amt {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  white-space: nowrap;
+}
+.chip {
+  flex: none;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+/* GET CHIPS */
+#chips-screen {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  text-align: center;
+}
+.chips-page {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 64px 16px 24px;
+}
+.chips-have {
+  margin: 0;
+  font: 400 clamp(18px, 3vmin, 26px) / 1 "Lilita One", system-ui, sans-serif;
+  letter-spacing: 0.1em;
+  color: #fff;
+}
+.packs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}
+.pack {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  width: min(200px, 42vw);
+  padding: 18px 12px 14px;
+  color: #fff;
+  font: 400 22px/1 "Racing Sans One", system-ui, sans-serif;
+  background: rgba(11, 7, 22, 0.88);
+  border: 3px solid var(--lime);
+  border-radius: 18px;
+  box-shadow: 0 0.8rem 2rem rgba(0, 0, 0, 0.55), 0 0 1.4rem rgba(182, 255, 0, 0.3);
+}
+.pack b {
+  font-weight: 400;
+  letter-spacing: 0.06em;
+}
+.pack .chips-amt {
+  font-size: 26px;
+  color: var(--lime);
+}
+.pack small {
+  font: 400 14px/1 "Lilita One", system-ui, sans-serif;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+.pack em {
+  position: absolute;
+  top: -12px;
+  padding: 0.25em 0.7em;
+  font: 400 12px/1 "Lilita One", system-ui, sans-serif;
+  letter-spacing: 0.12em;
+  font-style: normal;
+  color: var(--night);
+  background: var(--lime);
+  border-radius: 999px;
+}
+.pile {
+  display: flex;
+  height: 54px;
+  align-items: flex-end;
+}
+.pile .chip + .chip {
+  margin-left: -26px;
+}
+.chips-note {
+  margin: 0;
+  max-width: 36ch;
+  color: #fff;
+  font: 600 16px/1.4 system-ui, sans-serif;
+}
+/* the drivers stand behind the packs, smaller than on the title */
+.chips-lineup {
+  z-index: 1;
+  height: min(30vh, 340px, 46vw);
+  opacity: 0.9;
 }

@@ -6,7 +6,7 @@ import { loadCar } from "../carModel";
 import { duckMusic } from "../music";
 import { addNumber } from "../carNumber";
 import { CAR_HEIGHT } from "../carModel";
-import { earn } from "../garage";
+import { chipAmount, earnChips } from "../chips";
 import { CARS, type Car } from "../roster";
 import { airGun, autopilot, createQualifying, createSession, mph, order, pitStop, progress, qualifyingLap, stepSession, type Entry, type Session } from "./session";
 import { STOCK, speedOf, type CarState, type Input, type Spec } from "./physics";
@@ -31,8 +31,8 @@ const fmt = (t: number) => (isFinite(t) && t > 0 ? t.toFixed(2) : "--.--");
 const CAM_KEY = "scofti500:camera";
 
 // what a finish pays: 1st down to 8th, for a 15-lap race (shorter pays less)
-const PURSE = [3000, 2200, 1700, 1300, 1000, 800, 600, 400];
-const LED_BONUS = 40;
+const PURSE = [300, 220, 170, 130, 100, 80, 60, 40];
+const LED_BONUS = 4;
 
 type CarView = { root: THREE.Group; tilt: THREE.Group; body: THREE.Object3D | null; lastV: number; lastH: number; accel: number; lean: number };
 
@@ -1052,11 +1052,11 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     const ord = order(s);
     const pos = ord.indexOf(s.player) + 1;
     const scale = 0.4 + (s.laps / 15) * 0.6;
-    const payout = Math.round((PURSE[pos - 1] ?? 300) * scale) + s.led[s.player] * LED_BONUS;
-    earn(payout);
+    const payout = Math.round((PURSE[pos - 1] ?? 30) * scale) + s.led[s.player] * LED_BONUS;
+    earnChips(payout);
     $("rr-title").textContent = pos === 1 ? "VICTORY LANE" : pos <= 3 ? "PODIUM" : "CHECKERED FLAG";
     $("rr-pos").textContent = `P${pos}`;
-    $("rr-cash").textContent = `+$${payout.toLocaleString()}`;
+    $("rr-cash").innerHTML = chipAmount(payout, "+");
     // laps down on the winner, the way the real results sheet shows it
     const down = (i: number) => s.crossed[ord[0]] - s.crossed[i];
     $("rr-table").innerHTML = ord

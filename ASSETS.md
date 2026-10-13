@@ -26,4 +26,4 @@ Everything ships with the game; nothing loads from other sites.
 - Permanent Marker (SCOFTI only), Racing Sans One, Lilita One.
 
 ## saved in the browser (localStorage)
-`scofti500:driver`, `scofti500:car`, `scofti500:paint`, `scofti500:suit`, `scofti500:cash`, `scofti500:upgrades`, `scofti500:track`, `scofti500:laps`, `scofti500:mode`, `scofti500:camera`, `scofti500:music`
+`scofti500:driver`, `scofti500:car`, `scofti500:paint`, `scofti500:suit`, `scofti500:chips`, `scofti500:upgrades`, `scofti500:track`, `scofti500:laps`, `scofti500:mode`, `scofti500:camera`, `scofti500:music`
