@@ -1233,3 +1233,109 @@ body.replaying .replay-skip {
   letter-spacing: 0.14em;
   color: var(--muted);
 }
+
+/* tilt steering (src/steer.ts): the phone is the wheel, so the STEER pad goes; the switch on the
+   pause screen only shows on phones */
+body.tilt-steer .t-steer {
+  display: none;
+}
+.rp-steer {
+  display: none;
+}
+@media (pointer: coarse) {
+  .rp-steer {
+    display: flex;
+  }
+}
+
+/* asked once, after the first car pick on a phone */
+.steer-ask {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: none;
+  place-content: center;
+  justify-items: center;
+  gap: 18px;
+  padding: 16px;
+  text-align: center;
+  background: rgba(8, 6, 18, 0.88);
+  color: var(--muted);
+  font: 600 13px/1.3 system-ui, sans-serif;
+}
+.steer-ask.on {
+  display: grid;
+}
+.steer-choices {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+}
+.steer-choice {
+  display: grid;
+  gap: 6px;
+  min-width: 200px;
+  padding: 18px 26px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 4px solid #fff;
+  border-radius: 22px;
+  transform: skewX(-8deg);
+}
+.steer-choice b {
+  font: 400 clamp(24px, 5vmin, 38px) / 1 "Racing Sans One", system-ui, sans-serif;
+  letter-spacing: 0.04em;
+}
+.steer-choice span {
+  font: 600 14px/1.2 system-ui, sans-serif;
+  color: var(--muted);
+}
+.steer-choice[data-steer="tilt"] {
+  color: var(--night);
+  background: linear-gradient(180deg, #eaff8f 0%, var(--lime) 55%, #8fe000 100%);
+}
+.steer-choice[data-steer="tilt"] span {
+  color: rgba(11, 7, 22, 0.75);
+}
+
+/* phones race sideways only: held upright, everything waits behind this */
+.turn-phone {
+  display: none;
+}
+@media (pointer: coarse) and (orientation: portrait) {
+  .turn-phone {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 14px;
+    padding: 16px;
+    text-align: center;
+    background: var(--night);
+  }
+  .turn-phone span {
+    font-size: 84px;
+    line-height: 1;
+    color: var(--lime);
+    animation: turn-phone 1.8s ease-in-out infinite;
+  }
+  .turn-phone p {
+    margin: 0;
+    font: 400 clamp(26px, 8vw, 40px) / 1.1 "Racing Sans One", system-ui, sans-serif;
+    color: #fff;
+    transform: skewX(-8deg);
+  }
+}
+@keyframes turn-phone {
+  0%,
+  30% {
+    transform: rotate(0deg);
+  }
+  60%,
+  100% {
+    transform: rotate(90deg);
+  }
+}

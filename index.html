@@ -276,6 +276,7 @@
       <p class="race-flag">PAUSED</p>
       <button id="rp-resume" class="go-btn" type="button">RESUME ▶</button>
       <button id="rp-quit" class="back-btn" type="button">QUIT TO PIT GARAGE</button>
+      <div class="laps-pick rp-steer" id="rp-steer"><button type="button" data-steer="thumb">THUMB STEER</button><button type="button" data-steer="tilt">TILT STEER</button></div>
       <div class="rp-songs"><button id="rp-prev" class="back-btn" type="button">◀◀</button><span>MUSIC</span><button id="rp-next" class="back-btn" type="button">▶▶</button></div>
     </div>
     <div id="replay-bug" class="replay-bug"><b>↺ REPLAY</b><span id="replay-title"></span></div>
@@ -300,6 +301,19 @@
       </div>
     </div>
   </section>
+
+  <!-- the first car pick on a phone: tilt or thumb (src/steer.ts) -->
+  <div id="steer-ask" class="steer-ask">
+    <p class="race-flag">HOW DO YOU STEER?</p>
+    <div class="steer-choices">
+      <button type="button" class="steer-choice" data-steer="tilt"><b>TILT THE PHONE</b><span>turn it like a wheel</span></button>
+      <button type="button" class="steer-choice" data-steer="thumb"><b>THUMB PAD</b><span>drag left and right</span></button>
+    </div>
+    <small>change it any time on the pause screen</small>
+  </div>
+
+  <!-- phones race sideways only -->
+  <div class="turn-phone"><span>⟳</span><p>TURN YOUR PHONE SIDEWAYS</p></div>
 
   <script type="module" src="/src/main.ts"></script>
 </body>

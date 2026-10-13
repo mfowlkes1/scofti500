@@ -21,6 +21,7 @@ import { savedSuit, suitUrl } from "../suit";
 import { createRadio, type Radio } from "./radio";
 import { startAudio, type RaceAudio } from "./sound";
 import { BOUNDS, HALF, L, TRACK, bankAt, frame, gap, heightAt, setTrack } from "./track";
+import { setSteer, steerMode, tiltSteer, touchScreen, type SteerMode } from "../steer";
 
 /** easy: preseason testing. Walls and bumps only slow you down, a bit more grip, and the rivals take it easy */
 /** grid: the starting order from qualifying (names); race night qualifies first when there's none */
@@ -200,7 +201,10 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     // the keys turn the wheel at a steady rate, and let it come back a bit quicker
     const rate = want === 0 ? 4 : Math.sign(want) !== Math.sign(kbSteer) && kbSteer !== 0 ? 5 : 2.6;
     kbSteer += clamp(want - kbSteer, -rate * dt, rate * dt);
-    let steer = touchSteer ?? kbSteer;
+    // tilt steers when it's picked and the phone sends it; a thumb on the pad still wins
+    const tilt = steerPref === "tilt" ? tiltSteer() : null;
+    document.body.classList.toggle("tilt-steer", tilt !== null);
+    let steer = touchSteer ?? tilt ?? kbSteer;
     let throttle = keys.has("ArrowUp") || keys.has("w") || touchGas ? 1 : 0;
     let brake = keys.has("ArrowDown") || keys.has("s") || touchBrake ? 1 : 0;
     const gp = navigator.getGamepads?.().find((g) => g);
@@ -268,9 +272,24 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     else radio.say("crew-stay-out");
   }
 
+  // tilt or thumb, picked after the first car (src/steer.ts) and switched on the pause screen
+  let steerPref: SteerMode = steerMode();
+  const steerBtns = [...document.querySelectorAll<HTMLButtonElement>("#rp-steer button")];
+  const showSteer = () => steerBtns.forEach((b) => b.classList.toggle("on", b.dataset.steer === steerPref));
+  for (const b of steerBtns) {
+    b.addEventListener("click", async () => {
+      steerPref = await setSteer(b.dataset.steer as SteerMode);
+      showSteer();
+    });
+  }
+
   function setPaused(on: boolean): void {
     if (!running || finishedAt) return;
     paused = on;
+    if (on) {
+      steerPref = steerMode();
+      showSteer();
+    }
     $("race-pause").classList.toggle("on", on);
     audio?.pause(on);
     radio.mute(on);
@@ -286,6 +305,8 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     const tall = h > w;
     camera.fov = camMode === "seat" && !replaying ? (tall ? 92 : 72) : tall ? 76 : 60;
     camera.updateProjectionMatrix();
+    // a phone turned upright gets the TURN YOUR PHONE SIDEWAYS cover: hold the race behind it
+    if (touchScreen() && h > w && running && !paused) setPaused(true);
   }
   addEventListener("resize", resize);
 
@@ -293,6 +314,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
 
   async function start(s: RaceSetup): Promise<void> {
     setup = s;
+    steerPref = steerMode();
     setTrack(s.track);
     traceOutline();
     $("load-track").textContent = TRACK.id.toUpperCase();

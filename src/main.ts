@@ -15,6 +15,7 @@ import { STOCK } from "./race/physics";
 import { createRace } from "./race/race";
 import { CARS, DRIVERS, TRACKS, carUrl, faceUrl, fullUrl, type Car, type Driver } from "./roster";
 import { sendHome } from "./home";
+import { savedSteer, setSteer, touchScreen, type SteerMode } from "./steer";
 import { SUIT_PAINTS, carPaintFor, ownSwatch, saveSuit, savedSuit, suitUrl } from "./suit";
 import { VERSION } from "./version";
 
@@ -217,8 +218,16 @@ const cars = createPicker<Car>({
     showGaragePaints(c);
     showUpgrades();
     show("garage");
+    // the first time on a phone: tilt or thumb?
+    if (touchScreen() && !savedSteer()) $("steer-ask").classList.add("on");
   },
 });
+for (const b of document.querySelectorAll<HTMLButtonElement>("#steer-ask [data-steer]")) {
+  b.addEventListener("click", async () => {
+    await setSteer(b.dataset.steer as SteerMode);
+    $("steer-ask").classList.remove("on");
+  });
+}
 
 // the colours a car offers: stock only when the car starts in its own paint (no lime on the cars)
 function paintsFor(car: Car) {
