@@ -50,11 +50,11 @@ export const DRIVERS: Driver[] = [
     line: "Smirks on the grid. Laughs on the last lap.",
   },
   {
-    id: "si",
-    name: "si",
+    id: "reba",
+    name: "reba",
     team: "Scofti Racing",
-    role: "the wild card",
-    line: "Nobody knows what's in the bubble. Nobody asks.",
+    role: "the ice queen",
+    line: "Never smiles on the grid. Never misses a mark.",
   },
 ];
 
