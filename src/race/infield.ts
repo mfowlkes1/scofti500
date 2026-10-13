@@ -10,7 +10,7 @@ import { PAINTS } from "../paint";
 import { CARS } from "../roster";
 import { AD_EVERY, AD_FOR, drawAd, warmAds } from "./ads";
 import { RIVALS } from "./rivals";
-import { R, S } from "./track";
+import { APRON, HALF, LINE_S, PIT, R, S, frame, project } from "./track";
 
 export type Infield = {
   update(t: number): void;
@@ -257,6 +257,111 @@ export function buildInfield(scene: THREE.Object3D, night: boolean): Infield {
   }
   // pickups and a few people by the haulers
   for (let k = 0; k < 7; k++) pickup(-75 + k * 25, -(R - 44), 1.2 + rand() * 0.3);
+
+  // ---- the camping lots (Michael, 2026-10-13: "infield needs more action", with an aerial photo of
+  // a big speedway packed solid): rows and rows of campers, motorhomes, trucks and cars, all round
+  // the outside past the grandstands and, on a big track, filling the infield too, with people
+  // milling between them. Plain shapes, one instanced mesh per part, so hundreds cost next to nothing.
+  {
+    type Spot = { x: number; z: number; yaw: number; kind: 0 | 1 | 2 };
+    const spots: Spot[] = [];
+    const pylon = frame(LINE_S + 78, -32);
+    const free = (x: number, z: number, inside: boolean) => {
+      if (!inside) return true;
+      // keep clear of the motorhome rings and boards at the ends, the haulers, the logo and the pylon
+      for (const e of ENDS) if (Math.hypot(x - e.x, z - e.y) < (big ? 62 : 34)) return false;
+      if (Math.abs(x) < 115 && z < -(R - 58) && z > -(R - 18)) return false;
+      if (Math.abs(x) < 125 && Math.abs(z - 6) < 50) return false;
+      return Math.hypot(x - pylon.x, z - pylon.z) > 14;
+    };
+    // a lot: rows across it, 9 m apart, a vehicle every few meters, a gap now and then for a lane
+    // (every spot that fits is found first, then picked from at random, so a lot fills evenly)
+    const fill = (inside: boolean, cap: number) => {
+      const reach = inside ? R + 60 : R + HALF + 230;
+      const found: Spot[] = [];
+      for (let z = -reach; z <= reach + 120; z += 9) {
+        let x = -S / 2 - reach;
+        while (x < S / 2 + reach) {
+          const kind = (rand() < 0.42 ? 0 : rand() < 0.75 ? 1 : 2) as 0 | 1 | 2;
+          const len = kind === 0 ? 12 : kind === 1 ? 4.8 : 6;
+          x += len / 2 + 1.2;
+          const p = project(x, z);
+          const ok = inside ? p.d < APRON - 22 && !(p.s > PIT.wallFrom - 40 && p.s < PIT.wallTo + 40 && p.d > APRON - 70) : p.d > HALF + 68 && p.d < HALF + 175;
+          if (ok && free(x, z, inside)) found.push({ x, z, yaw: rand() < 0.5 ? 0 : Math.PI, kind });
+          x += len / 2 + 1.2 + (rand() < 0.08 ? 10 : 0);
+        }
+      }
+      for (let i = found.length - 1; i > 0; i--) {
+        const j = Math.floor(rand() * (i + 1));
+        [found[i], found[j]] = [found[j], found[i]];
+      }
+      spots.push(...found.slice(0, cap));
+    };
+    fill(false, big ? 2200 : 900);
+    if (big) fill(true, 1800);
+
+    // the parts: a camper's box and its window band, a car's body and its cabin, a truck's body and cab
+    const any = (r: () => number, list: string[]) => list[Math.floor(r() * list.length)];
+    const parts: { geo: THREE.BufferGeometry; kind: number; color: (r: () => number) => string }[] = [
+      { geo: new THREE.BoxGeometry(12, 3, 2.5).translate(0, 1.9, 0), kind: 0, color: (r) => any(r, ["#eceef0", "#e6dfcf", "#f4f4f2", "#d9dbd6"]) },
+      { geo: new THREE.BoxGeometry(12.04, 0.7, 2.54).translate(0, 2.3, 0), kind: 0, color: (r) => any(r, ["#2f3440", "#7a1e1e", "#1e3f7a", "#5a4a2a", "#2d5a2d", "#6b6f78"]) },
+      { geo: new THREE.BoxGeometry(4.8, 0.8, 1.85).translate(0, 0.65, 0), kind: 1, color: (r) => any(r, TRUCK_PAINT.concat(["#c4c8ce", "#2a4f8f", "#8f2a2a"])) },
+      { geo: new THREE.BoxGeometry(2.4, 0.6, 1.7).translate(-0.2, 1.35, 0), kind: 1, color: () => "#1a1f28" },
+      { geo: new THREE.BoxGeometry(6, 1.0, 2.0).translate(0, 0.9, 0), kind: 2, color: (r) => any(r, TRUCK_PAINT) },
+      { geo: new THREE.BoxGeometry(2.6, 0.9, 1.95).translate(1.2, 1.85, 0), kind: 2, color: (r) => any(r, TRUCK_PAINT) },
+    ];
+    const mat = std("#fff", { roughness: 0.55 });
+    const mm = new THREE.Matrix4();
+    const q = new THREE.Quaternion();
+    const one = new THREE.Vector3(1, 1, 1);
+    const col = new THREE.Color();
+    for (const part of parts) {
+      const mine = spots.filter((sp) => sp.kind === part.kind);
+      if (!mine.length) continue;
+      const mesh = new THREE.InstancedMesh(part.geo, mat, mine.length);
+      mine.forEach((sp, i) => {
+        q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), sp.yaw);
+        mm.compose(new THREE.Vector3(sp.x, 0, sp.z), q, one);
+        mesh.setMatrixAt(i, mm);
+        // each vehicle's colors come from where it's parked, so a truck's body and cab match
+        const r = mulberry(Math.round(sp.x * 7 + sp.z * 13));
+        mesh.setColorAt(i, col.set(part.color(r)));
+      });
+      mesh.receiveShadow = true;
+      root.add(mesh);
+    }
+    // folks between the rows: a few by every camper, some cheering
+    for (const sp of spots) {
+      if (sp.kind === 0 && rand() < 0.5) crowdAround(sp.x + (rand() - 0.5) * 8, sp.z + 4, 1 + Math.floor(rand() * 3), 3);
+      else if (rand() < 0.08) person(sp.x + (rand() - 0.5) * 5, 0, sp.z + 3.5);
+    }
+  }
+
+  // ---- big tracks: the garages, two long buildings behind pit road ----
+  if (big) {
+    const garage = std("#d9dbde", { roughness: 0.7 });
+    const roofMat = std("#8e939b", { roughness: 0.5, metalness: 0.3 });
+    const doorMat = std("#3a3e46", { roughness: 0.6 });
+    for (const [d0, d1] of [
+      [APRON - 34, APRON - 48],
+      [APRON - 56, APRON - 70],
+    ]) {
+      const s0 = PIT.wallFrom + 10;
+      const s1 = PIT.wallTo - 10;
+      const a = frame(s0, (d0 + d1) / 2);
+      const b = frame(s1, (d0 + d1) / 2);
+      const len = Math.hypot(b.x - a.x, b.z - a.z);
+      const g = new THREE.Group();
+      g.position.set((a.x + b.x) / 2, 0, (a.z + b.z) / 2);
+      g.rotation.y = -Math.atan2(b.z - a.z, b.x - a.x);
+      box(len, 5, Math.abs(d1 - d0), garage, 0, 2.5, 0, g);
+      box(len + 1, 0.5, Math.abs(d1 - d0) + 1.2, roofMat, 0, 5.2, 0, g);
+      // bay doors down both long sides
+      for (let k = -len / 2 + 6; k < len / 2 - 4; k += 9) for (const zz of [-1, 1]) box(6, 3.6, 0.1, doorMat, k, 1.8, zz * (Math.abs(d1 - d0) / 2 + 0.05), g);
+      root.add(g);
+      for (let k = 0; k < 30; k++) person(g.position.x + (rand() - 0.5) * len, 0, g.position.z + (rand() < 0.5 ? -1 : 1) * (Math.abs(d1 - d0) / 2 + 2 + rand() * 3), pick(SHIRTS), 0);
+    }
+  }
 
   // ---- people: a body and a head each ----
   const bodies = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.19, 0.23, 1.2, 7).translate(0, 0.6, 0), std("#fff", { roughness: 0.9 }), people.length);
