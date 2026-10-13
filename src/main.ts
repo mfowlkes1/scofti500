@@ -7,7 +7,7 @@ import { PAINTS, paintedUrl, savePaint, savedPaint } from "./paint";
 import { UPGRADES, MAX_LEVEL, buy, levels, nextCost, tuned } from "./garage";
 import { PACKS, buyPack, canBuy, chipAmount, chipSvg, chips, flagSvg } from "./chips";
 import { createGarage } from "./garageRoom";
-import { musicForRace, musicOn, setMusic, startMusic } from "./music";
+import { musicAway, musicForRace, musicOn, setMusic, startMusic } from "./music";
 import { createPicker } from "./pick";
 import { LINES, slug } from "./race/lines";
 import { STOCK } from "./race/physics";
@@ -87,6 +87,13 @@ let suitJob = 0;
 
 // ✕ back to the arcade shelf: /arcade/scofti500/ → /arcade/
 ($("to-arcade") as HTMLAnchorElement).href = import.meta.env.BASE_URL.replace(/scofti500\/?$/, "");
+// in the phone app the ✕ closes the app
+if (import.meta.env.MODE === "app") {
+  $("to-arcade").addEventListener("click", (e) => {
+    e.preventDefault();
+    void import("./app").then(({ exitApp }) => exitApp());
+  });
+}
 
 let driver: Driver = DRIVERS[0];
 
@@ -535,6 +542,27 @@ function goRacing(): void {
   race.start({ car, paintId: paintOf(car), driver: driver.name, spec: tuned(STOCK, car.id), pitCrew: levels(car.id).crew, laps, easy, track: track.id });
 }
 $("track-go").addEventListener("click", goRacing);
+
+// The phone app's back button: a race pauses (or resumes); other screens step back like Backspace;
+// false on the title, where the app closes. Leaving the app quiets it and pauses a race.
+function back(): boolean {
+  if (screen === "race") {
+    race.togglePause();
+    return true;
+  }
+  const prev = BACK[screen];
+  if (!prev) return false;
+  show(prev);
+  return true;
+}
+if (import.meta.env.MODE === "app") {
+  void import("./app").then(({ setupApp }) =>
+    setupApp(back, (gone) => {
+      musicAway(gone);
+      if (gone && screen === "race") race.pause();
+    }),
+  );
+}
 addEventListener("keydown", (e) => {
   if (screen === "track" && (e.key === "Enter" || e.key === " ")) {
     e.preventDefault();

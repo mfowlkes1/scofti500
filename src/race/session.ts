@@ -332,7 +332,9 @@ function crossLine(sess: Session, i: number): void {
     const time = sess.t - sess.lapStart[i];
     sess.lastLap[i] = time;
     if (time < sess.bestLap[i] && sess.drivers[i].mode !== "pit") sess.bestLap[i] = time;
-    if (order(sess)[0] === i) sess.led[i]++;
+    // a lap led (not after the flag: a car taking it looks for a moment like it's ahead of the cars that
+    // already finished, and every finisher got a lap led)
+    if (sess.phase !== "checkered" && order(sess)[0] === i) sess.led[i]++;
   }
   sess.lapStart[i] = sess.t;
   if (sess.finishOrder.includes(i)) return;

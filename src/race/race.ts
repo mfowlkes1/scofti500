@@ -65,6 +65,9 @@ export function createRace(opts: { onDone(again: boolean): void }) {
   let running = false;
   let paused = false;
   let finishedAt = 0;
+  // when the winner took the flag: the recap comes 20 s after it even if you're still out there
+  // (wrecked or a lap down), placed by the laps you finished (Michael, 2026-10-13)
+  let checkeredAt = 0;
   let camMode: "chase" | "seat" = (() => {
     try {
       return localStorage.getItem(CAM_KEY) === "seat" ? "seat" : "chase";
@@ -288,6 +291,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     $("load-track").textContent = TRACK.id.toUpperCase();
     $("load-line").textContent = TRACK.night ? "rolling out under the lights…" : "rolling out into the heat…";
     finishedAt = 0;
+    checkeredAt = 0;
     paused = false;
     $("race-results").classList.remove("on");
     $("race-pause").classList.remove("on");
@@ -472,6 +476,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
       track!.board(running.map((i) => ({ number: sess!.entries[i].number, name: sess!.entries[i].name, me: i === sess!.player })), lap);
     }
     renderer.render(scene, camera);
+    if (!finishedAt && checkeredAt && !sess.qualifying && t - checkeredAt > 20000) finishedAt = t - 4500;
     if (finishedAt && t - finishedAt > (sess.qualifying ? 1500 : 4500) && !$("race-results").classList.contains("on")) {
       if (sess.qualifying) qualified();
       else results();
@@ -763,6 +768,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
         radio.say("crew-white");
         radio.say(me("white"));
       } else if (e.type === "checkered") {
+        checkeredAt = performance.now();
         const win = s.finishOrder[0];
         radio.say(here(`ann-win-${slug(name(win))}`));
         audio?.roar();
@@ -1088,6 +1094,10 @@ export function createRace(opts: { onDone(again: boolean): void }) {
 
   return {
     start: (s: RaceSetup) => void start(s),
+    /** pause the race (the phone app going to the background) */
+    pause: () => setPaused(true),
+    /** the phone's back button in a race: pause it, or resume a paused one */
+    togglePause: () => setPaused(!paused),
   };
 }
 

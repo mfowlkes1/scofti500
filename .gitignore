@@ -8,3 +8,4 @@ art/meshy/views/
 art/meshy/*log*.txt
 public/dev/
 art/meshy/flat/
+dist-app
