@@ -978,6 +978,18 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     });
     $("ck-pos").textContent = String(pos);
     $("ck-lap").textContent = String(lap);
+    // the lap timer: this lap ticking up, your best, and how this lap's last one compared
+    const running = s.phase !== "pace" && s.crossed[s.player] >= 0 && !s.finishOrder.includes(s.player);
+    $("ck-laptime").textContent = running ? clock(s.t - s.lapStart[s.player]) : clock(s.lastLap[s.player] || 0);
+    const best = s.bestLap[s.player];
+    $("ck-best").textContent = isFinite(best) ? clock(best) : "--.--";
+    const last = s.lastLap[s.player];
+    const delta = $("ck-delta");
+    if (last > 0 && isFinite(best) && s.crossed[s.player] >= 2) {
+      const d = last - best;
+      delta.textContent = d <= 0.0005 ? "PB!" : `+${d.toFixed(2)}`;
+      delta.className = d <= 0.0005 ? "pb" : "slow";
+    } else delta.textContent = "";
     // the gauges: water follows the tires' heat, oil the revs, fuel goes down through a run and fills at a stop
     needle("ck-water", (me.temp - 0.5) / 0.8);
     needle("ck-oil", 0.25 + (me.rpm / 9600) * 0.7);
@@ -992,6 +1004,8 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     const flag = s.phase === "checkered" ? ["CHECKER", "white"] : whiteFlag() ? ["WHITE", "white"] : s.phase === "green" ? ["GREEN", "green"] : ["GREEN", "green"];
     lamp("ck-l-flag", s.phase === "green" || s.phase === "checkered", flag[0], flag[1]);
   }
+  /** a lap time on the dash: 0:23.4 */
+  const clock = (t: number) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, "0")}`;
   // the lap of your last pit stop (the fuel gauge fills there)
   let pitLap = 0;
   const pitLapOf = (s: Session) => (s.drivers[s.player].pitPhase === "stopped" ? (pitLap = Math.max(0, s.crossed[s.player])) : pitLap);

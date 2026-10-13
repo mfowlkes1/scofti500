@@ -188,18 +188,23 @@
         <svg width="0" height="0" style="position:absolute"><defs><linearGradient id="ck-arc" x1="0" x2="1"><stop offset="0" stop-color="#2bff5a"/><stop offset=".65" stop-color="#ffd400"/><stop offset="1" stop-color="#ff3d3d"/></linearGradient></defs></svg>
         <div id="ck-shift" class="ck-shift"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
         <div class="ck-pod ck-pod-l"><div class="ck-dial"><svg viewBox="-50 -50 100 100"><path d="M-36 25 A44 44 0 1 1 36 25" fill="none" stroke="#1e1e24" stroke-width="7"/><path d="M-36 25 A44 44 0 1 1 36 25" fill="none" stroke="url(#ck-arc)" stroke-width="3"/><line id="ck-water" x1="0" y1="0" x2="0" y2="-34" stroke="#ff3d3d" stroke-width="3" stroke-linecap="round"/><circle r="5" fill="#ff3d3d"/></svg><small>WATER</small></div><div class="ck-dial"><svg viewBox="-50 -50 100 100"><path d="M-36 25 A44 44 0 1 1 36 25" fill="none" stroke="#1e1e24" stroke-width="7"/><path d="M-36 25 A44 44 0 1 1 36 25" fill="none" stroke="url(#ck-arc)" stroke-width="3"/><line id="ck-oil" x1="0" y1="0" x2="0" y2="-34" stroke="#ff3d3d" stroke-width="3" stroke-linecap="round"/><circle r="5" fill="#ff3d3d"/></svg><small>OIL</small></div></div>
-        <div class="ck-gauge">
-          <div class="ck-row"><b id="ck-speed">0</b><span class="ck-gearbox"><em id="ck-gear">1</em><small>GEAR</small></span></div>
-          <small class="ck-sub">MPH · P<span id="ck-pos">1</span> · LAP <span id="ck-lap">1</span></small>
+        <div class="ck-gauge ck-timer">
+          <small>LAP <span id="ck-lap">1</span> · P<span id="ck-pos">1</span></small>
+          <b id="ck-laptime">0:00.0</b>
+          <div class="ck-best"><small>BEST</small><i id="ck-best">--.--</i><em id="ck-delta"></em></div>
         </div>
         <div class="ck-pod ck-pod-r"><div class="ck-dial"><svg viewBox="-50 -50 100 100"><path d="M-36 25 A44 44 0 1 1 36 25" fill="none" stroke="#1e1e24" stroke-width="7"/><path d="M-36 25 A44 44 0 1 1 36 25" fill="none" stroke="url(#ck-arc)" stroke-width="3"/><line id="ck-fuel" x1="0" y1="0" x2="0" y2="-34" stroke="#ff3d3d" stroke-width="3" stroke-linecap="round"/><circle r="5" fill="#ff3d3d"/></svg><small>FUEL</small></div>
-          <div class="ck-lights">
-            <i id="ck-l-draft" data-c="blue">DRAFT</i><i id="ck-l-tires" data-c="amber">TIRES</i><i id="ck-l-pit" data-c="blue">PIT LIM</i>
-            <i id="ck-l-flag" data-c="green">GREEN</i><i id="ck-l-caution" data-c="amber">CAUTION</i><i id="ck-l-hot" data-c="red">HOT</i>
+          <div class="ck-gauge ck-speedo">
+            <div class="ck-row"><b id="ck-speed">0</b><span class="ck-gearbox"><em id="ck-gear">1</em><small>GEAR</small></span></div>
+            <small class="ck-sub">MPH</small>
           </div>
         </div>
+        <div class="ck-lights">
+          <i id="ck-l-draft" data-c="blue">DRAFT</i><i id="ck-l-tires" data-c="amber">TIRES</i><i id="ck-l-pit" data-c="blue">PIT LIM</i>
+          <i id="ck-l-flag" data-c="green">GREEN</i><i id="ck-l-caution" data-c="amber">CAUTION</i><i id="ck-l-hot" data-c="red">HOT</i>
+        </div>
         <div class="ck-switches"><i class="on">IGN</i><i class="on">FUEL</i><i class="on">FAN</i><i class="on">START</i></div>
-        <svg id="ck-wheel" class="ck-wheel" viewBox="-50 -50 100 100"><circle r="44" fill="none" stroke="#111" stroke-width="9" /><circle r="44" fill="none" stroke="#2a2a2e" stroke-width="3" /><path d="M-40 4 L-12 8 L-8 18 L8 18 L12 8 L40 4" fill="none" stroke="#111" stroke-width="9" stroke-linejoin="round" /><rect x="-3" y="-47" width="6" height="8" fill="#c8161d" /><circle r="9" fill="#1a1a1d" /></svg>
+        <svg id="ck-wheel" class="ck-wheel" viewBox="-60 -60 120 120"><defs><radialGradient id="ck-hub" r="1"><stop offset="0" stop-color="#3a3a42"/><stop offset="1" stop-color="#121216"/></radialGradient></defs><circle r="46" fill="none" stroke="#0c0c0e" stroke-width="20"/><circle r="46" fill="none" stroke="#24242a" stroke-width="12"/><circle r="46" fill="none" stroke="#3a3a42" stroke-width="2" stroke-dasharray="3 5"/><path d="M-46 -6 A46 46 0 0 1 -38 -26" stroke="#16161a" stroke-width="22" fill="none"/><path d="M46 -6 A46 46 0 0 0 38 -26" stroke="#16161a" stroke-width="22" fill="none"/><path d="M-36 6 L-14 10 L-10 22 L10 22 L14 10 L36 6" fill="none" stroke="#0c0c0e" stroke-width="15" stroke-linejoin="round"/><circle r="17" fill="url(#ck-hub)" stroke="#0a0a0c" stroke-width="3"/><circle cx="-7" cy="-5" r="3" fill="#ff3d3d"/><circle cx="7" cy="-5" r="3" fill="#2bff5a"/><circle cx="0" cy="7" r="3" fill="#ffd400"/><rect x="-4" y="-60" width="8" height="12" rx="1.5" fill="#c8161d"/></svg>
       </div>
     </div>
 
