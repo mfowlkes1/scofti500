@@ -243,6 +243,15 @@ const CHATTER: Record<string, string[]> = {
     "Save the drama for the last lap.",
   ],
 };
+// Martinsvale: the fans throw chicken bones on the track, and your driver has something to say about it
+// (Michael, 2026-10-13)
+const BONES: Record<string, string> = {
+  raven: "Ha! Somebody just chucked a chicken bone on the track. Martinsvale, I love you.",
+  reba: "Chicken bones on the track. Again. I'll go around.",
+  lynx: "Was that a chicken bone?! Somebody's having a better lunch than me!",
+  maia: "Who's throwing chicken bones?! I'm finding you after this race!",
+  paige: "Chicken bones on the track. Classy, Martinsvale. Love you anyway.",
+};
 const COPY: Record<string, string> = { raven: "Copy that.", reba: "Understood.", lynx: "Yep! Got it!", maia: "Yeah, yeah. Got it.", paige: "Copy. Showtime." };
 export const CHATTER_COUNT: Record<string, number> = Object.fromEntries(Object.entries(CHATTER).map(([d, l]) => [d, l.length]));
 const PAINT_TALK: Record<string, string> = {
@@ -399,6 +408,7 @@ for (const [driver, voice] of Object.entries(DRIVER_VOICES)) {
   for (const [k, text] of Object.entries(DRIVER_LINES)) lines[`drv-${driver}-${k}`] = { who: "driver", text, label, voice };
   CHATTER[driver].forEach((text, i) => (lines[`drv-${driver}-chat-${i + 1}`] = { who: "driver", text, label, voice }));
   lines[`drv-${driver}-copy`] = { who: "driver", text: COPY[driver], label, voice };
+  if (BONES[driver]) lines[`drv-${driver}-bones`] = { who: "driver", text: BONES[driver], label, voice };
   const say = (key: string, text: string) => (lines[`drv-${driver}-${key}`] = { who: "driver", text, label, voice, clean: true });
   say("pick", "Let's go racing!");
   say("hello", HELLO[driver]);

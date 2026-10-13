@@ -694,6 +694,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     lappedAt: 0,
     stop: 99,
     chat: [] as number[], // chatter lines still to say, shuffled
+    bones: false,
   });
   let chat = freshChat();
 
@@ -882,6 +883,12 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     // before any repeats)
     if (racing && radio.quiet() > 14000) {
       const d = slug(setup?.driver ?? "");
+      // Martinsvale: once a race, the fans are throwing chicken bones on the track (Michael, 2026-10-13)
+      if (TRACK.id === "martinsvale" && !chat.bones && s.crossed[s.player] >= 1) {
+        chat.bones = true;
+        radio.say(me("bones"));
+        return;
+      }
       if (!chat.chat.length) chat.chat = Array.from({ length: CHATTER_COUNT[d] ?? 0 }, (_, i) => i + 1).sort(() => Math.random() - 0.5);
       const n = chat.chat.pop();
       if (n) radio.say(me(`chat-${n}`));
@@ -935,6 +942,43 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     }
   }
 
+  // ---- the dash, lit up (Michael, 2026-10-13: "light that shit up like a xmas tree") ----
+  const shiftLeds = [...$("ck-shift").children] as HTMLElement[];
+  const needle = (id: string, k: number) => $(id).setAttribute("transform", `rotate(${-140 + clamp(k, 0, 1) * 280})`);
+  const lamp = (id: string, on: boolean, text?: string, color?: string) => {
+    const el = $(id);
+    el.classList.toggle("on", on);
+    if (text !== undefined) el.textContent = text;
+    if (color) el.dataset.c = color;
+  };
+  function dash(s: Session, me: CarState, pos: number, lap: number): void {
+    // shift lights fill green, yellow, red, then all blue and flashing at the top of the gear
+    const k = clamp((me.rpm - 4200) / 5000, 0, 1);
+    const lit = Math.round(k * shiftLeds.length);
+    const flash = k > 0.96 && me.gear < 4 && Math.floor(performance.now() / 90) % 2 === 0;
+    shiftLeds.forEach((led, i) => {
+      led.className = flash ? "blue" : i < lit ? (i < 5 ? "green" : i < 9 ? "yellow" : "red") : "";
+    });
+    $("ck-pos").textContent = String(pos);
+    $("ck-lap").textContent = String(lap);
+    // the gauges: water follows the tires' heat, oil the revs, fuel goes down through a run and fills at a stop
+    needle("ck-water", (me.temp - 0.5) / 0.8);
+    needle("ck-oil", 0.25 + (me.rpm / 9600) * 0.7);
+    const since = Math.max(0, s.crossed[s.player] - (pitLapOf(s) ?? 0));
+    needle("ck-fuel", 1 - Math.min(0.9, since / 40));
+    // the warning lights
+    lamp("ck-l-draft", me.draft > 0.15);
+    lamp("ck-l-tires", me.wear > 0.55);
+    lamp("ck-l-pit", me.limiter);
+    lamp("ck-l-hot", me.temp > 1.12);
+    lamp("ck-l-caution", s.phase === "caution" || s.phase === "pace");
+    const flag = s.phase === "checkered" ? ["CHECKER", "white"] : whiteFlag() ? ["WHITE", "white"] : s.phase === "green" ? ["GREEN", "green"] : ["GREEN", "green"];
+    lamp("ck-l-flag", s.phase === "green" || s.phase === "checkered", flag[0], flag[1]);
+  }
+  // the lap of your last pit stop (the fuel gauge fills there)
+  let pitLap = 0;
+  const pitLapOf = (s: Session) => (s.drivers[s.player].pitPhase === "stopped" ? (pitLap = Math.max(0, s.crossed[s.player])) : pitLap);
+
   function hud(): void {
     const s = sess!;
     const me = s.cars[s.player];
@@ -960,7 +1004,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     $("hud-gear").textContent = String(me.gear);
     $("ck-speed").textContent = String(Math.round(mph(me)));
     $("ck-gear").textContent = String(me.gear);
-    ($("ck-rpm") as HTMLElement).style.width = `${clamp((me.rpm - 3000) / 6600, 0, 1) * 100}%`;
+    dash(s, me, pos, lap);
     ($("ck-wheel") as HTMLElement).style.transform = `rotate(${me.steer * 120}deg)`;
     // the tire monitor: how much of each tire is left, and how hot it is
     me.tires.forEach((t, i) => {
