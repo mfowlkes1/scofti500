@@ -2,7 +2,7 @@
 // line, races the laps, and takes the checkered flag. Rivals pit when their tires are gone and
 // there are enough laps left; you pit when you ask to. No 3D here: the race screen draws it, and
 // scripts can run whole races with it.
-import { canStartPit, drive, gridSlot, newDriver, startPit, type Driver } from "./ai";
+import { paceRun, canStartPit, drive, gridSlot, newDriver, startPit, type Driver } from "./ai";
 import { collide, drafts, freshTires, newCar, speedOf, step, type CarState, type Input, type Spec } from "./physics";
 import { L, LINE_S, gap, wrap } from "./track";
 
@@ -116,7 +116,7 @@ function makeSession(entries: Entry[], laps: number, easy: boolean, qualifying: 
     laps,
     t: 0,
     phase: "pace",
-    paceS: wrap(LINE_S - 230),
+    paceS: wrap(LINE_S - paceRun()),
     paceV: PACE_SPEED,
     crossed: entries.map(() => -1),
     furthest: entries.map(() => -1),

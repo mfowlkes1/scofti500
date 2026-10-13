@@ -19,6 +19,8 @@ export type Line = {
 
 const lines: Record<string, Line> = {
   "ann-welcome": { who: "announcer", text: "Good evening, race fans, and welcome to Martinsvale under the lights!" },
+  // what the series is for (Michael, 2026-10-13: whoever wins it "gets a deal with the big boys")
+  "ann-stakes": { who: "announcer", text: "This is the SCOFTI 500 series, folks, and the stakes don't get any higher. Whoever takes the championship earns a ride with the big boys!" },
   "crew-pace": { who: "crew", text: "Double file behind the pace car. Stay in line till the green, then it's all you." },
   "spot-green": { who: "spotter", text: "Green, green, green!" },
   "spot-car-high": { who: "spotter", text: "Car high." },

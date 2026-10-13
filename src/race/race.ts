@@ -393,6 +393,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     if (qualifying) radio.say("crew-qual-warm");
     else {
       radio.say(here("ann-welcome"));
+      radio.say("ann-stakes");
       radio.say("crew-pace");
     }
     spot = { high: false, low: false, clearAt: 0 };

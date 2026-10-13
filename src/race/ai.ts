@@ -311,9 +311,14 @@ function pit(drv: Driver, ctx: Context, c: CarState, v: number): Input {
   return { steer: steerTo(c, s + ld, d), ...pedals(v, Math.max(0, target)) };
 }
 
+/** how far the pace car leads the field round before the green: about 22 seconds at pace speed, time
+ * for the announcer's welcome and the stakes and the crew chief's word (under half a lap, so
+ * Martinsvale's is a little shorter) */
+export const paceRun = () => Math.min(480, L * 0.48);
+
 /** where the field lines up for the pace laps: double file, pole on the inside */
 export function gridSlot(pos: number): { s: number; d: number; slot: number } {
   const row = Math.floor(pos / 2);
   const slot = 18 + row * 9.5;
-  return { s: wrap(LINE_S - 230 - slot), d: pos % 2 === 0 ? -3 : 3, slot };
+  return { s: wrap(LINE_S - paceRun() - slot), d: pos % 2 === 0 ? -3 : 3, slot };
 }
