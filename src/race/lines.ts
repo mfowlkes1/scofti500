@@ -135,10 +135,9 @@ const PAINT_TALK: Record<string, string> = {
 };
 for (const [driver, voice] of Object.entries(DRIVER_VOICES)) {
   const label = driver.toUpperCase();
-  const name = driver[0].toUpperCase() + driver.slice(1);
   for (const [k, text] of Object.entries(DRIVER_LINES)) lines[`drv-${driver}-${k}`] = { who: "driver", text, label, voice };
   const say = (key: string, text: string) => (lines[`drv-${driver}-${key}`] = { who: "driver", text, label, voice, clean: true });
-  say("pick", `${name}. Let's go racing.`);
+  say("pick", "Let's go racing!");
   say("hello", HELLO[driver]);
   for (const [car, text] of Object.entries(CAR_TALK)) say(`car-${car}`, text);
   for (const [paint, text] of Object.entries(PAINT_TALK)) say(`paint-${paint}`, text);
