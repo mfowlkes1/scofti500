@@ -43,11 +43,11 @@ export const DRIVERS: Driver[] = [
     line: "Smiles on the grid. Gone by turn three.",
   },
   {
-    id: "allan",
-    name: "allan",
+    id: "raven",
+    name: "raven",
     team: "Scofti Racing",
     role: "the hotshot",
-    line: "Cocky, quick, and grinning the whole way round.",
+    line: "Smirks on the grid. Laughs on the last lap.",
   },
   {
     id: "si",

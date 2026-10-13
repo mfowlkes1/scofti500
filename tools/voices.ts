@@ -31,6 +31,10 @@ for (const key of wanted) {
     console.log(`${key}: no such line`);
     continue;
   }
+  if (line.voice === "") {
+    console.log(`${key}: no voice picked yet`);
+    continue;
+  }
   const raw = `${RAW}/${key}.mp3`;
   const out = `${OUT}/${key}.mp3`;
   if (!existsSync(raw)) {

@@ -50,7 +50,7 @@ for (const r of RIVALS) {
   lines[`crew-pitting-${id}`] = { who: "crew", text: `${r.name} is pitting.` };
   lines[`ann-win-${id}`] = { who: "announcer", text: `Checkered flag! ${r.name} wins at Martinsvale!` };
 }
-for (const name of ["Madhuvan", "Allan", "Si"]) lines[`ann-win-${slug(name)}`] = { who: "announcer", text: `Checkered flag! ${name} wins it under the lights!` };
+for (const name of ["Madhuvan", "Raven", "Si"]) lines[`ann-win-${slug(name)}`] = { who: "announcer", text: `Checkered flag! ${name} wins it under the lights!` };
 
 // ---- more radio: the crew chief, the spotter and the announcer talking you round ----
 Object.assign(lines, {
@@ -85,7 +85,7 @@ Object.assign(lines, {
   "crew-win-hotlanta": { who: "crew", text: "You won it! You won Hotlanta! Burn it down, kid!" },
 } satisfies Record<string, Line>);
 for (const r of RIVALS) lines[`ann-win-${slug(r.name)}-hotlanta`] = { who: "announcer", text: `Checkered flag! ${r.name} wins at Hotlanta!` };
-for (const name of ["Madhuvan", "Allan", "Si"]) lines[`ann-win-${slug(name)}-hotlanta`] = { who: "announcer", text: `Checkered flag! ${name} wins it at Hotlanta!` };
+for (const name of ["Madhuvan", "Raven", "Si"]) lines[`ann-win-${slug(name)}-hotlanta`] = { who: "announcer", text: `Checkered flag! ${name} wins it at Hotlanta!` };
 // qualifying (race night): the warm-up, the lap, and how it went
 Object.assign(lines, {
   "crew-qual-warm": { who: "crew", text: "Warm-up lap. Get some heat in those tires. Then it's one lap, all you've got." },
@@ -98,7 +98,7 @@ Object.assign(lines, {
 } satisfies Record<string, Line>);
 // the announcer calls every lead change
 for (const r of RIVALS) lines[`ann-lead-${slug(r.name)}`] = { who: "announcer", text: `${r.name} takes the lead!` };
-for (const name of ["Madhuvan", "Allan", "Si"]) lines[`ann-lead-${slug(name)}`] = { who: "announcer", text: `${name} takes the lead! Listen to this crowd!` };
+for (const name of ["Madhuvan", "Raven", "Si"]) lines[`ann-lead-${slug(name)}`] = { who: "announcer", text: `${name} takes the lead! Listen to this crowd!` };
 // the pack (Hotlanta's full field): who leads, who wins, who's pitting
 for (const r of PACK_RIVALS) {
   const id = slug(r.name);
@@ -108,9 +108,10 @@ for (const r of PACK_RIVALS) {
 }
 
 // ---- the drivers ----
-// Madhuvan: "SCOFTI CON daisy", a sweet Southern voice Michael designed; Allan: "David - Deep, Southern,
-// Cowboy" and Si: "Adam - Robotic and Friendly", both from the ElevenLabs library (Michael, 2026-10-12)
-const DRIVER_VOICES: Record<string, string> = { madhuvan: "VDCzHcQzuGC8lVW8vjyr", allan: "0hh7H4ZVAtaGpm1VZyEN", si: "Lo6JZOZvGYBxVhTFszLx" };
+// Madhuvan: "SCOFTI CON daisy", a sweet Southern voice Michael designed; Si: "Adam - Robotic and
+// Friendly", from the ElevenLabs library (Michael, 2026-10-12). Raven (Michael, 2026-10-13, the series
+// went all women): her voice is still to pick; until then her lines aren't recorded
+const DRIVER_VOICES: Record<string, string> = { madhuvan: "VDCzHcQzuGC8lVW8vjyr", raven: "", si: "Lo6JZOZvGYBxVhTFszLx" };
 // on the radio, the same words in each driver's voice
 const DRIVER_LINES: Record<string, string> = {
   green: "Here we go!",
@@ -135,12 +136,12 @@ const DRIVER_LINES: Record<string, string> = {
 // said on the pick screens, not over the radio: hello when you look at them, and what they think of
 // each car and paint
 const HELLO: Record<string, string> = {
-  madhuvan: "Strap in, boys. I don't race for second.",
-  allan: "Your car sure does look nice... in my rearview mirror.",
+  madhuvan: "Strap in, ladies. I don't race for second.",
+  raven: "Hope you brought a fast car. You're gonna need it.",
   si: "Greetings! Bubble polished. Tires hungry. Ready to race!",
 };
 // each driver's own take on each car: Madhuvan a badass with a mean streak (Michael, 2026-10-13: "not
-// like an innocent girl"), Allan few words, Si a friendly robot. The 7 is a nod to the old owl car, and
+// like an innocent girl"), Raven cocky and laughing at you, Si a friendly robot. The 7 is a nod to the old owl car, and
 // Madhuvan winks about it (Michael, 2026-10-12)
 const CAR_TALK: Record<string, Record<string, string>> = {
   madhuvan: {
@@ -149,11 +150,11 @@ const CAR_TALK: Record<string, Record<string, string>> = {
     "3-muscle": "The three. All that muscle... let's see if it can handle me.",
     "7-owl": "Number seven, the owl car. Hooters? I brought my own.",
   },
-  allan: {
-    "17-modern": "Seventeen. Modern. Clean. I'll take it.",
-    "43-eighties": "Forty-three. Older than me. Still faster than you.",
-    "3-muscle": "The three. No tricks. Just horsepower.",
-    "7-owl": "The seven. Runs quiet in the dark. Like me.",
+  raven: {
+    "17-modern": "The seventeen. Sleek and mean. I like it.",
+    "43-eighties": "The forty-three. Old school. Let's teach the new kids something.",
+    "3-muscle": "The three. That's a lot of motor. Good thing I can handle it.",
+    "7-owl": "The seven. Night owl. Funny, they call me that too.",
   },
   si: {
     "17-modern": "Seventeen. Aerodynamics: excellent. I approve.",
@@ -167,9 +168,9 @@ const CAR_TALK: Record<string, Record<string, string>> = {
 const CHATTER: Record<string, string[]> = {
   madhuvan: [
     "This thing's a rocket. And I'm the one holding the match.",
-    "Somebody tell the boys up front I'm comin'. And I ain't slowing down.",
+    "Somebody tell the girls up front I'm comin'. And I ain't slowing down.",
     "Is it hot in here, or is it just me? ...It's me.",
-    "Every one of these boys is about to learn my name.",
+    "Every one of these girls is about to learn my name.",
     "I don't lift. I don't brake. I don't apologize.",
     "Wall's close. I like it close.",
     "They can watch their mirrors all they want. I'm still coming.",
@@ -177,15 +178,15 @@ const CHATTER: Record<string, string[]> = {
     "That last corner? Flat out. Try and keep up.",
     "Nice guys finish second. I'm not nice.",
   ],
-  allan: [
-    "Car's hooked up. Let's go.",
-    "They can't hold me off forever.",
-    "Easy. I'm just warming up.",
-    "Feeling good. Keep the numbers coming.",
-    "Somebody's about to have a long night.",
-    "Line's working. I'm staying on it.",
-    "Watch this.",
-    "Nobody gets past me tonight.",
+  raven: [
+    "Ha! Did you see that? They never saw me coming.",
+    "I'm just getting warmed up.",
+    "Pass me? Cute. Try again.",
+    "This car's on rails. Keep it coming.",
+    "Keep the radio short. I'm busy.",
+    "I could do this all day.",
+    "Somebody up there's driving scared. I can smell it.",
+    "Smile for the cameras. I'm about to take the lead.",
   ],
   si: [
     "Beep boop! Having fun!",
@@ -198,7 +199,7 @@ const CHATTER: Record<string, string[]> = {
     "Request: more speed. Request granted.",
   ],
 };
-const COPY: Record<string, string> = { madhuvan: "Copy. Now let me drive.", allan: "Copy.", si: "Message received!" };
+const COPY: Record<string, string> = { madhuvan: "Copy. Now let me drive.", raven: "Copy that.", si: "Message received!" };
 export const CHATTER_COUNT: Record<string, number> = Object.fromEntries(Object.entries(CHATTER).map(([d, l]) => [d, l.length]));
 const PAINT_TALK: Record<string, string> = {
   stock: "Stock paint. The real deal.",
@@ -216,6 +217,17 @@ const PAINT_TALK: Record<string, string> = {
 };
 // a driver's own words in place of the shared radio, paint and pick lines above
 const OWN: Record<string, Record<string, string>> = {
+  raven: {
+    green: "Green flag! Let's have some fun.",
+    win: "Ha! Told you. Somebody hand me that trophy.",
+    podium: "Podium. Not bad. Next time it's the top step.",
+    "got-one": "See ya!",
+    passed: "Oh, she did not just do that.",
+    lead: "Out front! Try and catch me.",
+    rubbing: "Ha! Rubbin's racin'!",
+    white: "Last lap. Let's make it a good one.",
+    pick: "Let's go racing!",
+  },
   madhuvan: {
     green: "Green flag. Time to go to work.",
     pit: "Copy. Coming in hot.",
