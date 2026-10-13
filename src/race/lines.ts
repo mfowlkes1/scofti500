@@ -110,8 +110,8 @@ const DRIVER_LINES: Record<string, string> = {
 // each car and paint
 const HELLO: Record<string, string> = {
   madhuvan: "Hey there! Smile for the cameras... then I'm gone by turn three.",
-  allan: "Allan. Your car sure does look nice... in my rearview mirror.",
-  si: "Greetings! Si is ready. Bubble polished. Tires hungry.",
+  allan: "Your car sure does look nice... in my rearview mirror.",
+  si: "Greetings! Bubble polished. Tires hungry. Ready to race!",
 };
 // each driver's own take on each car: Madhuvan cheeky, Allan few words, Si a friendly robot. The 7 is a
 // nod to the old owl car, and Madhuvan winks about it (Michael, 2026-10-12)
@@ -129,8 +129,8 @@ const CAR_TALK: Record<string, Record<string, string>> = {
     "7-owl": "The seven. Runs quiet in the dark. Like me.",
   },
   si: {
-    "17-modern": "Seventeen. Aerodynamics: excellent. Si approves.",
-    "43-eighties": "Forty-three. Vintage hardware. Si respects the classics.",
+    "17-modern": "Seventeen. Aerodynamics: excellent. I approve.",
+    "43-eighties": "Forty-three. Vintage hardware. I respect the classics.",
     "3-muscle": "Number three. Muscle detected. Engaging happy mode.",
     "7-owl": "Seven. Owl mode activated. Hoot hoot!",
   },

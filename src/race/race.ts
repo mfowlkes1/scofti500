@@ -191,9 +191,10 @@ export function createRace(opts: { onDone(again: boolean): void }) {
       throttle = Math.max(throttle, gp.buttons[7]?.value ?? 0, gp.buttons[0]?.pressed ? 1 : 0);
       brake = Math.max(brake, gp.buttons[6]?.value ?? 0, gp.buttons[1]?.pressed ? 1 : 0);
     }
-    // preseason: no brake pedal. Let off the gas and the car slows itself, just enough to make the
-    // corner coming up (and a little on the straights)
-    if (setup?.easy && sess && throttle < 0.1) {
+    // let off the gas and the car slows itself, just enough to make the corner coming up (and a little
+    // on the straights). Preseason has no brake pedal at all; race night keeps one for braking harder
+    // (Michael, 2026-10-12: "if you lift off gas it brakes too")
+    if (sess && throttle < 0.1) {
       const c = sess.cars[sess.player];
       const v = Math.hypot(c.vx, c.vz);
       const corner = planSpeed(c.s + v * 0.6) * 0.97;

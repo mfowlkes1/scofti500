@@ -1,13 +1,14 @@
 // The infield on race night: the teams' haulers parked in a row off the backstretch in their team
 // colors, fans' motorhomes packed into both ends with awnings, string lights, flags and grills going,
 // pickups parked between them, people everywhere (fans on the motorhome roofs; the pit crews are in crew.ts),
-// and a giant video leaderboard at each end facing down the straights.
+// and a giant video leaderboard at each end facing down the straights (with an ad now and then, ads.ts).
 // Built from simple shapes; if Meshy models turn up in public/models (hauler, motorhome, pickup) they
 // take the place of the hand-built ones.
 import * as THREE from "three";
 import { model } from "../models";
 import { PAINTS } from "../paint";
 import { CARS } from "../roster";
+import { AD_EVERY, AD_FOR, drawAd, warmAds } from "./ads";
 import { RIVALS } from "./rivals";
 import { R, S } from "./track";
 
@@ -296,6 +297,11 @@ export function buildInfield(scene: THREE.Scene): Infield {
   // ---- the big leaderboards, one at each end, facing down the straights ----
   const [bc, bg] = canvas(1024, 640);
   const boardTex = tex(bc);
+  // the boards cut to an ad now and then (ads.ts), then back to the running order
+  warmAds();
+  const ad = { on: false, n: Math.floor(rand() * 100), start: 0, next: -1, drawn: 0 };
+  let lastRows: { number: string; name: string; me: boolean }[] = [];
+  let lastLap = "";
   for (const [e, end] of ENDS.entries()) {
     const out = e === 0 ? 1 : -1;
     const g = new THREE.Group();
@@ -333,6 +339,23 @@ export function buildInfield(scene: THREE.Scene): Infield {
 
   return {
     update(t) {
+      if (ad.next < 0 || t < ad.start) ad.next = t + AD_EVERY * 0.5; // first one comes a bit sooner
+      if (!ad.on && t >= ad.next) {
+        ad.on = true;
+        ad.start = t;
+        ad.n++;
+      }
+      if (ad.on) {
+        if (t - ad.start > AD_FOR) {
+          ad.on = false;
+          ad.next = t + AD_EVERY;
+          drawBoard();
+        } else if (t - ad.drawn > 1 / 20) {
+          ad.drawn = t;
+          drawAd(bg, 1024, 640, ad.n, t - ad.start);
+          boardTex.needsUpdate = true;
+        }
+      }
       for (const [p, i] of bouncers) {
         m.makeTranslation(p.x, p.y + Math.abs(Math.sin(t * (5 + p.bounce * 4) + i)) * 0.18 * p.bounce, p.z);
         bodies.setMatrixAt(i, m);
@@ -351,38 +374,46 @@ export function buildInfield(scene: THREE.Scene): Infield {
       }
     },
     board(rows, lap) {
-      bg.fillStyle = "#05060a";
-      bg.fillRect(0, 0, 1024, 640);
-      // header: SCOFTI 500 and the lap
-      bg.fillStyle = "#c8161d";
-      bg.fillRect(0, 0, 1024, 92);
-      bg.textBaseline = "middle";
-      bg.fillStyle = "#fff";
-      bg.font = "64px 'Permanent Marker'";
-      bg.textAlign = "left";
-      bg.fillText("SCOFTI 500", 28, 50);
-      bg.textAlign = "right";
-      bg.font = "58px 'Lilita One'";
-      bg.fillText(lap, 996, 50);
-      rows.slice(0, 8).forEach((r, k) => {
-        const y = 100 + k * 67;
-        bg.fillStyle = r.me ? "#ffd400" : k % 2 ? "#12141b" : "#0b0c12";
-        bg.fillRect(0, y, 1024, 64);
-        const ink = r.me ? "#111" : "#fff";
-        bg.textAlign = "right";
-        bg.fillStyle = r.me ? "#111" : "#ffd400";
-        bg.font = "52px 'Lilita One'";
-        bg.fillText(String(k + 1), 92, y + 34);
-        bg.textAlign = "center";
-        bg.fillStyle = r.me ? "#111" : "#ffd400";
-        bg.font = "italic 58px 'Racing Sans One'";
-        bg.fillText(r.number, 190, y + 34);
-        bg.textAlign = "left";
-        bg.fillStyle = ink;
-        bg.font = "52px 'Lilita One'";
-        bg.fillText(r.name.toUpperCase(), 270, y + 34);
-      });
-      boardTex.needsUpdate = true;
+      lastRows = rows;
+      lastLap = lap;
+      if (!ad.on) drawBoard();
     },
   };
+
+  function drawBoard(): void {
+    const rows = lastRows;
+    const lap = lastLap;
+    bg.fillStyle = "#05060a";
+    bg.fillRect(0, 0, 1024, 640);
+    // header: SCOFTI 500 and the lap
+    bg.fillStyle = "#c8161d";
+    bg.fillRect(0, 0, 1024, 92);
+    bg.textBaseline = "middle";
+    bg.fillStyle = "#fff";
+    bg.font = "64px 'Permanent Marker'";
+    bg.textAlign = "left";
+    bg.fillText("SCOFTI 500", 28, 50);
+    bg.textAlign = "right";
+    bg.font = "58px 'Lilita One'";
+    bg.fillText(lap, 996, 50);
+    rows.slice(0, 8).forEach((r, k) => {
+      const y = 100 + k * 67;
+      bg.fillStyle = r.me ? "#ffd400" : k % 2 ? "#12141b" : "#0b0c12";
+      bg.fillRect(0, y, 1024, 64);
+      const ink = r.me ? "#111" : "#fff";
+      bg.textAlign = "right";
+      bg.fillStyle = r.me ? "#111" : "#ffd400";
+      bg.font = "52px 'Lilita One'";
+      bg.fillText(String(k + 1), 92, y + 34);
+      bg.textAlign = "center";
+      bg.fillStyle = r.me ? "#111" : "#ffd400";
+      bg.font = "italic 58px 'Racing Sans One'";
+      bg.fillText(r.number, 190, y + 34);
+      bg.textAlign = "left";
+      bg.fillStyle = ink;
+      bg.font = "52px 'Lilita One'";
+      bg.fillText(r.name.toUpperCase(), 270, y + 34);
+    });
+    boardTex.needsUpdate = true;
+  }
 }
