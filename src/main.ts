@@ -396,9 +396,13 @@ function showUpgrades(): void {
 
 // ---- the race: how many laps, then go ----
 const LAPS_KEY = "scofti500:laps";
-let laps = 30;
+// short races (Michael, 2026-10-13: "these races too long"): 5, 10 or 15 laps, 10 to start
+const LAP_CHOICES = [5, 10, 15];
+let laps = 10;
 try {
-  laps = Number(localStorage.getItem(LAPS_KEY)) || 30;
+  const saved = Number(localStorage.getItem(LAPS_KEY));
+  // (an old 30 or 60 from before falls back to 10)
+  if (LAP_CHOICES.includes(saved)) laps = saved;
 } catch {
   // not remembered
 }

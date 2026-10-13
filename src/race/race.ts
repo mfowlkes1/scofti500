@@ -30,7 +30,7 @@ const angleTo = (a: number, b: number) => Math.atan2(Math.sin(b - a), Math.cos(b
 const fmt = (t: number) => (isFinite(t) && t > 0 ? t.toFixed(2) : "--.--");
 const CAM_KEY = "scofti500:camera";
 
-// what a finish pays: 1st down to 8th, for a 30-lap race (shorter pays less, longer more)
+// what a finish pays: 1st down to 8th, for a 15-lap race (shorter pays less)
 const PURSE = [3000, 2200, 1700, 1300, 1000, 800, 600, 400];
 const LED_BONUS = 40;
 
@@ -1051,7 +1051,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     if (setup) setup = { ...setup, grid: undefined };
     const ord = order(s);
     const pos = ord.indexOf(s.player) + 1;
-    const scale = 0.4 + (s.laps / 30) * 0.6;
+    const scale = 0.4 + (s.laps / 15) * 0.6;
     const payout = Math.round((PURSE[pos - 1] ?? 300) * scale) + s.led[s.player] * LED_BONUS;
     earn(payout);
     $("rr-title").textContent = pos === 1 ? "VICTORY LANE" : pos <= 3 ? "PODIUM" : "CHECKERED FLAG";
