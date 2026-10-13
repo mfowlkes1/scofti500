@@ -119,6 +119,11 @@ const CAR_TALK: Record<string, string> = {
   "3-muscle": "The number three. That thing is pure muscle.",
   "7-owl": "The seven. Night owl. Spooky fast.",
 };
+// a driver's own take on a car, over the shared one. The 7 is a nod to the old owl car (Michael,
+// 2026-10-12): Madhuvan has a wink about it.
+const OWN_CAR_TALK: Record<string, Record<string, string>> = {
+  madhuvan: { "7-owl": "The seven! An owl car? Oh, honey... I know a thing or two about hooters." },
+};
 const PAINT_TALK: Record<string, string> = {
   stock: "Stock paint. The real deal.",
   red: "Red. Fast and loud.",
@@ -139,7 +144,7 @@ for (const [driver, voice] of Object.entries(DRIVER_VOICES)) {
   const say = (key: string, text: string) => (lines[`drv-${driver}-${key}`] = { who: "driver", text, label, voice, clean: true });
   say("pick", "Let's go racing!");
   say("hello", HELLO[driver]);
-  for (const [car, text] of Object.entries(CAR_TALK)) say(`car-${car}`, text);
+  for (const [car, text] of Object.entries({ ...CAR_TALK, ...OWN_CAR_TALK[driver] })) say(`car-${car}`, text);
   for (const [paint, text] of Object.entries(PAINT_TALK)) say(`paint-${paint}`, text);
 }
 
