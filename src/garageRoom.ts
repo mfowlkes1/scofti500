@@ -7,6 +7,7 @@
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { loadCar } from "./carModel";
+import { addNumber, addTrim } from "./carNumber";
 import { paintedUrl } from "./paint";
 import { carUrl, type Car } from "./roster";
 
@@ -52,6 +53,11 @@ export function createGarage(canvas: HTMLCanvasElement): Garage {
     const obj = (await loadCar(car, paintId, { brightness: 0.5 })) ?? (await pictureStand(car, paintId));
     // a later pick arrived while this one loaded
     if (want !== key) return;
+    // a black car keeps white trim: its number on the doors and roof, and pinstripes
+    if (paintId === "black" && obj instanceof THREE.Group && obj.children.length) {
+      addNumber(obj, car.id, car.number, "black");
+      addTrim(obj, car.id);
+    }
     if (carObj) table.remove(carObj);
     carObj = obj;
     table.add(obj);

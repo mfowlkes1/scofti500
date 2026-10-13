@@ -131,3 +131,49 @@ export function addNumber(body: THREE.Group, carId: string, number: string, pain
     body.add(new THREE.Mesh(geo, mat));
   }
 }
+
+// ---- white trim on black cars (Michael, 2026-10-13: "all black cars should always have white trim").
+// The lime cars are black underneath, so painted black they lost every bit of contrast; a black car gets
+// a double white pinstripe down each side, along the beltline. ----
+const stripes = new Map<string, THREE.BufferGeometry[]>();
+
+function stripesFor(body: THREE.Object3D, carId: string): THREE.BufferGeometry[] {
+  const hit = stripes.get(carId);
+  if (hit) return hit;
+  const inner = body.children[0];
+  let mesh: THREE.Mesh | null = null;
+  body.traverse((o) => {
+    if (o instanceof THREE.Mesh && (!mesh || o.geometry.attributes.position.count > mesh.geometry.attributes.position.count)) mesh = o;
+  });
+  if (!inner || !mesh) return [];
+  body.updateMatrixWorld(true);
+  // the body's size in the model's own units (x front to back, y up, z across)
+  const box = new THREE.Box3().setFromObject(mesh);
+  const a = inner.worldToLocal(box.min.clone());
+  const b = inner.worldToLocal(box.max.clone());
+  const lo = new THREE.Vector3(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z));
+  const hi = new THREE.Vector3(Math.max(a.x, b.x), Math.max(a.y, b.y), Math.max(a.z, b.z));
+  const scale = inner.scale.x;
+  const outZ = body.worldToLocal(box.max.clone()).z;
+  const len = (hi.x - lo.x) * 0.84 * scale;
+  const made: THREE.BufferGeometry[] = [];
+  // the beltline: a bit below the middle of the body's height, two lines close together
+  for (const k of [0.4, 0.46]) {
+    const y = lo.y + (hi.y - lo.y) * k;
+    for (const side of ["left", "right"] as const) {
+      const mid = inner.localToWorld(new THREE.Vector3((lo.x + hi.x) / 2, y, 0));
+      mid.z = side === "left" ? outZ * 0.6 : -outZ * 0.6;
+      const orient = new THREE.Euler().setFromRotationMatrix(BASIS[side]);
+      made.push(new DecalGeometry(mesh!, mid, orient, new THREE.Vector3(len, (hi.y - lo.y) * 0.022 * scale, outZ)));
+    }
+  }
+  stripes.set(carId, made);
+  return made;
+}
+
+const stripeMat = new THREE.MeshStandardMaterial({ color: "#f4f4f4", roughness: 0.4, polygonOffset: true, polygonOffsetFactor: -4 });
+
+/** a black car: white pinstripes down both sides */
+export function addTrim(body: THREE.Group, carId: string): void {
+  for (const geo of stripesFor(body, carId)) body.add(new THREE.Mesh(geo, stripeMat));
+}

@@ -91,7 +91,8 @@ export function createRadio(box: HTMLElement, onTalk: (talking: boolean) => void
     };
     if (muted) return void setTimeout(done, 900 + line.text.length * 30);
     if (line.key && (await hasFile(line.key))) {
-      current = playClip(`${import.meta.env.BASE_URL}audio/radio/${line.key}.mp3`);
+      // a touch louder than the clip itself, so it cuts through the race (Michael, 2026-10-13)
+      current = playClip(`${import.meta.env.BASE_URL}audio/radio/${line.key}.mp3`, 1.5);
       // (if it couldn't play, the caption still shows for a moment)
       void current.done.then((ok) => (ok ? done() : setTimeout(done, 1500 + line.text.length * 40)));
       return;

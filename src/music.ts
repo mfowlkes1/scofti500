@@ -111,7 +111,7 @@ export function duckMusic(on: boolean): void {
   const now = ctx.currentTime;
   gain.gain.cancelScheduledValues(now);
   gain.gain.setValueAtTime(gain.gain.value, now);
-  gain.gain.linearRampToValueAtTime(on ? level * 0.4 : level, now + (on ? 0.15 : 0.8));
+  gain.gain.linearRampToValueAtTime(on ? level * 0.3 : level, now + (on ? 0.15 : 0.8));
 }
 
 /** in a race the music sits down under the engines */

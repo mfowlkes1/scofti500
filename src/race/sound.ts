@@ -205,7 +205,7 @@ export function startAudio(): RaceAudio | null {
       crowd.gain.setTargetAtTime(0.05, now + 2, 1.2);
     },
     duck(on) {
-      under.gain.setTargetAtTime(on ? 0.35 : 1, ctx.currentTime, on ? 0.08 : 0.4);
+      under.gain.setTargetAtTime(on ? 0.25 : 1, ctx.currentTime, on ? 0.08 : 0.4);
     },
     pause(on) {
       void (on ? ctx.suspend() : ctx.resume());

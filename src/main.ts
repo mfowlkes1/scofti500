@@ -63,7 +63,7 @@ addEventListener("click", startMusic);
 addEventListener("keydown", startMusic);
 // ◀◀ ▶▶: skip songs (on the title and the pause screen); the song's name shows for a moment
 for (const id of ["song-prev", "rp-prev"]) $(id).addEventListener("click", prevSong);
-for (const id of ["song-next", "rp-next"]) $(id).addEventListener("click", skipSong);
+for (const id of ["song-next", "rp-next", "hud-song"]) $(id).addEventListener("click", skipSong);
 let songTimer = 0;
 onSongChange((name) => {
   const el = $("song-name");

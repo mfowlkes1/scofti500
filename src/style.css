@@ -192,6 +192,7 @@ body:not([data-screen="title"]) .welcome {
 #to-arcade,
 #music {
   position: fixed;
+  z-index: 10;
   top: max(14px, env(safe-area-inset-top));
   right: max(14px, env(safe-area-inset-right));
   width: 44px;
@@ -206,6 +207,7 @@ body:not([data-screen="title"]) .welcome {
   border-radius: 50%;
 }
 #music {
+  z-index: 10;
   right: calc(max(14px, env(safe-area-inset-right)) + 54px);
   padding: 0;
 }
@@ -1078,6 +1080,7 @@ body[data-screen="garage"] .welcome {
 /* skip songs: ◀◀ ▶▶ beside the ♪ on the title */
 .song-btn {
   position: fixed;
+  z-index: 10;
   top: max(14px, env(safe-area-inset-top));
   width: 44px;
   height: 44px;

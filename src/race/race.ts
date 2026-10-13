@@ -5,7 +5,7 @@ import * as THREE from "three";
 import { loadCar } from "../carModel";
 import { duckMusic } from "../music";
 import { playClip, type Clip } from "../voice";
-import { addNumber } from "../carNumber";
+import { addNumber, addTrim } from "../carNumber";
 import { CAR_HEIGHT } from "../carModel";
 import { chipAmount, earnChips } from "../chips";
 import { CARS, type Car } from "../roster";
@@ -371,13 +371,21 @@ export function createRace(opts: { onDone(again: boolean): void }) {
       entries.map(async (e) => {
         const car = CARS.find((c) => c.id === e.carId)!;
         let body: THREE.Group | null;
-        if (e.player) body = await loadCar(car, e.paintId, { brightness: 0.85, maxSize: 2048 });
+        if (e.player) {
+          body = await loadCar(car, e.paintId, { brightness: 0.85, maxSize: 2048 });
+          // a black car: its number in white on the doors and roof, and white pinstripes
+          if (body && e.paintId === "black") {
+            addNumber(body, e.carId, e.number, "black");
+            addTrim(body, e.carId);
+          }
+        }
         else {
           const key = `${e.carId}|${e.paintId}`;
           if (!shared.has(key)) shared.set(key, loadCar(car, e.paintId, { brightness: 0.85, maxSize: big ? 512 : 1024 }));
           body = (await shared.get(key)!)?.clone() ?? null;
           // their own number over the one baked into the model
           if (body) addNumber(body, e.carId, e.number, e.paintId);
+          if (body && e.paintId === "black") addTrim(body, e.carId);
         }
         loaded++;
         bar.style.width = `${20 + (loaded / entries.length) * 78}%`;
