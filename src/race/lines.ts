@@ -120,10 +120,10 @@ for (const r of PACK_RIVALS) {
 // ---- the drivers ----
 // The series is all women (Michael, 2026-10-13). Reba: "SCOFTI CON daisy", a voice Michael designed
 // (it was Madhuvan's, before she left). Raven: "Blue - Neutral, Vocal Fry, Commentator" from the
-// ElevenLabs library. Maia: "Eryn - Strong Female Military Commander", ElevenLabs library. Lynx and
-// Paige: voices still to pick; until then their lines
+// ElevenLabs library. Maia: "Eryn - Strong Female Military Commander", ElevenLabs library. Lynx: "Blondie - Radio Host", ElevenLabs
+// library. Paige: voice still to pick; until then their lines
 // aren't recorded
-const DRIVER_VOICES: Record<string, string> = { raven: "kfU9VUUMjY4PWNoUfZ45", reba: "VDCzHcQzuGC8lVW8vjyr", lynx: "", maia: "wa4sQVgbDDzUDEzJwch3", paige: "" };
+const DRIVER_VOICES: Record<string, string> = { raven: "kfU9VUUMjY4PWNoUfZ45", reba: "VDCzHcQzuGC8lVW8vjyr", lynx: "st7NwhTPEzqo2riw7qWC", maia: "wa4sQVgbDDzUDEzJwch3", paige: "" };
 // on the radio, the same words in each driver's voice
 const DRIVER_LINES: Record<string, string> = {
   green: "Here we go!",
