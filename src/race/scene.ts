@@ -468,7 +468,7 @@ export async function buildTrack(): Promise<TrackScene> {
   {
     const boxes = new THREE.Group();
     const cart = new THREE.MeshStandardMaterial({ color: "#b3141b", roughness: 0.4, metalness: 0.3 });
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < TRACK.field; i++) {
       const s = PIT.stall(i);
       for (const ds of [-4, 4]) {
         const m = new THREE.Mesh(ribbon(s + ds - 0.12, s + ds + 0.12, PIT.inner, PIT.lane - 1.2, { flat: true, lift: 0.01, step: 0.24 }), white);

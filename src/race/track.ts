@@ -7,7 +7,7 @@
 // 240 m straights joined by two tight 180° turns, concrete in the turns, 12° of banking in them and
 // none on the straights.
 // Hotlanta (Michael, 2026-10-12: tri-oval, day, "Hotlanta"): about a mile and a half. Long, sweeping
-// 26° turns, 5° on the straights, and the start/finish line out on the tri-oval's kink. Flat out in
+// 30° turns (steep enough to run three-wide in a pack with grip to spare), 5° on the straights, and the start/finish line out on the tri-oval's kink. Flat out in
 // a pack and the draft is everything.
 //
 // Positions on the track are (s, d): s is meters along the centerline from the start of the front
@@ -28,7 +28,11 @@ export type TrackDef = {
   dogleg?: { r: number; deg: number };
   /** pit road: the pit wall (s), the limiter (m/s), where the AI starts down for it (m before the
    * line s = 0) and where the entry lane leaves the apron (m before s = 0) */
-  pit: { wallFrom: number; wallTo: number; speed: number; dive: number; link: number };
+  pit: { wallFrom: number; wallTo: number; speed: number; dive: number; link: number; gap: number };
+  /** how many cars start, you included */
+  field: number;
+  /** how much of the grip the drivers' speed plan uses in the turns: a pack needs room to spare */
+  aiGrip: number;
   /** air drag (1 = Martinsvale): the big track's cars carry a draggier aero package */
   drag: number;
   night: boolean;
@@ -42,7 +46,9 @@ export const TRACK_DEFS: Record<string, TrackDef> = {
     R: 58,
     bankDeg: 12,
     straightBankDeg: 0,
-    pit: { wallFrom: 22, wallTo: 222, speed: 15.6, dive: 95, link: 70 },
+    pit: { wallFrom: 22, wallTo: 222, speed: 15.6, dive: 95, link: 70, gap: 20 },
+    field: 8,
+    aiGrip: 0.97,
     drag: 1,
     night: true,
     concreteTurns: true,
@@ -51,10 +57,13 @@ export const TRACK_DEFS: Record<string, TrackDef> = {
     id: "hotlanta",
     S: 640,
     R: 185,
-    bankDeg: 26,
+    bankDeg: 30,
     straightBankDeg: 5,
     dogleg: { r: 800, deg: 36 },
-    pit: { wallFrom: 60, wallTo: 380, speed: 24.6, dive: 260, link: 180 },
+    // a full field (Michael, 2026-10-13: "give it full nascar"... "35"), so the boxes are packed tight
+    pit: { wallFrom: 60, wallTo: 420, speed: 24.6, dive: 260, link: 180, gap: 9.5 },
+    field: 35,
+    aiGrip: 0.86,
     drag: 1,
     night: false,
     concreteTurns: false,
@@ -79,7 +88,8 @@ export const PIT = {
   speed: 15.6, // the limiter: 35 mph at Martinsvale
   dive: 95,
   link: 70,
-  stall: (i: number) => PIT.wallFrom + 24 + i * 20, // s of each team's box
+  gap: 20, // between the boxes
+  stall: (i: number) => PIT.wallFrom + 24 + i * PIT.gap, // s of each team's box
 };
 
 export let TRACK: TrackDef = TRACK_DEFS.martinsvale;
@@ -116,7 +126,7 @@ export function setTrack(id: string): void {
   R = t.R;
   BANK = (t.bankDeg * Math.PI) / 180;
   STRAIGHT_BANK = (t.straightBankDeg * Math.PI) / 180;
-  Object.assign(PIT, { wallFrom: t.pit.wallFrom, wallTo: t.pit.wallTo, speed: t.pit.speed, dive: t.pit.dive, link: t.pit.link });
+  Object.assign(PIT, t.pit);
   pieces = [];
   let s = 0;
   const line = (x: number, z: number, tx: number, tz: number, len: number) => {
@@ -240,10 +250,10 @@ const smooth = (e0: number, e1: number, x: number) => {
 };
 
 /** how far into a turn s is, 0 on the straights, 1 through the middle of the turns: banking and
- * concrete fade in over 30 m around each turn */
+ * concrete fade in round each turn, over 30 m at Martinsvale and longer on a big track's steep turns */
 export function turnAmount(s: number): number {
   s = wrap(s);
-  const ramp = 30;
+  const ramp = Math.max(30, R * 0.5);
   const into = (a: number, b: number, x: number) => smooth(a - ramp, a + ramp * 0.5, x) * (1 - smooth(b - ramp * 0.5, b + ramp, x));
   let k = 0;
   // turns 3-4 end at the line, s = L, so look a lap either way too

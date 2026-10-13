@@ -41,6 +41,8 @@ export type Session = {
   paceV: number;
   /** line crossings since the green (-1 before it) */
   crossed: number[];
+  /** the most times each car has crossed the line: backing over it and driving across again isn't a lap */
+  furthest: number[];
   lapStart: number[];
   lastLap: number[];
   bestLap: number[];
@@ -89,6 +91,7 @@ export function createSession(entries: Entry[], laps: number, easy = false): Ses
     paceS: wrap(LINE_S - 230),
     paceV: PACE_SPEED,
     crossed: entries.map(() => -1),
+    furthest: entries.map(() => -1),
     lapStart: entries.map(() => 0),
     lastLap: entries.map(() => 0),
     bestLap: entries.map(() => Infinity),
@@ -188,6 +191,8 @@ export function stepSession(sess: Session, playerInput: Input | null, dt: number
 
 function crossLine(sess: Session, i: number): void {
   sess.crossed[i]++;
+  if (sess.crossed[i] <= sess.furthest[i]) return;
+  sess.furthest[i] = sess.crossed[i];
   if (sess.phase === "pace") return;
   const c = sess.crossed[i];
   if (c > 0) {

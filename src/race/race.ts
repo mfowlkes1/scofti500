@@ -3,12 +3,13 @@
 // radio, sparks and tire smoke, and the results. The race itself runs in session.ts.
 import * as THREE from "three";
 import { loadCar } from "../carModel";
+import { addNumber } from "../carNumber";
 import { earn } from "../garage";
 import { CARS, type Car } from "../roster";
 import { airGun, autopilot, createSession, mph, order, pitStop, progress, stepSession, type Entry, type Session } from "./session";
 import { STOCK, speedOf, type CarState, type Input, type Spec } from "./physics";
 import { planSpeed } from "./ai";
-import { RIVALS } from "./rivals";
+import { fieldOf } from "./rivals";
 import { buildTrack, type TrackScene } from "./scene";
 import { buildCrews, type PitCrews } from "./crew";
 import { CHATTER_COUNT, LINES, slug } from "./lines";
@@ -48,6 +49,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
   // each track's scene, built the first time it's raced and kept
   const tracks = new Map<string, Promise<TrackScene>>();
   let crews: PitCrews | null = null;
+  const crewSets = new Map<string, PitCrews>();
 
   let sess: Session | null = null;
   let setup: RaceSetup | null = null;
@@ -289,11 +291,11 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     bar.style.width = "4%";
     resize();
 
-    // the field: the rivals in grid order, you at the back
-    const entries: Entry[] = RIVALS.map((r) => {
-      const car = CARS.find((c) => c.id === r.carId)!;
-      if (s.easy) return { name: r.name, number: car.number, carId: r.carId, paintId: r.paint, spec: { ...STOCK, power: STOCK.power * 0.94 }, skill: r.skill * 0.95, aggression: r.aggression * 0.4 };
-      return { name: r.name, number: car.number, carId: r.carId, paintId: r.paint, spec: STOCK, skill: r.skill, aggression: r.aggression };
+    // the field: the rivals in grid order (as many as the track takes), you at the back
+    const entries: Entry[] = fieldOf(TRACK.field).map((r) => {
+      const number = r.number;
+      if (s.easy) return { name: r.name, number, carId: r.carId, paintId: r.paint, spec: { ...STOCK, power: STOCK.power * 0.94 }, skill: r.skill * 0.95, aggression: r.aggression * 0.4 };
+      return { name: r.name, number, carId: r.carId, paintId: r.paint, spec: STOCK, skill: r.skill, aggression: r.aggression };
     });
     // shuffle the rivals' starting spots a little each race
     for (let i = entries.length - 1; i > 0; i--) {
@@ -319,10 +321,22 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     for (const v of views) scene.remove(v.root);
     views = [];
     let loaded = 0;
+    // rivals in the same car and paint share one painted model (copies of it); a big field gets
+    // smaller paint textures to go easy on phones
+    const shared = new Map<string, Promise<THREE.Group | null>>();
+    const big = entries.length > 12;
     const made = await Promise.all(
       entries.map(async (e) => {
         const car = CARS.find((c) => c.id === e.carId)!;
-        const body = await loadCar(car, e.paintId, { brightness: 0.85, maxSize: e.player ? 2048 : 1024 });
+        let body: THREE.Group | null;
+        if (e.player) body = await loadCar(car, e.paintId, { brightness: 0.85, maxSize: 2048 });
+        else {
+          const key = `${e.carId}|${e.paintId}`;
+          if (!shared.has(key)) shared.set(key, loadCar(car, e.paintId, { brightness: 0.85, maxSize: big ? 512 : 1024 }));
+          body = (await shared.get(key)!)?.clone() ?? null;
+          // their own number over the one baked into the model
+          if (body) addNumber(body, e.carId, e.number, e.paintId);
+        }
         loaded++;
         bar.style.width = `${20 + (loaded / entries.length) * 78}%`;
         return body;
@@ -342,7 +356,9 @@ export function createRace(opts: { onDone(again: boolean): void }) {
       return { root, tilt, body, lastV: 0, lastH: 0, accel: 0, lean: 0 };
     });
     sess.cars.forEach((c, i) => (views[i].lastH = c.h));
-    crews ??= buildCrews(scene);
+    // each track's pit crews, one for every box, live in its scene
+    crews = crewSets.get(TRACK.id) ?? buildCrews(track.root, TRACK.field);
+    crewSets.set(TRACK.id, crews);
     crews.setup(sess);
     placeCamera();
     camH = sess.cars[sess.player].h;
@@ -684,7 +700,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
         radio.say(me("pit-out"));
         warned = { half: false, gone: false };
         $("hud-pit").classList.remove("on");
-      } else if (e.type === "pit-in" && Math.random() < 0.4) {
+      } else if (e.type === "pit-in" && Math.random() < 3 / s.cars.length) {
         radio.say(`crew-pitting-${slug(name(e.car))}`);
       }
     }
@@ -835,8 +851,11 @@ export function createRace(opts: { onDone(again: boolean): void }) {
 
     // the running order
     const leaderP = progress(s, ord[0]);
-    $("hud-board").innerHTML = ord
-      .map((i, k) => {
+    const mine = ord.indexOf(s.player);
+    const shown = ord.length <= 10 ? ord : ord.filter((_, k) => k < 5 || Math.abs(k - Math.max(mine, 6)) <= 1);
+    $("hud-board").innerHTML = shown
+      .map((i) => {
+        const k = ord.indexOf(i);
         const behind = (leaderP - progress(s, i)) / 36;
         const lapsDown = Math.floor((leaderP - progress(s, i)) / L);
         const gapTxt = k === 0 ? "LEADER" : lapsDown > 0 ? `-${lapsDown} LAP` : `+${behind.toFixed(1)}`;

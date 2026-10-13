@@ -90,7 +90,7 @@ export function buildInfield(scene: THREE.Object3D, night: boolean): Infield {
   // ---- the teams' haulers: one per rival plus a spare, in a row off the backstretch ----
   const teams = RIVALS.map((r) => ({
     color: PAINTS.find((p) => p.id === r.paint)?.swatch.startsWith("#") ? PAINTS.find((p) => p.id === r.paint)!.swatch : "#4b5530",
-    number: CARS.find((c) => c.id === r.carId)?.number ?? "",
+    number: r.number,
     name: r.name,
   }));
   teams.push({ color: "#111", number: "", name: "SCOFTI 500" });

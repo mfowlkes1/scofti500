@@ -2,7 +2,7 @@
 // ElevenLabs into public/audio/radio/<key>.mp3 (and lists them in lines.json). A line with no
 // recording yet is read by the browser's voice.
 import type { Who } from "./radio";
-import { RIVALS } from "./rivals";
+import { PACK_RIVALS, RIVALS } from "./rivals";
 
 export type Line = {
   who: Who;
@@ -41,7 +41,7 @@ const lines: Record<string, Line> = {
   "spot-wall": { who: "spotter", text: "Whoa, you're okay. Keep going." },
 };
 // moving up: "That's P5. Keep going."
-for (let p = 2; p <= 8; p++) lines[`crew-pos-${p}`] = { who: "crew", text: `That's P${p}. Keep going.` };
+for (let p = 2; p <= 35; p++) lines[`crew-pos-${p}`] = { who: "crew", text: `That's P${p}. Keep going.` };
 // counting down the laps
 for (const n of [3, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]) lines[`crew-togo-${n}`] = { who: "crew", text: `${n} to go.` };
 // who's pitting, and who won
@@ -89,6 +89,13 @@ for (const name of ["Madhuvan", "Allan", "Si"]) lines[`ann-win-${slug(name)}-hot
 // the announcer calls every lead change
 for (const r of RIVALS) lines[`ann-lead-${slug(r.name)}`] = { who: "announcer", text: `${r.name} takes the lead!` };
 for (const name of ["Madhuvan", "Allan", "Si"]) lines[`ann-lead-${slug(name)}`] = { who: "announcer", text: `${name} takes the lead! Listen to this crowd!` };
+// the pack (Hotlanta's full field): who leads, who wins, who's pitting
+for (const r of PACK_RIVALS) {
+  const id = slug(r.name);
+  lines[`ann-lead-${id}`] = { who: "announcer", text: `${r.name} takes the lead!` };
+  lines[`ann-win-${id}-hotlanta`] = { who: "announcer", text: `Checkered flag! ${r.name} wins at Hotlanta!` };
+  lines[`crew-pitting-${id}`] = { who: "crew", text: `${r.name} is pitting.` };
+}
 
 // ---- the drivers ----
 // Madhuvan: "SCOFTI CON daisy", a sweet Southern voice Michael designed; Allan: "David - Deep, Southern,

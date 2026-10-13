@@ -2,7 +2,7 @@
 // They use the same physics as you. Each follows a racing line round the track (wide into the
 // turn, down to the apex, wide out) at a speed plan worked out from grip: brake late, carry speed,
 // and pass when there's room.
-import { frame, gap, HALF, L, LINE_S, PIT, TURNS, bankAt, onTrack, wrap } from "./track";
+import { frame, gap, HALF, L, LINE_S, PIT, TRACK, TURNS, bankAt, onTrack, wrap } from "./track";
 import { G, STOCK, WHEELBASE, freshTires, speedOf, steerLock, tireGrip, type CarState, type Input, type Spec } from "./physics";
 
 // ---- the racing line and how fast it can be driven ----
@@ -13,17 +13,22 @@ const LEAD = 26; // how far before a turn the line starts down
 
 function lineD(s: number): number {
   s = wrap(s);
+  // a pack track runs in lanes round the middle, not wall to apex to wall (that swing took them into
+  // the wall in traffic)
+  const pack = TRACK.field > 12;
+  const hi = pack ? 1.5 : HI;
+  const lo = pack ? -3.5 : LO;
   for (const [a, b] of TURNS) {
     for (const off of [0, L, -L]) {
       const t = (s + off - (a - LEAD)) / (b - a + LEAD * 1.6);
       if (t > 0 && t < 1) {
         // a late apex: the line reaches the bottom past the middle of the turn
         const bell = Math.pow(Math.sin(Math.PI * Math.pow(t, 1.18)), 2);
-        return HI - (HI - LO) * bell;
+        return hi - (hi - lo) * bell;
       }
     }
   }
-  return HI;
+  return hi;
 }
 
 // worked out again for each track
@@ -55,7 +60,7 @@ onTrack(() => {
     const mu = STOCK.grip;
     const tb = Math.tan(bankAt(i));
     const aMax = (G * (mu + tb)) / (1 - mu * tb);
-    vmax.push(Math.min(80, Math.sqrt(aMax * 0.97 * rad)));
+    vmax.push(Math.min(80, Math.sqrt(aMax * TRACK.aiGrip * rad)));
     brakeAt.push(Math.min(STOCK.brake, aMax) * 0.78);
   }
   for (let i = 0; i < N; i++) PLAN.push(vmax[i]);
@@ -149,13 +154,25 @@ export function drive(drv: Driver, ctx: Context): Input {
   let want = 0;
   let cap = Infinity;
   const myLine = racingLine(c.s) + drv.offset;
+  // in a pack it's one nudge each way for whoever's alongside, and going round only the nearest car in
+  // the way (adding them all up shoved cars in the middle of a pack into a spin)
+  // (Martinsvale's eight still add up every nudge: that suits its short-track bumping)
+  const pack = TRACK.field > 12;
+  let above = false;
+  let below = false;
+  let round = 0;
+  let roundG = Infinity;
   for (let i = 0; i < ctx.cars.length; i++) {
     if (i === ctx.me) continue;
     const o = ctx.cars[i];
     const g = gap(c.s, o.s);
     const ov = speedOf(o);
     // someone alongside: make room
-    if (Math.abs(g) < 5.6 && Math.abs(o.d - c.d) < 2.7) want += o.d > c.d ? -2.2 : 2.2;
+    if (Math.abs(g) < 5.6 && Math.abs(o.d - c.d) < 2.7) {
+      if (!pack) want += o.d > c.d ? -2.2 : 2.2;
+      else if (o.d > c.d) above = true;
+      else below = true;
+    }
     if (g <= 0 || g > 34) continue;
     if (Math.abs(o.d - myLine) > 2.4) continue;
     // a car in our path ahead
@@ -164,18 +181,27 @@ export function drive(drv: Driver, ctx: Context): Input {
       // go round it: under it when it's high, over it when it's low
       const side = o.d > 0.5 ? -1 : 1;
       const room = side < 0 ? o.d - 3.8 > -HALF + 1.2 : o.d + 3.8 < HALF - 1.2;
-      if (room) want += o.d + side * 3.8 - racingLine(c.s);
+      if (room && !pack) want += o.d + side * 3.8 - racingLine(c.s);
+      else if (room && g < roundG) {
+        roundG = g;
+        round = o.d + side * 3.8 - racingLine(c.s);
+      }
     }
-    const close = 7 - drv.aggression * 3.5 + Math.max(0, closing) * 0.9;
-    if (g < close) cap = Math.min(cap, ov - 0.6 + drv.aggression * 1.4);
+    // how close they'll tuck up behind, and how hard they lean on that car. In a big pack at 170 mph a
+    // shove sends both cars round, so there everyone keeps a car length and stops pushing
+    const close = (pack ? 9 : 7) - drv.aggression * 3.5 + Math.max(0, closing) * (pack ? 1.4 : 0.9);
+    if (g < close) cap = Math.min(cap, ov - 0.6 + drv.aggression * (pack ? 0.4 : 1.4));
   }
+  if (pack) want = round + (above ? -2.2 : 0) + (below ? 2.2 : 0);
   drv.want += clamp(want - drv.want, -2.5 * ctx.dt, 2.5 * ctx.dt);
   if (want === 0) drv.want *= Math.exp(-ctx.dt * 0.7);
   drv.offset += clamp(drv.want - drv.offset, -2.4 * ctx.dt, 2.4 * ctx.dt);
 
   const ld = 7 + v * 0.36;
-  const d2 = clamp(racingLine(c.s + ld) + drv.offset, -HALF + 1.3, HALF - 1.2);
-  const steer = steerTo(c, c.s + ld, d2);
+  // a pack track keeps them a car's width more off the wall (riding it in a pack wrecks them)
+  const d2 = clamp(racingLine(c.s + ld) + drv.offset, -HALF + 1.3, HALF - (TRACK.field > 12 ? 2.2 : 1.2));
+  // a hair short of full lock, so a nudge in the turn doesn't tip it into a spin
+  const steer = clamp(steerTo(c, c.s + ld, d2), pack ? -0.92 : -1, pack ? 0.92 : 1);
   const p = pedals(v, Math.min(target, cap));
   return { steer, ...p };
 }

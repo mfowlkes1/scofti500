@@ -106,7 +106,8 @@ function capsule(r: number, len: number): THREE.BufferGeometry {
   return new THREE.CapsuleGeometry(r, Math.max(0.01, len - 2 * r), 4, 10).translate(0, -len / 2, 0);
 }
 
-export function buildCrews(scene: THREE.Scene): PitCrews {
+/** a crew for each of count boxes, added to scene (the track's, so they go with it) */
+export function buildCrews(scene: THREE.Object3D, count: number): PitCrews {
   const std = (color: THREE.ColorRepresentation, o: THREE.MeshStandardMaterialParameters = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.7, ...o });
   const PARTS: Record<PartName, { geo: THREE.BufferGeometry; mat: THREE.Material; tint: Tint; color?: string; shadow?: boolean }> = {
     pelvis: { geo: new THREE.SphereGeometry(1, 12, 8).scale(0.15, 0.13, 0.19), mat: std("#fff"), tint: "suit", shadow: true },
@@ -206,7 +207,7 @@ export function buildCrews(scene: THREE.Scene): PitCrews {
   }
 
   const crews: Crew[] = [];
-  for (let b = 0; b < 8; b++) {
+  for (let b = 0; b < count; b++) {
     const members = JOBS.map((job, k): Member => {
       // behind the wall, either side of the cart
       const home = { x: -3.2 + k * 1.28 + (k >= 3 ? 0.5 : 0), z: WALL_Z - 2.4 - (k % 2) * 0.6 };

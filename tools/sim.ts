@@ -3,18 +3,19 @@
 // TRACK=hotlanta picks the track (martinsvale by default).
 import { STOCK } from "../src/race/physics";
 import { createSession, order, stepSession, type Entry } from "../src/race/session";
-import { L, setTrack, turnAmount } from "../src/race/track";
+import { L, TRACK, setTrack, turnAmount } from "../src/race/track";
 
 setTrack(process.env.TRACK ?? "martinsvale");
 
 const laps = Number(process.argv[2] ?? 30);
-const entries: Entry[] = Array.from({ length: 8 }, (_, i) => ({
+const N = TRACK.field;
+const entries: Entry[] = Array.from({ length: N }, (_, i) => ({
   name: `car${i}`,
   number: String(i),
   carId: "",
   paintId: "",
   spec: STOCK,
-  skill: 0.985 - i * 0.008,
+  skill: 0.985 - (i * 0.05) / N,
   aggression: (i % 3) / 2,
 }));
 // EASY=1: preseason testing (soft walls, rivals easing off the way the race screen sets them)
@@ -22,13 +23,13 @@ const easy = !!process.env.EASY;
 if (easy) for (const e of entries) Object.assign(e, { spec: { ...STOCK, power: STOCK.power * 0.94 }, skill: e.skill * 0.95, aggression: e.aggression * 0.4 });
 const sess = createSession(entries, laps, easy);
 const dt = 1 / 120;
-const walls = new Array(8).fill(0);
-const bumps = new Array(8).fill(0);
+const walls = new Array(N).fill(0);
+const bumps = new Array(N).fill(0);
 let hardest = 0;
 // your car's fastest on the straights and slowest in the turns, once racing
 let top = 0;
 let turnLow = Infinity;
-while (sess.finishOrder.length < 8 && sess.t < laps * (L / 12) + 200) {
+while (sess.finishOrder.length < N && sess.t < laps * (L / 12) + 200) {
   stepSession(sess, null, dt);
   sess.cars.forEach((c, i) => {
     if (c.scrape > 1) walls[i]++;
