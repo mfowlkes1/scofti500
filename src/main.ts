@@ -67,6 +67,18 @@ musicBtn.addEventListener("click", () => {
 
 $("version").textContent = VERSION;
 
+// the title: all the drivers lined up together, Raven in the middle (the first thing anyone sees)
+{
+  const order = ["maia", "lynx", "raven", "reba", "paige"];
+  const lined = [...order.map((id) => DRIVERS.find((d) => d.id === id)).filter((d): d is Driver => !!d), ...DRIVERS.filter((d) => !order.includes(d.id))];
+  for (const d of lined) {
+    const img = new Image();
+    img.src = fullUrl(d);
+    img.alt = "";
+    $("lineup").append(img);
+  }
+}
+
 // ✕ back to the arcade shelf: /arcade/scofti500/ → /arcade/
 ($("to-arcade") as HTMLAnchorElement).href = import.meta.env.BASE_URL.replace(/scofti500\/?$/, "");
 

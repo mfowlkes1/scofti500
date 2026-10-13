@@ -70,6 +70,62 @@ body:not([data-screen="title"]) .welcome {
   -webkit-text-stroke: 0.06em var(--night);
   paint-order: stroke fill;
 }
+/* what makes it different, under the series */
+.tagline {
+  display: block;
+  margin-top: 0.45em;
+  font: 400 clamp(13px, 2.4vmin, 22px) / 1 "Lilita One", system-ui, sans-serif;
+  letter-spacing: 0.22em;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
+}
+
+/* the drivers lined up along the bottom of the title, the middle one a step forward */
+.lineup {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  translate: -50% 0;
+  /* all five always fit across: capped by the screen width too */
+  height: min(46vh, 520px, 54vw);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+.lineup img {
+  height: 92%;
+  width: auto;
+  margin: 0 -1.2vh;
+  filter: drop-shadow(0 0.8rem 1rem rgba(0, 0, 0, 0.75));
+}
+.lineup img:nth-child(2),
+.lineup img:nth-child(4) {
+  height: 96%;
+  z-index: 1;
+}
+.lineup img:nth-child(3) {
+  height: 100%;
+  z-index: 2;
+}
+/* on a wide screen the logo sits a little smaller and higher, clear of their heads */
+@media (min-aspect-ratio: 1/1) {
+  .title {
+    top: 3vh;
+  }
+  .mark {
+    font-size: clamp(56px, 13.5vmin, 150px);
+  }
+  .five {
+    font-size: clamp(70px, 17vmin, 200px);
+  }
+}
+/* the logo and the button stay in front of them */
+.title,
+#race-now {
+  z-index: 3;
+}
+
 /* the series under the logo: SCOFTI in its brush font (it's ours), ACADEMY in the heading font */
 .academy {
   display: block;
