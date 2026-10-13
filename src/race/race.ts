@@ -11,7 +11,7 @@ import { planSpeed } from "./ai";
 import { RIVALS } from "./rivals";
 import { buildTrack, type TrackScene } from "./scene";
 import { buildCrews, type PitCrews } from "./crew";
-import { slug } from "./lines";
+import { CHATTER_COUNT, slug } from "./lines";
 import { createRadio, type Radio } from "./radio";
 import { startAudio, type RaceAudio } from "./sound";
 import { HALF, L, R, S, bankAt, frame, gap, heightAt } from "./track";
@@ -568,6 +568,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     goGetSaid: false,
     lappedAt: 0,
     stop: 99,
+    chat: [] as number[], // chatter lines still to say, shuffled
   });
   let chat = freshChat();
 
@@ -636,6 +637,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
         if (s.laps >= 10 && done === Math.floor(s.laps / 2)) {
           radio.say("ann-halfway");
           radio.say("crew-halfway");
+        radio.say(me("copy"));
         }
         // a couple of laps in, the crew chief asks how it feels: worn fronts push (tight), worn rears
         // come round (loose)
@@ -685,6 +687,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     if (mine.wear > 0.45 && !warned.half) {
       warned.half = true;
       radio.say("crew-tires-half");
+      radio.say(me("copy"));
     } else if (mine.wear > 0.72 && !warned.gone && s.laps - s.crossed[s.player] > 3) {
       warned.gone = true;
       radio.say(me("tires"));
@@ -696,13 +699,13 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     const racing = !autopilot(s) && s.crossed[s.player] >= 0;
     if (pos < lastPos && now - posSaidAt > 9000 && racing) {
       posSaidAt = now;
-      if (pos === 1) radio.say(me("lead"));
-      else if (Math.random() < 0.5) radio.say(me("got-one"));
-      else radio.say(Math.random() < 0.5 ? "spot-clean" : "crew-nice-move");
+      radio.say(me(pos === 1 ? "lead" : "got-one"));
+      if (pos > 1 && Math.random() < 0.4) radio.say(Math.random() < 0.5 ? "spot-clean" : "crew-nice-move");
       radio.say(pos === 1 ? "crew-lead" : `crew-pos-${pos}`);
     } else if (pos > lastPos && now - chat.droppedAt > 20000 && racing) {
       chat.droppedAt = now;
-      radio.say(Math.random() < 0.5 ? me("passed") : "crew-passed-ok");
+      radio.say(me("passed"));
+      if (Math.random() < 0.5) radio.say("crew-passed-ok");
     }
     lastPos = pos;
 
@@ -727,6 +730,15 @@ export function createRace(opts: { onDone(again: boolean): void }) {
       radio.say(me("draft"));
     }
 
+    // your driver is a talker: after about 14 quiet seconds they say something (each line once
+    // before any repeats)
+    if (racing && radio.quiet() > 14000) {
+      const d = slug(setup?.driver ?? "");
+      if (!chat.chat.length) chat.chat = Array.from({ length: CHATTER_COUNT[d] ?? 0 }, (_, i) => i + 1).sort(() => Math.random() - 0.5);
+      const n = chat.chat.pop();
+      if (n) radio.say(me(`chat-${n}`));
+    }
+
     // every few seconds: are we reeling in the car ahead, is the one behind reeling us in, and are
     // there lapped cars up the road
     if (now - chat.trendAt > 6000 && racing) {
@@ -740,6 +752,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
           chat.goGetSaid = true;
           radio.say("crew-go-get-em");
         } else radio.say("crew-closing");
+        radio.say(me("copy"));
       }
       if (behind < 40 && chat.behind - behind > 6 && now - chat.catchAt > 40000) {
         chat.catchAt = now;
@@ -754,6 +767,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
           if (g > 0 && g < 90 && at - progress(s, i) > L / 2) {
             chat.lappedAt = now;
             radio.say("crew-lapped");
+            radio.say(me("copy"));
             break;
           }
         }

@@ -135,6 +135,44 @@ const CAR_TALK: Record<string, Record<string, string>> = {
     "7-owl": "Seven. Owl mode activated. Hoot hoot!",
   },
 };
+// on the radio when it's been quiet a while, so your driver keeps talking all race (Michael,
+// 2026-10-12: "she needs to be talkative on the radio"), and how each one answers the crew chief
+const CHATTER: Record<string, string[]> = {
+  madhuvan: [
+    "Whoo! This thing is a rocket tonight!",
+    "Somebody tell the boys up front I'm comin'.",
+    "Is it hot in here, or is it just me?",
+    "I can see the fans wavin'! Hi, sugar!",
+    "Car's stickin' like sweet tea on a summer porch.",
+    "Don't you worry, I'll bring her home pretty.",
+    "I'm havin' way too much fun right now.",
+    "Tell my mama I'm on TV!",
+    "That last corner? Smooth as butter, honey.",
+    "These boys can look all they want. They just can't catch me.",
+  ],
+  allan: [
+    "Car's hooked up. Let's go.",
+    "They can't hold me off forever.",
+    "Easy. I'm just warming up.",
+    "Feeling good. Keep the numbers coming.",
+    "Somebody's about to have a long night.",
+    "Line's working. I'm staying on it.",
+    "Watch this.",
+    "Nobody gets past me tonight.",
+  ],
+  si: [
+    "Beep boop! Having fun!",
+    "Speed: very fast. Mood: very happy.",
+    "Bubble temperature normal. Joy levels high.",
+    "Hello, fans! Waving now!",
+    "Calculating the best line. Found it.",
+    "Tires happy. Engine happy. I am happy.",
+    "Friendship with car: established.",
+    "Request: more speed. Request granted.",
+  ],
+};
+const COPY: Record<string, string> = { madhuvan: "Copy that, sugar!", allan: "Copy.", si: "Message received!" };
+export const CHATTER_COUNT: Record<string, number> = Object.fromEntries(Object.entries(CHATTER).map(([d, l]) => [d, l.length]));
 const PAINT_TALK: Record<string, string> = {
   stock: "Stock paint. The real deal.",
   red: "Red. Fast and loud.",
@@ -152,6 +190,8 @@ const PAINT_TALK: Record<string, string> = {
 for (const [driver, voice] of Object.entries(DRIVER_VOICES)) {
   const label = driver.toUpperCase();
   for (const [k, text] of Object.entries(DRIVER_LINES)) lines[`drv-${driver}-${k}`] = { who: "driver", text, label, voice };
+  CHATTER[driver].forEach((text, i) => (lines[`drv-${driver}-chat-${i + 1}`] = { who: "driver", text, label, voice }));
+  lines[`drv-${driver}-copy`] = { who: "driver", text: COPY[driver], label, voice };
   const say = (key: string, text: string) => (lines[`drv-${driver}-${key}`] = { who: "driver", text, label, voice, clean: true });
   say("pick", "Let's go racing!");
   say("hello", HELLO[driver]);

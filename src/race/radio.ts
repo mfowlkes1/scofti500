@@ -20,6 +20,8 @@ export type Radio = {
   /** say a line from lines.ts */
   say(key: string): void;
   clear(): void;
+  /** how long (ms) the radio has been silent, 0 while a line is playing or waiting */
+  quiet(): number;
   mute(on: boolean): void;
 };
 
@@ -38,8 +40,10 @@ export function createRadio(box: HTMLElement): Radio {
   const queue: { who: Who; text: string; key?: string; label?: string }[] = [];
   let busy = false;
   let playing = 0; // which line is current, so a cut-off line finishing late changes nothing
+  let speaking: Who | null = null; // who is on the radio right now
   let muted = false;
   let hideAt = 0;
+  let lastAt = 0; // when the last line ended
   let current: HTMLAudioElement | null = null;
   // which lines have a recording (public/audio/radio/lines.json: a list of keys)
   let recorded: Promise<Set<string>> | null = null;
@@ -69,10 +73,12 @@ export function createRadio(box: HTMLElement): Radio {
     if (!line) return;
     busy = true;
     const id = ++playing;
+    speaking = line.who;
     show(line.who, line.text, line.label);
     const done = () => {
       if (id !== playing) return;
       busy = false;
+      lastAt = performance.now();
       void next();
     };
     if (muted) return void setTimeout(done, 900 + line.text.length * 30);
@@ -101,9 +107,10 @@ export function createRadio(box: HTMLElement): Radio {
       if (!line) return;
       const { who, text } = line;
       if (who === "spotter") {
-        // traffic can't wait: drop anything stale and cut in
+        // traffic can't wait: drop anything stale and cut in (but let your driver finish; the call
+        // goes straight after)
         for (let i = queue.length - 1; i >= 0; i--) if (queue[i].who === "spotter") queue.splice(i, 1);
-        if (busy) {
+        if (busy && speaking !== "driver") {
           playing++;
           synth?.cancel();
           current?.pause();
@@ -116,8 +123,12 @@ export function createRadio(box: HTMLElement): Radio {
       }
       void next();
     },
+    quiet() {
+      return busy || queue.length ? 0 : performance.now() - lastAt;
+    },
     clear() {
       queue.length = 0;
+      lastAt = performance.now();
       playing++;
       synth?.cancel();
       current?.pause();
