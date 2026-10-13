@@ -1074,3 +1074,50 @@ body[data-screen="garage"] .welcome {
 .say-bubble {
   display: none !important;
 }
+
+/* skip songs: ◀◀ ▶▶ beside the ♪ on the title */
+.song-btn {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top));
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  font: 400 15px/1 system-ui, sans-serif;
+  letter-spacing: -0.12em;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+}
+#song-next {
+  right: calc(max(14px, env(safe-area-inset-right)) + 108px);
+}
+#song-prev {
+  right: calc(max(14px, env(safe-area-inset-right)) + 162px);
+}
+body:not([data-screen="title"]) .song-btn {
+  display: none;
+}
+/* the song's name, for a moment, when one starts */
+.song-name {
+  position: fixed;
+  left: 50%;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 20;
+  padding: 8px 16px;
+  font: 400 15px/1 "Lilita One", system-ui, sans-serif;
+  letter-spacing: 0.12em;
+  color: #b6ff00;
+  background: rgba(8, 6, 18, 0.85);
+  border: 1px solid rgba(182, 255, 0, 0.4);
+  border-radius: 999px;
+  white-space: nowrap;
+  transform: translate(-50%, 20px);
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+}
+.song-name.on {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}

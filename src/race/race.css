@@ -1223,3 +1223,13 @@ body.replaying .replay-skip {
   user-select: none;
   -webkit-touch-callout: none;
 }
+
+/* the pause screen's music skip */
+.rp-songs {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font: 400 14px/1 "Lilita One", system-ui, sans-serif;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}

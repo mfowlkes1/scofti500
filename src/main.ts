@@ -7,7 +7,7 @@ import { PAINTS, paintedUrl, savePaint, savedPaint } from "./paint";
 import { UPGRADES, MAX_LEVEL, buy, levels, nextCost, tuned } from "./garage";
 import { PACKS, buyPack, canBuy, chipAmount, chipSvg, chips, flagSvg } from "./chips";
 import { createGarage } from "./garageRoom";
-import { musicAway, musicForRace, musicOn, setMusic, startMusic } from "./music";
+import { musicAway, musicForRace, musicOn, onSongChange, prevSong, setMusic, skipSong, startMusic } from "./music";
 import { playClip, voicesAway, type Clip } from "./voice";
 import { createPicker } from "./pick";
 import { LINES, slug } from "./race/lines";
@@ -61,6 +61,18 @@ function speak(d: Driver, what: string, bubble: HTMLElement): void {
 addEventListener("pointerup", startMusic);
 addEventListener("click", startMusic);
 addEventListener("keydown", startMusic);
+// ◀◀ ▶▶: skip songs (on the title and the pause screen); the song's name shows for a moment
+for (const id of ["song-prev", "rp-prev"]) $(id).addEventListener("click", prevSong);
+for (const id of ["song-next", "rp-next"]) $(id).addEventListener("click", skipSong);
+let songTimer = 0;
+onSongChange((name) => {
+  const el = $("song-name");
+  el.textContent = `♪ ${name}`;
+  el.classList.add("on");
+  clearTimeout(songTimer);
+  songTimer = setTimeout(() => el.classList.remove("on"), 3000);
+  $("music").classList.remove("off");
+});
 const musicBtn = $("music");
 musicBtn.classList.toggle("off", !musicOn());
 musicBtn.addEventListener("click", () => {

@@ -62,6 +62,22 @@ export function startMusic(): void {
   else void ctx.suspend();
 }
 
+/** ▶▶: the next song (starting the music if it isn't on yet) */
+export function skipSong(): void {
+  startMusic();
+  if (!on) setMusic(true);
+  next();
+}
+/** ◀◀: back a song (or the start of this one if it's the first) */
+export function prevSong(): void {
+  startMusic();
+  if (!on) setMusic(true);
+  if (back < played.length - 1) {
+    back++;
+    play(played[played.length - 1 - back]);
+  } else if (player) player.currentTime = 0;
+}
+
 /** the phone app went to the background (true) or came back: the music stops and starts with it */
 export function musicAway(gone: boolean): void {
   if (!ctx) return;
@@ -109,10 +125,37 @@ export function musicForRace(racing: boolean): void {
   gain.gain.linearRampToValueAtTime(level, now + FADE);
 }
 
+// what's been played, so ◀◀ can go back (Michael, 2026-10-13: a >> << to skip)
+const played: string[] = [];
+let back = 0; // how far back in played we are (0 = the newest)
+const songName = (url: string) =>
+  decodeURIComponent(url.split("/").pop() ?? "")
+    .replace(/^thunder--/, "")
+    .replace(/(-[A-Za-z0-9_]{8})?\.mp3$/, "")
+    .replace(/-/g, " ")
+    .toUpperCase();
+let onSong: (name: string) => void = () => {};
+/** told the song's name each time one starts */
+export function onSongChange(fn: (name: string) => void): void {
+  onSong = fn;
+}
+
 function next(): void {
   if (!ctx || !gain || !player) return;
+  if (back > 0) {
+    back--;
+    play(played[played.length - 1 - back]);
+    return;
+  }
   const choices = SONGS.length > 1 ? SONGS.filter((s) => s !== last) : SONGS;
-  last = choices[Math.floor(Math.random() * choices.length)];
+  play(choices[Math.floor(Math.random() * choices.length)]);
+  played.push(last);
+}
+
+function play(url: string): void {
+  if (!ctx || !gain || !player) return;
+  last = url;
+  onSong(songName(url));
   player.src = last;
   player.play().catch(() => {
     // blocked or can't play: the game just runs without music
