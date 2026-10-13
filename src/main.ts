@@ -67,9 +67,9 @@ musicBtn.addEventListener("click", () => {
 
 $("version").textContent = VERSION;
 
-// the title: all the drivers lined up together, Raven in the middle (the first thing anyone sees)
+// the title: all the drivers lined up together, Reba in the middle (the first thing anyone sees)
 {
-  const order = ["maia", "lynx", "raven", "reba", "paige"];
+  const order = ["maia", "lynx", "reba", "raven", "paige"];
   const lined = [...order.map((id) => DRIVERS.find((d) => d.id === id)).filter((d): d is Driver => !!d), ...DRIVERS.filter((d) => !order.includes(d.id))];
   for (const d of lined) {
     const img = new Image();
