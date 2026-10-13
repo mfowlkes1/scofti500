@@ -123,7 +123,7 @@ PRESEASON TESTING or RACE NIGHT) → the race at martinsvale under the lights.
 - Car decals: art/meshy/fix-lettering.mjs repaints SCOFTI and numbers on the 17, 43 and 3
   (art/meshy/flat.mjs makes flat side/top/rear pictures to check them).
 - Voices: tools/voices.ts (ElevenLabs). Spotter, crew chief, the announcer (fBRhBCYyrzF7JBCdE4Nt, "nascar announcer"),
-  Madhuvan (voice VDCzHcQzuGC8lVW8vjyr, "SCOFTI CON daisy"), Allan (KHla1Z0y3pZPYrqfub7h, "Trey"),
+  Madhuvan (voice VDCzHcQzuGC8lVW8vjyr, "SCOFTI CON daisy"), Allan (0hh7H4ZVAtaGpm1VZyEN, "David - Deep, Southern, Cowboy"),
   Si (Lo6JZOZvGYBxVhTFszLx, "Adam - Robotic and Friendly", used straight from the library).
 
 Waiting on Michael / next up:

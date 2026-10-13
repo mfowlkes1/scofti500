@@ -82,9 +82,9 @@ for (const r of RIVALS) lines[`ann-lead-${slug(r.name)}`] = { who: "announcer", 
 for (const name of ["Madhuvan", "Allan", "Si"]) lines[`ann-lead-${slug(name)}`] = { who: "announcer", text: `${name} takes the lead! Listen to this crowd!` };
 
 // ---- the drivers ----
-// Madhuvan: "SCOFTI CON daisy", a sweet Southern voice Michael designed; Allan: "Trey" and Si: "Adam -
-// Robotic and Friendly", both from the ElevenLabs library (Michael, 2026-10-12)
-const DRIVER_VOICES: Record<string, string> = { madhuvan: "VDCzHcQzuGC8lVW8vjyr", allan: "KHla1Z0y3pZPYrqfub7h", si: "Lo6JZOZvGYBxVhTFszLx" };
+// Madhuvan: "SCOFTI CON daisy", a sweet Southern voice Michael designed; Allan: "David - Deep, Southern,
+// Cowboy" and Si: "Adam - Robotic and Friendly", both from the ElevenLabs library (Michael, 2026-10-12)
+const DRIVER_VOICES: Record<string, string> = { madhuvan: "VDCzHcQzuGC8lVW8vjyr", allan: "0hh7H4ZVAtaGpm1VZyEN", si: "Lo6JZOZvGYBxVhTFszLx" };
 // on the radio, the same words in each driver's voice
 const DRIVER_LINES: Record<string, string> = {
   green: "Here we go!",
