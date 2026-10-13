@@ -113,16 +113,27 @@ const HELLO: Record<string, string> = {
   allan: "Allan. Don't blink, you'll miss me.",
   si: "Greetings! Si is ready. Bubble polished. Tires hungry.",
 };
-const CAR_TALK: Record<string, string> = {
-  "17-modern": "Ooh, the seventeen. Low, wide and mean.",
-  "43-eighties": "The forty-three! Old school. I love it.",
-  "3-muscle": "The number three. That thing is pure muscle.",
-  "7-owl": "The seven. Night owl. Spooky fast.",
-};
-// a driver's own take on a car, over the shared one. The 7 is a nod to the old owl car (Michael,
-// 2026-10-12): Madhuvan has a wink about it.
-const OWN_CAR_TALK: Record<string, Record<string, string>> = {
-  madhuvan: { "7-owl": "The seven! An owl car? Oh, honey... I know a thing or two about hooters." },
+// each driver's own take on each car: Madhuvan cheeky, Allan few words, Si a friendly robot. The 7 is a
+// nod to the old owl car, and Madhuvan winks about it (Michael, 2026-10-12)
+const CAR_TALK: Record<string, Record<string, string>> = {
+  madhuvan: {
+    "17-modern": "Ooh, the seventeen. Low, wide and mean... just how I like 'em.",
+    "43-eighties": "The forty-three! Big hair, big engine. My kinda eighties.",
+    "3-muscle": "The number three. All that muscle? Sugar, take me for a ride.",
+    "7-owl": "Number seven, the owl car! Hooters? Sugar, I brought my own.",
+  },
+  allan: {
+    "17-modern": "Seventeen. Modern. Clean. I'll take it.",
+    "43-eighties": "Forty-three. Older than me. Still faster than you.",
+    "3-muscle": "The three. No tricks. Just horsepower.",
+    "7-owl": "The seven. Runs quiet in the dark. Like me.",
+  },
+  si: {
+    "17-modern": "Seventeen. Aerodynamics: excellent. Si approves.",
+    "43-eighties": "Forty-three. Vintage hardware. Si respects the classics.",
+    "3-muscle": "Number three. Muscle detected. Engaging happy mode.",
+    "7-owl": "Seven. Owl mode activated. Hoot hoot!",
+  },
 };
 const PAINT_TALK: Record<string, string> = {
   stock: "Stock paint. The real deal.",
@@ -144,7 +155,7 @@ for (const [driver, voice] of Object.entries(DRIVER_VOICES)) {
   const say = (key: string, text: string) => (lines[`drv-${driver}-${key}`] = { who: "driver", text, label, voice, clean: true });
   say("pick", "Let's go racing!");
   say("hello", HELLO[driver]);
-  for (const [car, text] of Object.entries({ ...CAR_TALK, ...OWN_CAR_TALK[driver] })) say(`car-${car}`, text);
+  for (const [car, text] of Object.entries(CAR_TALK[driver])) say(`car-${car}`, text);
   for (const [paint, text] of Object.entries(PAINT_TALK)) say(`paint-${paint}`, text);
 }
 
