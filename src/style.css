@@ -342,6 +342,23 @@ body[data-screen="car"] #car-screen {
   }
 }
 
+/* a spotlight behind the driver, so she never gets lost in the dark background */
+.driver-hero::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(150%, 520px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 244, 214, 0.5) 0%, rgba(255, 244, 214, 0.22) 30%, rgba(182, 255, 0, 0.12) 48%, rgba(0, 0, 0, 0) 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+.driver-hero {
+  isolation: isolate;
+}
+
 /* what the driver says, in a speech bubble */
 .say-bubble {
   position: absolute;
@@ -477,7 +494,7 @@ body[data-screen="car"] #car-screen {
 
 .pick-cards {
   display: flex;
-  gap: 12px;
+  gap: clamp(6px, 2vw, 12px);
   justify-content: safe center;
   overflow-x: auto;
   padding: 6px 10px 4px;
@@ -507,7 +524,8 @@ body[data-screen="car"] #car-screen {
   background: var(--night);
 }
 #driver-cards .card-art img {
-  width: clamp(80px, 11vmin, 120px);
+  /* all five fit across a phone */
+  width: clamp(56px, min(11vmin, calc((100vw - 90px) / 5)), 120px);
   aspect-ratio: 1;
   border-radius: 50%;
 }
@@ -547,11 +565,22 @@ body[data-screen="car"] #car-screen {
     align-content: center;
     gap: 18px;
   }
+  /* the driver takes the room that's left once her name, colors and NEXT have theirs, so she never
+     spills over the title or her own label (Michael, 2026-10-13, on an iPhone) */
+  #driver-screen .pick-stage {
+    grid-template-rows: minmax(0, 1fr) auto;
+    align-content: stretch;
+    height: 100%;
+    min-height: 0;
+    gap: 10px;
+  }
   .driver-hero {
-    height: auto;
+    height: 100%;
+    min-height: 0;
   }
   #driver-img {
-    height: min(38vh, 400px);
+    height: 100%;
+    max-height: 420px;
   }
   /* the speech bubble stays on the screen on a phone */
   .say-bubble {
