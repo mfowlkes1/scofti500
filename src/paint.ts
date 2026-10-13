@@ -189,7 +189,7 @@ function recolour(data: ImageData, paint: Paint, key: KeyHue, skip: Rect[], numb
 
 // camo: four colours in soft blobs from two layers of value noise
 type Rgb = [number, number, number];
-const CAMOS = {
+export const CAMOS = {
   woods: [
     [86, 96, 52], // olive
     [52, 64, 36], // dark green
@@ -204,7 +204,7 @@ const CAMOS = {
   ] as Rgb[],
 };
 
-function camoField(w: number, h: number, CAMO: Rgb[]): Rgb[] {
+export function camoField(w: number, h: number, CAMO: Rgb[]): Rgb[] {
   const out: [number, number, number][] = new Array(w * h);
   const scale = Math.max(w, h) / 22;
   for (let y = 0; y < h; y++) {

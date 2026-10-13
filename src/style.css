@@ -431,6 +431,9 @@ body[data-screen="car"] #car-screen {
 }
 
 /* car colours */
+.paints-wrap[hidden] {
+  display: none;
+}
 .paints-wrap {
   display: grid;
   gap: 6px;

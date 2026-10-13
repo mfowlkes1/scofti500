@@ -1,13 +1,14 @@
 // The drivers' colors (Michael, 2026-10-13: a color selector "to keep attention there an extra minute
-// or two", and "that color will transfer to the car"). Picking a color repaints her race suit in her
+// or two", "that color will transfer to the car", and camo like the cars; the car screen has no colors
+// of its own now). Picking a color repaints her race suit in her
 // picture: only the suit's own colors change (found by hue, below her head), so her skin, hair, lips
 // and the white SCOFTI lettering stay as they are; a two-tone suit keeps its second tone as trim. The same
 // color becomes her car's paint.
-import { PAINTS } from "./paint";
+import { CAMOS, PAINTS, camoField } from "./paint";
 import { fullUrl, type Driver } from "./roster";
 
-/** the colors on offer: her own (stock), then the car paints that work on cloth (no camo) */
-export const SUIT_PAINTS = PAINTS.filter((p) => !p.camo);
+/** the colors on offer: her own (stock), then every car paint, camo too */
+export const SUIT_PAINTS = PAINTS;
 
 // each suit's colors, as hue windows (degrees), the first one her main color: measured off her
 // picture (red sits just below skin tones, so its window stops short of them)
@@ -94,6 +95,9 @@ export function suitUrl(d: Driver, paintId: string): Promise<string> {
       const data = g.getImageData(0, 0, c.width, c.height);
       const px = data.data;
       const shift = (paint.hsl?.[0] ?? 0) - suit.main;
+      // camo: the pattern over the whole suit, keeping its folds and shading
+      const camo = paint.camo ? camoField(c.width, c.height, CAMOS[paint.camo]) : null;
+      const whole = !!camo || paint.id === "black" || paint.id === "white";
       // below her head only: lips and makeup can share the suit's hue
       const from = Math.floor(c.height * 0.18) * c.width * 4;
       for (let i = from; i < px.length; i += 4) {
@@ -103,9 +107,13 @@ export function suitUrl(d: Driver, paintId: string): Promise<string> {
         const w = suit.windows.findIndex((win) => inWindow(h, win));
         // her main color takes the new one; a second tone (Maia and Paige's blue) stays as a trim,
         // except going all black or white
-        if (w < 0 || (w > 0 && paint.id !== "black" && paint.id !== "white")) continue;
+        if (w < 0 || (w > 0 && !whole)) continue;
         let out: [number, number, number];
-        if (paint.id === "black") out = hslToRgb(h, s * 0.12, l * 0.32);
+        if (camo) {
+          const shade = Math.min(1.35, l / suit.light);
+          const [cr, cg, cb] = camo[i / 4];
+          out = [Math.min(1, (cr / 255) * shade), Math.min(1, (cg / 255) * shade), Math.min(1, (cb / 255) * shade)];
+        } else if (paint.id === "black") out = hslToRgb(h, s * 0.12, l * 0.32);
         else if (paint.id === "white") out = hslToRgb(h, s * 0.06, 0.74 + l * 0.24);
         else out = hslToRgb((h + shift + 720) % 360, Math.min(1, s * 1.15), Math.min(0.88, l * ((paint.hsl?.[2] ?? 0.5) / suit.light)));
         px[i] = out[0] * 255;
