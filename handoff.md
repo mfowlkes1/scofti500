@@ -123,7 +123,7 @@ PRESEASON TESTING or RACE NIGHT) → the race at martinsvale under the lights.
 - Car decals: art/meshy/fix-lettering.mjs repaints SCOFTI and numbers on the 17, 43 and 3
   (art/meshy/flat.mjs makes flat side/top/rear pictures to check them).
 - Voices: tools/voices.ts (ElevenLabs). Spotter, crew chief, a stand-in announcer ("Bill"),
-  Madhuvan (voice yj30vwTGJxSHezdAGsv9).
+  Madhuvan (voice VDCzHcQzuGC8lVW8vjyr, "SCOFTI CON daisy").
 
 Waiting on Michael / next up:
 - New announcer voice ID from ElevenLabs Voice Design (prompt was given). Then swap VOICES.announcer

@@ -50,8 +50,8 @@ for (const r of RIVALS) {
 }
 for (const name of ["Madhuvan", "Allan", "Si"]) lines[`ann-win-${slug(name)}`] = { who: "announcer", text: `Checkered flag! ${name} wins it under the lights!` };
 
-// the drivers talk back. Madhuvan: "Jessa" from the ElevenLabs library (Michael, 2026-10-12)
-const DRIVER_VOICES: Record<string, string> = { madhuvan: "yj30vwTGJxSHezdAGsv9" };
+// the drivers talk back. Madhuvan: "SCOFTI CON daisy", a sweet Southern voice Michael designed (2026-10-12)
+const DRIVER_VOICES: Record<string, string> = { madhuvan: "VDCzHcQzuGC8lVW8vjyr" };
 const DRIVER_LINES: Record<string, string> = {
   green: "Here we go!",
   pit: "Copy. Coming in.",
