@@ -118,12 +118,11 @@ for (const r of PACK_RIVALS) {
 }
 
 // ---- the drivers ----
-// The series is all women (Michael, 2026-10-13). Reba: "SCOFTI CON daisy", a voice Michael designed
-// (it was Madhuvan's, before she left). Raven: "Blue - Neutral, Vocal Fry, Commentator" from the
-// ElevenLabs library. Maia: "Eryn - Strong Female Military Commander", ElevenLabs library. Lynx: "Blondie - Radio Host", ElevenLabs
-// library. Paige: voice still to pick; until then their lines
-// aren't recorded
-const DRIVER_VOICES: Record<string, string> = { raven: "kfU9VUUMjY4PWNoUfZ45", reba: "VDCzHcQzuGC8lVW8vjyr", lynx: "st7NwhTPEzqo2riw7qWC", maia: "wa4sQVgbDDzUDEzJwch3", paige: "" };
+// The series is all women (Michael, 2026-10-13); he picked each voice. Reba: "SCOFTI CON daisy", a voice
+// he designed (Madhuvan's, before she left). From the ElevenLabs library: Raven "Blue - Neutral, Vocal
+// Fry, Commentator", Lynx "Marie - Young & Optimistic", Maia "Eryn - Strong Female Military Commander",
+// Paige "Jessa - Easygoing and Effortless"
+const DRIVER_VOICES: Record<string, string> = { raven: "kfU9VUUMjY4PWNoUfZ45", reba: "VDCzHcQzuGC8lVW8vjyr", lynx: "ijbjxuucMt4vnA0kA9IO", maia: "wa4sQVgbDDzUDEzJwch3", paige: "yj30vwTGJxSHezdAGsv9" };
 // on the radio, the same words in each driver's voice
 const DRIVER_LINES: Record<string, string> = {
   green: "Here we go!",
@@ -150,11 +149,11 @@ const DRIVER_LINES: Record<string, string> = {
 const HELLO: Record<string, string> = {
   raven: "Hope you brought a fast car. You're gonna need it.",
   reba: "Don't get comfortable. I'm here to win.",
-  lynx: "Been doing this since before you could drive. Try and keep up.",
+  lynx: "Hi! I'm gonna wreck your whole day. Don't take it personal.",
   maia: "Red hair, short fuse. Stay out of my way.",
   paige: "Cameras are rolling. Watch me steal the show.",
 };
-// each driver's own take on each car: Raven cocky and laughing at you, Reba the ice queen, Lynx the veteran who's seen it all, Maia the firecracker, Paige the showstopper; tough, never
+// each driver's own take on each car: Raven cocky and laughing at you, Reba the ice queen, Lynx the wild child, Maia the firecracker, Paige the showstopper; tough, never
 // sweet (Michael, 2026-10-13: "not like an innocent girl"). The 7 is a nod to the old owl car, and
 // Raven winks about it (Michael: a polite nod to Alan Kulwicki)
 const CAR_TALK: Record<string, Record<string, string>> = {
@@ -171,10 +170,10 @@ const CAR_TALK: Record<string, Record<string, string>> = {
     "7-owl": "The seven. Quiet. Patient. Like me.",
   },
   lynx: {
-    "17-modern": "The seventeen. Fancy new ride. Still needs somebody who can drive it.",
-    "43-eighties": "The forty-three. I learned on cars like this. Still the best.",
-    "3-muscle": "The three. Big motor, bad attitude. We'll get along fine.",
-    "7-owl": "The seven. Old owl. Takes one to know one.",
+    "17-modern": "The seventeen. Shiny. Let's see how fast it goes sideways.",
+    "43-eighties": "The forty-three. Grandpa's ride. Let's make it misbehave.",
+    "3-muscle": "The three. Loud and rowdy. Just like me.",
+    "7-owl": "The seven. Owl car? Let's stay up all night.",
   },
   maia: {
     "17-modern": "The seventeen. Fast and mean. Let's light it up.",
@@ -213,14 +212,14 @@ const CHATTER: Record<string, string[]> = {
     "Let them race each other. I'm racing the clock.",
   ],
   lynx: [
-    "Twenty years of this, and it never gets old.",
-    "These kids drive like they've got somewhere to be. I do too. The front.",
-    "Saving my tires. They'll wish they had.",
-    "Seen every trick in the book. Wrote half of 'em.",
-    "Steady. Let the young ones burn up their stuff.",
-    "Car's talking to me. I'm listening.",
-    "Old dog, new tricks. Watch this.",
-    "Patience wins races. Speed just helps.",
+    "Whoo! Best job in the world!",
+    "Bet I can go faster. Watch.",
+    "Rules? I thought those were suggestions.",
+    "I'm not reckless. I'm creative.",
+    "Somebody's mad at me. Good.",
+    "Pedal down, music up!",
+    "If you're not having fun, you're doing it wrong.",
+    "Bump drafting? Love it. Mostly.",
   ],
   maia: [
     "Move! I'm not asking twice.",
@@ -243,7 +242,7 @@ const CHATTER: Record<string, string[]> = {
     "Save the drama for the last lap.",
   ],
 };
-const COPY: Record<string, string> = { raven: "Copy that.", reba: "Understood.", lynx: "Heard you the first time, chief.", maia: "Yeah, yeah. Got it.", paige: "Copy. Showtime." };
+const COPY: Record<string, string> = { raven: "Copy that.", reba: "Understood.", lynx: "Yep! Got it!", maia: "Yeah, yeah. Got it.", paige: "Copy. Showtime." };
 export const CHATTER_COUNT: Record<string, number> = Object.fromEntries(Object.entries(CHATTER).map(([d, l]) => [d, l.length]));
 const PAINT_TALK: Record<string, string> = {
   stock: "Stock. Let 'em know who's driving.",
@@ -285,16 +284,17 @@ const OWN: Record<string, Record<string, string>> = {
     pick: "Let's go racing!",
   },
   lynx: {
-    green: "Green flag. Here we go again.",
-    win: "Still got it. Never lost it.",
-    podium: "Podium. The old girl can still run.",
-    "got-one": "Thanks for keeping it warm.",
-    passed: "Go on, kid. I'll see you in a few laps.",
-    lead: "Out front. Where I've always been.",
-    rubbing: "That's how we did it in the old days.",
-    white: "Last lap. Done this a thousand times.",
-    tires: "Tires are gone. I've won on worse.",
-    pick: "Let's go racing.",
+    green: "Let's gooo!",
+    win: "Ha! Did that just happen? It did!",
+    podium: "Podium! Not bad for a troublemaker.",
+    "got-one": "Bye bye!",
+    passed: "Hey! Rude. I'm coming back.",
+    lead: "Leading? Oh, this is gonna be fun.",
+    rubbing: "Bumper cars! My favorite!",
+    white: "Last lap! Hold on tight!",
+    wall: "Oops! Still rolling!",
+    tires: "Tires are toast. Whatever, still fun.",
+    pick: "Let's go racing!",
   },
   reba: {
     green: "Green. Time to work.",

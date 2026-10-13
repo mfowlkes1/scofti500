@@ -53,8 +53,8 @@ export const DRIVERS: Driver[] = [
     id: "lynx",
     name: "lynx",
     team: "Scofti Racing",
-    role: "the veteran",
-    line: "Twenty years of short tracks. Still the one to beat.",
+    role: "the wild child",
+    line: "Tattoos, pigtails, zero brakes. Racing's the fun part.",
   },
   {
     id: "maia",
