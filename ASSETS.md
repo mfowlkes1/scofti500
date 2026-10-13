@@ -10,7 +10,7 @@ Everything ships with the game; nothing loads from other sites.
 - Everything else in 3D (the tracks, stands, infield, crews, campers) is built in code.
 
 ## sound
-- **Theme song** "Burn It Down" (`src/radio/thunder--burn-it-down.mp3`): Michael, made in ElevenLabs Music; leveled with ffmpeg loudnorm.
+- **Songs** (`src/radio/thunder--*.mp3`): by SCOFTI, made in ElevenLabs Music, leveled with ffmpeg loudnorm: "Burn It Down", "Lipstick, Smoke and Gasoline", "Big Boys' Table".
 - **Voices** (`public/audio/radio/`, made by `tools/voices.ts`, ElevenLabs text to speech):
   - spotter: "Chris" (iP95p4xoKVk53GoZ742B), ElevenLabs library
   - crew chief: "Austin Knox" (Bj9UqZbhQsanLzgalpEG), ElevenLabs library
