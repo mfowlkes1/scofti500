@@ -122,13 +122,11 @@ PRESEASON TESTING or RACE NIGHT) → the race at martinsvale under the lights.
   hand-built ones automatically (art/meshy/infield.mjs makes them; failed: Meshy account out of credits).
 - Car decals: art/meshy/fix-lettering.mjs repaints SCOFTI and numbers on the 17, 43 and 3
   (art/meshy/flat.mjs makes flat side/top/rear pictures to check them).
-- Voices: tools/voices.ts (ElevenLabs). Spotter, crew chief, a stand-in announcer ("Bill"),
+- Voices: tools/voices.ts (ElevenLabs). Spotter, crew chief, the announcer (fBRhBCYyrzF7JBCdE4Nt, "nascar announcer"),
   Madhuvan (voice VDCzHcQzuGC8lVW8vjyr, "SCOFTI CON daisy"), Allan (KHla1Z0y3pZPYrqfub7h, "Trey"),
   Si (Lo6JZOZvGYBxVhTFszLx, "Adam - Robotic and Friendly", used straight from the library).
 
 Waiting on Michael / next up:
-- New announcer voice ID from ElevenLabs Voice Design (prompt was given). Then swap VOICES.announcer
-  in tools/voices.ts, delete the ann-*.mp3 files in art/voices and public/audio/radio, rerun the tool.
 - Maybe: make SCOFTI and the numbers white on dark paints (they vanish on black cars).
 - Meshy credits for real haulers and motorhomes (rerun art/meshy/infield.mjs, then optimize into public/models).
 - Rivals in the same car model share its baked-in number (two #17s).

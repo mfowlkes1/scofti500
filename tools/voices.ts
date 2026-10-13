@@ -14,8 +14,8 @@ if (!KEY) throw new Error("ELEVENLABS_API_KEY not set");
 const VOICES: Record<Who, { id: string; name: string; stability: number; style: number }> = {
   spotter: { id: "iP95p4xoKVk53GoZ742B", name: "Chris", stability: 0.35, style: 0.45 },
   crew: { id: "Bj9UqZbhQsanLzgalpEG", name: "Austin Knox", stability: 0.45, style: 0.35 },
-  // a stand-in until Michael designs the Martinsvale announcer (Rex Thunder "sounds like transformers")
-  announcer: { id: "pqHfZKP75CvOlQylNhV4", name: "Bill", stability: 0.45, style: 0.5 },
+  // the Martinsvale announcer, from Michael's Voice Design: "excited and animated, more emotional" (2026-10-12)
+  announcer: { id: "fBRhBCYyrzF7JBCdE4Nt", name: "nascar announcer", stability: 0.4, style: 0.55 },
   driver: { id: "", name: "driver", stability: 0.4, style: 0.45 },
 };
 
