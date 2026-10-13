@@ -21,7 +21,8 @@ export function startAudio(): RaceAudio | null {
   void ctx.resume();
   const master = ctx.createGain();
   master.gain.value = 0;
-  master.gain.linearRampToValueAtTime(0.9, ctx.currentTime + 1);
+  // a touch lower overall, so the music sits on top of the race
+  master.gain.linearRampToValueAtTime(0.7, ctx.currentTime + 1);
   // under the radio: the whole race dips while someone's talking
   const under = ctx.createGain();
   master.connect(under).connect(ctx.destination);

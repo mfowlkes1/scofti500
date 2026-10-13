@@ -16,7 +16,7 @@ const SONGS = Object.entries(files)
   .map(([, url]) => url);
 
 const MENU = 0.95; // Michael, 2026-10-13: "can barely hear it"
-const RACE = 0.6; // up over the engines (Michael, 2026-10-13: "needs music to help drown it out")
+const RACE = 0.9; // up over the engines (Michael, 2026-10-13: "needs music to help drown it out", then "louder while driving")
 const FADE = 1.2; // seconds
 const KEY = "scofti500:music";
 
@@ -53,6 +53,13 @@ export function startMusic(): void {
   });
   if (on) next();
   else void ctx.suspend();
+}
+
+/** the phone app went to the background (true) or came back: the music stops and starts with it */
+export function musicAway(gone: boolean): void {
+  if (!ctx) return;
+  if (gone) void ctx.suspend();
+  else if (on) void ctx.resume();
 }
 
 /** music on or off (remembered) */
