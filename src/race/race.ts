@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { loadCar } from "../carModel";
 import { duckMusic } from "../music";
 import { addNumber } from "../carNumber";
+import { CAR_HEIGHT } from "../carModel";
 import { earn } from "../garage";
 import { CARS, type Car } from "../roster";
 import { airGun, autopilot, createQualifying, createSession, mph, order, pitStop, progress, qualifyingLap, stepSession, type Entry, type Session } from "./session";
@@ -382,6 +383,9 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     crews = crewSets.get(TRACK.id) ?? buildCrews(track.root, TRACK.field);
     crewSets.set(TRACK.id, crews);
     crews.setup(sess);
+    if (!paceCar) await buildPaceCar();
+    paceGone = -1;
+    lastPhase = "";
     placeCamera();
     camH = sess.cars[sess.player].h;
     $("race-load").classList.remove("on");
@@ -453,7 +457,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     }
     const me = sess.cars[sess.player];
     track!.focus(me.x, me.z);
-    track!.update(t / 1000, sess.phase === "checkered" ? "checkered" : sess.phase === "pace" ? "yellow" : whiteFlag() ? "white" : "green");
+    track!.update(t / 1000, sess.phase === "checkered" ? "checkered" : sess.phase === "pace" || sess.phase === "caution" ? "yellow" : whiteFlag() ? "white" : "green");
     sound();
     if (t > hudAt) {
       hudAt = t + 100;
@@ -464,7 +468,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
       pylonAt = t + 1000;
       const running = order(sess);
       track!.pylon(running.map((i) => sess!.entries[i].number));
-      const lap = sess.phase === "pace" ? "PACE LAP" : sess.phase === "checkered" ? "CHECKERED" : `LAP ${Math.min(sess.laps, Math.max(...sess.crossed) + 1)}/${sess.laps}`;
+      const lap = sess.phase === "pace" ? "PACE LAP" : sess.phase === "checkered" ? "CHECKERED" : sess.phase === "caution" ? "CAUTION" : `LAP ${Math.min(sess.laps, Math.max(...sess.crossed) + 1)}/${sess.laps}`;
       track!.board(running.map((i) => ({ number: sess!.entries[i].number, name: sess!.entries[i].name, me: i === sess!.player })), lap);
     }
     renderer.render(scene, camera);
@@ -476,7 +480,64 @@ export function createRace(opts: { onDone(again: boolean): void }) {
 
   const whiteFlag = () => !!sess && sess.phase === "green" && Math.max(...sess.crossed) === sess.laps - 1;
 
+  // ---- the pace car: white, PACE on the doors, a light bar flashing on the roof. It leads the pace
+  // laps and every caution, then ducks off down the apron at the green ----
+  let paceCar: { root: THREE.Group; tilt: THREE.Group; lights: THREE.Mesh[] } | null = null;
+  let paceGone = -1; // when it pulled off (race time), -1 while it's leading
+  let lastPhase = "";
+  async function buildPaceCar(): Promise<void> {
+    const car = CARS.find((c) => c.id === "17-modern")!;
+    const body = await loadCar(car, "white", { brightness: 0.85, maxSize: 1024 });
+    const root = new THREE.Group();
+    const tilt = new THREE.Group();
+    root.add(tilt);
+    if (body) {
+      addNumber(body, car.id, "PACE", "white");
+      body.rotation.y = Math.PI;
+      tilt.add(body);
+    }
+    // the light bar across the roof: amber, red and blue
+    const lights = ["#ffb000", "#ff2020", "#2060ff"].map((c, k) => {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.12, 0.34), new THREE.MeshBasicMaterial({ color: c, toneMapped: false }));
+      m.position.set(0.2, CAR_HEIGHT * 0.98, (k - 1) * 0.36);
+      tilt.add(m);
+      return m;
+    });
+    const bar = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.06, 1.2), new THREE.MeshStandardMaterial({ color: "#222" }));
+    bar.position.set(0.2, CAR_HEIGHT * 0.94, 0);
+    tilt.add(bar);
+    root.visible = false;
+    scene.add(root);
+    paceCar = { root, tilt, lights };
+  }
+
+  function drawPaceCar(): void {
+    const s = sess!;
+    if (!paceCar) return;
+    const leading = s.phase === "pace" || s.phase === "caution";
+    if (leading) paceGone = -1;
+    else if (lastPhase === "pace" || lastPhase === "caution") paceGone = s.t;
+    lastPhase = s.phase;
+    const out = paceGone < 0 ? 0 : s.t - paceGone;
+    if ((!leading && paceGone < 0) || out > 5 || s.qualifying) {
+      paceCar.root.visible = false;
+      return;
+    }
+    // pulling off: it speeds up and drops down to the apron, out of the way
+    const at = s.paceS + out * (s.paceV + out * 5);
+    const d = -Math.min(11, out * out * 3);
+    const f = frame(at, d);
+    paceCar.root.visible = true;
+    paceCar.root.position.set(f.x, heightAt(at, Math.min(d, HALF)), f.z);
+    paceCar.root.rotation.y = -Math.atan2(f.tz, f.tx);
+    paceCar.tilt.rotation.set(d > -HALF - 0.5 ? -bankAt(at) : 0, 0, 0);
+    // the lights take turns
+    const beat = Math.floor(s.t * 6) % 3;
+    paceCar.lights.forEach((m, k) => (m.visible = k === beat || (beat === 2 && k === 0)));
+  }
+
   function drawCars(dt: number): void {
+    drawPaceCar();
     sess!.cars.forEach((c, i) => {
       const v = views[i];
       const y = heightAt(c.s, Math.min(c.d, HALF));
@@ -632,7 +693,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
   let chat = freshChat();
 
   function spotter(): void {
-    if (!sess || sess.phase === "pace" || finishedAt) return;
+    if (!sess || sess.phase !== "green" || finishedAt) return;
     const me = sess.cars[sess.player];
     let high = false;
     let low = false;
@@ -679,7 +740,20 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     }
     const name = (i: number) => s.entries[i].name;
     for (const e of s.events) {
-      if (e.type === "green") {
+      if (e.type === "caution") {
+        radio.say("spot-caution");
+        radio.say("ann-caution");
+        radio.say("crew-caution");
+        cautionUntil = s.t + 3;
+      } else if (e.type === "restart-soon") {
+        radio.say("crew-restart-soon");
+      } else if (e.type === "restart") {
+        radio.say("spot-green");
+        radio.say("ann-restart");
+        radio.say(me("green"));
+        greenAt = s.t;
+        audio?.roar();
+      } else if (e.type === "green") {
         radio.say(here("ann-green"));
         radio.say("spot-green");
         radio.say(me("green"));
@@ -871,6 +945,8 @@ export function createRace(opts: { onDone(again: boolean): void }) {
           : "QUALIFYING LAP"
       : s.phase === "pace"
         ? "PACE LAP"
+        : s.phase === "caution"
+          ? `CAUTION · LAP ${lap}/${s.laps}`
         : `LAP ${lap}/${s.laps}`;
     $("hud-last").textContent = fmt(s.lastLap[s.player]);
     $("hud-best").textContent = fmt(s.bestLap[s.player]);
@@ -891,7 +967,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     });
     $("hud-limiter").classList.toggle("on", me.limiter);
     const flag = $("hud-flag");
-    const label = s.phase === "pace" ? "" : s.phase === "checkered" ? "CHECKERED" : whiteFlag() ? "WHITE FLAG" : s.t < greenUntil() ? "GREEN" : "";
+    const label = s.phase === "pace" ? "" : s.t < cautionUntil ? "CAUTION" : s.phase === "caution" ? "" : s.phase === "checkered" ? "CHECKERED" : whiteFlag() ? "WHITE FLAG" : s.t < greenUntil() ? "GREEN" : "";
     flag.textContent = label;
     flag.dataset.flag = label.split(" ")[0].toLowerCase();
 
@@ -931,6 +1007,7 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     });
   }
   let greenAt = 0;
+  let cautionUntil = 0;
   const greenUntil = () => {
     if (!greenAt && sess && sess.phase === "green") greenAt = sess.t;
     return greenAt + 4;

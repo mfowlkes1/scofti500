@@ -135,6 +135,8 @@ export type Context = {
   /** pace laps: where the pace car is (s) and its speed */
   paceS: number;
   paceV: number;
+  /** pace laps: how much faster than the pace car a car may go to reach its spot (more under a caution) */
+  catchUp: number;
   dt: number;
 };
 
@@ -206,13 +208,20 @@ export function drive(drv: Driver, ctx: Context): Input {
   return { steer, ...p };
 }
 
-/** the pace laps: double file behind the pace car, holding the slot */
+/** behind the pace car (the pace laps and cautions): double file, holding the slot, and never into
+ * the car in front */
 function pace(drv: Driver, ctx: Context, c: CarState, v: number): Input {
   const slotS = ctx.paceS - drv.slot;
   const behind = gap(c.s, slotS);
   const f = frame(c.s);
   const scale = f.r ? (f.r + drv.file) / f.r : 1;
-  const target = Math.max(0, ctx.paceV * scale + clamp(behind * 0.9, -6, 6));
+  let target = Math.max(0, ctx.paceV * scale + clamp(behind * (ctx.catchUp > 6 ? 0.4 : 0.9), -6, ctx.catchUp));
+  for (let i = 0; i < ctx.cars.length; i++) {
+    if (i === ctx.me) continue;
+    const o = ctx.cars[i];
+    const g = gap(c.s, o.s);
+    if (g > 0 && g < 14 && Math.abs(o.d - c.d) < 2.2) target = Math.min(target, speedOf(o) - 1 + (g - 8) * 0.5);
+  }
   const ld = 6 + v * 0.35;
   return { steer: steerTo(c, c.s + ld, drv.file), ...pedals(v, target) };
 }

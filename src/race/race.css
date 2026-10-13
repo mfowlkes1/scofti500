@@ -229,6 +229,10 @@ body[data-screen="race"] .welcome {
   top: auto;
   bottom: 30%;
 }
+.hud-flag[data-flag="caution"] {
+  color: #ffd400;
+  text-shadow: 0 0 30px rgba(255, 212, 0, 0.7), 0 4px 0 #000;
+}
 .hud-flag[data-flag="checkered"] {
   color: #fff;
   text-shadow: 0 0 30px rgba(255, 255, 255, 0.6), 0 4px 0 #000;

@@ -17,7 +17,7 @@ export type Entry = {
   player?: boolean;
 };
 
-export type Phase = "pace" | "green" | "checkered";
+export type Phase = "pace" | "green" | "caution" | "checkered";
 
 export type RaceEvent =
   | { type: "green" }
@@ -27,7 +27,12 @@ export type RaceEvent =
   | { type: "finish"; car: number; pos: number }
   | { type: "pit-in"; car: number }
   | { type: "pit-stopped"; car: number; time: number }
-  | { type: "pit-out"; car: number };
+  | { type: "pit-out"; car: number }
+  /** a wreck brings out the yellow: car is the one stopped on the track */
+  | { type: "caution"; car: number }
+  /** the wreck's cleared: green next time by */
+  | { type: "restart-soon" }
+  | { type: "restart" };
 
 export type Session = {
   entries: Entry[];
@@ -57,6 +62,18 @@ export type Session = {
   events: RaceEvent[];
   /** a qualifying run: one car, a warm-up lap and then one timed lap */
   qualifying: boolean;
+  /** preseason testing: nobody wrecks, so no cautions */
+  easy: boolean;
+  /** cautions so far, when the last one started, when the last green flew, and whether the field's
+   * set for the restart */
+  cautions: number;
+  cautionAt: number;
+  greenAt: number;
+  restartArmed: boolean;
+  /** how long each car has sat stopped on the track (seconds) */
+  stoppedFor: number[];
+  /** the next slot at the back of the caution line (for cars coming off pit road) */
+  tailSlot: number;
 };
 
 export const PACE_SPEED = 21;
@@ -130,6 +147,13 @@ function makeSession(entries: Entry[], laps: number, easy: boolean, qualifying: 
     answerAt: entries.map(() => -1),
     events: [],
     qualifying,
+    easy,
+    cautions: 0,
+    cautionAt: 0,
+    greenAt: 0,
+    restartArmed: false,
+    stoppedFor: entries.map(() => 0),
+    tailSlot: 0,
   };
 }
 
@@ -154,15 +178,17 @@ export const autopilot = (sess: Session) => sess.drivers[sess.player].mode !== "
 
 export function stepSession(sess: Session, playerInput: Input | null, dt: number, pitCrew = 0): void {
   sess.t += dt;
+  if (sess.phase === "pace" || sess.phase === "caution") sess.paceS = wrap(sess.paceS + sess.paceV * dt);
   if (sess.phase === "pace") {
-    sess.paceS = wrap(sess.paceS + sess.paceV * dt);
     // the pace car ducks off and the field goes green at the line
     if (gap(sess.paceS, LINE_S) < 14) {
       sess.phase = "green";
+      sess.greenAt = sess.t;
       for (const d of sess.drivers) d.mode = "race";
       sess.events.push({ type: "green" });
     }
-  }
+  } else if (sess.phase === "green") watchForWrecks(sess, dt);
+  else if (sess.phase === "caution") runCaution(sess);
 
   const n = sess.cars.length;
   const prevS = sess.cars.map((c) => c.s);
@@ -195,7 +221,7 @@ export function stepSession(sess: Session, playerInput: Input | null, dt: number
     }
     const wasStopped = drv.pitPhase === "stopped";
     const wasPit = drv.mode === "pit";
-    const ctx = { cars: sess.cars, me: i, spec: entry.spec, paceS: sess.paceS, paceV: sess.paceV, dt };
+    const ctx = { cars: sess.cars, me: i, spec: entry.spec, paceS: sess.paceS, paceV: sess.paceV, catchUp: sess.phase === "caution" ? 22 : 6, dt };
     const input = i === sess.player && drv.mode === "race" && playerInput ? playerInput : drive(drv, ctx);
     if (input === playerInput) car.limiter = false;
     step(car, input, entry.spec, dt);
@@ -203,6 +229,8 @@ export function stepSession(sess: Session, playerInput: Input | null, dt: number
     if (wasPit && drv.mode !== "pit") {
       sess.events.push({ type: "pit-out", car: i });
       if (i === sess.player) sess.pitCall = false;
+      // off pit road under the yellow: onto the back of the line
+      if (sess.phase === "caution") toTheBack(sess, i);
     }
   }
   collide(sess.cars);
@@ -215,6 +243,82 @@ export function stepSession(sess: Session, playerInput: Input | null, dt: number
     if (Math.abs(before) > 60 || Math.abs(after) > 60) continue;
     if (before < 0 && after >= 0) crossLine(sess, i);
     else if (before >= 0 && after < 0) sess.crossed[i]--;
+  }
+}
+
+// ---- cautions (race night only): a car stopped on the track brings out the yellow ----
+const STOPPED = 7; // m/s: slower than this on the track counts as stopped
+const CAUTION_SPEED = () => (L > 1500 ? 30 : 21); // the pace car's speed under yellow
+
+function watchForWrecks(sess: Session, dt: number): void {
+  let wreck = -1;
+  sess.cars.forEach((c, i) => {
+    const racing = sess.drivers[i].mode === "race" && !sess.finishOrder.includes(i);
+    sess.stoppedFor[i] = racing && speedOf(c) < STOPPED ? sess.stoppedFor[i] + dt : 0;
+    if (sess.stoppedFor[i] > 2) wreck = i;
+  });
+  if (wreck < 0 || sess.easy || sess.qualifying) return;
+  // not on the opening lap, not in the last few, not right after the last one, and not too many
+  const leader = order(sess)[0];
+  const left = sess.laps - sess.crossed[leader];
+  if (sess.crossed[leader] < 1 || left <= 3 || sess.t - sess.greenAt < 30) return;
+  if (sess.cautions >= Math.max(1, Math.floor(sess.laps / 8))) return;
+  startCaution(sess, wreck);
+}
+
+function startCaution(sess: Session, wreck: number): void {
+  sess.phase = "caution";
+  sess.cautions++;
+  sess.cautionAt = sess.t;
+  sess.restartArmed = false;
+  // the pace car pulls out ahead of the leader
+  const leader = order(sess)[0];
+  sess.paceS = wrap(sess.cars[leader].s + 70);
+  sess.paceV = CAUTION_SPEED();
+  // the field lines up double file behind it in the order they're running round the track
+  const running = sess.cars
+    .map((_, i) => i)
+    .filter((i) => sess.drivers[i].mode !== "pit" && !sess.finishOrder.includes(i))
+    .sort((a, b) => wrap(sess.paceS - sess.cars[a].s) - wrap(sess.paceS - sess.cars[b].s));
+  running.forEach((i, k) => {
+    const d = sess.drivers[i];
+    d.mode = "pace";
+    d.slot = 18 + Math.floor(k / 2) * 9.5;
+    d.file = k % 2 === 0 ? -3 : 3;
+  });
+  sess.tailSlot = 18 + Math.ceil(running.length / 2) * 9.5;
+  sess.events.push({ type: "caution", car: wreck });
+}
+
+function toTheBack(sess: Session, i: number): void {
+  const d = sess.drivers[i];
+  d.mode = "pace";
+  d.slot = sess.tailSlot;
+  d.file = 0;
+  sess.tailSlot += 9.5;
+}
+
+function runCaution(sess: Session): void {
+  // set for the restart once the wreck's cleared (everyone rolling again) or it's gone on long enough
+  if (!sess.restartArmed) {
+    const rolling = sess.cars.every((c, i) => sess.drivers[i].mode !== "pace" || speedOf(c) > 12);
+    const long = sess.t - sess.cautionAt;
+    if ((rolling && long > 22) || long > 70) {
+      // the green comes the next time the pace car reaches the line, so it needs to be far enough off
+      if (gap(sess.paceS, LINE_S) > 120) {
+        sess.restartArmed = true;
+        sess.events.push({ type: "restart-soon" });
+      }
+    }
+    return;
+  }
+  // the pace car pulls off at the line and they're racing again
+  if (gap(sess.paceS, LINE_S) < 14) {
+    sess.phase = "green";
+    sess.greenAt = sess.t;
+    for (const d of sess.drivers) if (d.mode === "pace") d.mode = "race";
+    sess.paceV = PACE_SPEED;
+    sess.events.push({ type: "restart" });
   }
 }
 

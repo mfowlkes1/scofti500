@@ -88,6 +88,14 @@ Object.assign(lines, {
 } satisfies Record<string, Line>);
 for (const r of RIVALS) lines[`ann-win-${slug(r.name)}-hotlanta`] = { who: "announcer", text: `Checkered flag! ${r.name} wins at Hotlanta!` };
 for (const name of ["Raven", "Reba", "Lynx", "Maia", "Paige"]) lines[`ann-win-${slug(name)}-hotlanta`] = { who: "announcer", text: `Checkered flag! ${name} wins it at Hotlanta!` };
+// cautions: a wreck brings out the yellow and the pace car; the field restarts double file
+Object.assign(lines, {
+  "spot-caution": { who: "spotter", text: "Caution, caution! Wreck up ahead, slow it down!" },
+  "ann-caution": { who: "announcer", text: "Yellow flag! There's trouble on the track!" },
+  "crew-caution": { who: "crew", text: "Caution's out. Ride it out behind the pace car. We'll restart double file." },
+  "crew-restart-soon": { who: "crew", text: "Pace car's coming in. Green flag next time by. Get ready!" },
+  "ann-restart": { who: "announcer", text: "And we're back to green!" },
+} satisfies Record<string, Line>);
 // qualifying (race night): the warm-up, the lap, and how it went
 Object.assign(lines, {
   "crew-qual-warm": { who: "crew", text: "Warm-up lap. Get some heat in those tires. Then it's one lap, all you've got." },
