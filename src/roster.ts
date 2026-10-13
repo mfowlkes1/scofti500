@@ -56,6 +56,13 @@ export const DRIVERS: Driver[] = [
     role: "the veteran",
     line: "Twenty years of short tracks. Still the one to beat.",
   },
+  {
+    id: "maia",
+    name: "maia",
+    team: "Scofti Racing",
+    role: "the firecracker",
+    line: "Red hair, short fuse, no brakes.",
+  },
 ];
 
 export const CARS: Car[] = [
