@@ -87,6 +87,34 @@ body[data-screen="race"] .welcome {
   color: #fff;
   margin-right: 8px;
 }
+/* phones only: a lap clock up top, this lap and your best, in place of the small LAST/BEST line */
+.hud-clock {
+  display: none;
+}
+@media (pointer: coarse) {
+  .hud-times {
+    display: none;
+  }
+  .hud-clock {
+    display: grid;
+    gap: 2px;
+    margin-top: 4px;
+  }
+  .hud-clock b {
+    font: 400 26px/1 "Racing Sans One", system-ui, sans-serif;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(61, 184, 255, 0.6), 0 2px 0 rgba(0, 0, 0, 0.6);
+  }
+  .hud-clock span {
+    font: 700 13px/1 system-ui, sans-serif;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+  }
+  .hud-clock i {
+    font-style: normal;
+    color: #b6ff00;
+  }
+}
 
 /* the running order, down the left */
 .hud-board {

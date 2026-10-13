@@ -1070,6 +1070,10 @@ export function createRace(opts: { onDone(again: boolean): void }) {
         : `LAP ${lap}/${s.laps}`;
     $("hud-last").textContent = fmt(s.lastLap[s.player]);
     $("hud-best").textContent = fmt(s.bestLap[s.player]);
+    // the phone's lap clock: this lap ticking, and your best
+    const onLap = s.phase !== "pace" && s.crossed[s.player] >= 0 && !s.finishOrder.includes(s.player);
+    $("hud-now").textContent = onLap ? clock(s.t - s.lapStart[s.player]) : clock(s.lastLap[s.player] || 0);
+    $("hud-pb").textContent = isFinite(s.bestLap[s.player]) ? clock(s.bestLap[s.player]) : "--.--";
     $("hud-speed").textContent = String(Math.round(mph(me)));
     $("hud-gear").textContent = String(me.gear);
     $("ck-speed").textContent = String(Math.round(mph(me)));
