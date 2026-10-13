@@ -1228,7 +1228,8 @@ export function createRace(opts: { onDone(again: boolean): void }) {
       c.x = mix(0);
       c.z = mix(1);
       c.h = a.f[o + 2] + angleTo(a.f[o + 2], b.f[o + 2]) * k;
-      c.s = mix(3);
+      // (the distance round the lap wraps back to 0 at the line: blend across it, not through the lap)
+      c.s = a.f[o + 3] + gap(a.f[o + 3], b.f[o + 3]) * k;
       c.d = mix(4);
       c.vx = mix(5);
       c.vz = mix(6);
@@ -1282,7 +1283,10 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     drawCars(dt);
     // the TV camera: up and out to the side of the car in the clip, swinging round as it goes by
     const c = s.cars[clips[clipAt].car];
-    const f = frame(c.s);
+    // aimed off the car itself: along its heading, out to its infield side (Michael, 2026-10-13: the
+    // camera was outside the stadium looking in)
+    const n = frame(c.s);
+    const f = { tx: Math.cos(c.h), tz: Math.sin(c.h), nx: n.nx, nz: n.nz };
     const swing = (clipT - (clips[clipAt].t - 5)) / 7.5; // 0..1 through the clip
     const side = -16 + swing * 6;
     const back = 18 - swing * 26;
