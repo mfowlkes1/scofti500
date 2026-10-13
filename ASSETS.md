@@ -4,7 +4,7 @@ Everything ships with the game; nothing loads from other sites.
 
 ## art
 - **Car models** (`public/models/car-*.glb`): Meshy, made from Michael's car sheets (`art/reference/`), lettering repainted by `art/meshy/fix-lettering.mjs`. The car pictures in `public/img/cars/` are from the same sheets.
-- **Drivers** (`public/img/drivers/`): cut from Michael's character sheets (`raven-sheet.png`, `reba-sheet.png`, `lynx-sheet.png`, `maia-sheet.png`, `paige-sheet.png` and `paige-solo.png`); full-body pictures cut out of the sheets (background removed).
+- **Drivers** (`public/img/drivers/`): cut from Michael's character sheets (`raven-sheet.png`, `reba-sheet.png`, `lynx-sheet.png`, `maia-sheet.png`, `paige-sheet.png`, and the solo shots `paige-solo.png`, `reba-solo.png`); full-body pictures cut out of the sheets (background removed).
 - **Title art and covers** (`public/img/welcome-*.jpg`, `cover.jpg`, `cover-portrait.jpg`): Michael's.
 - **Big-screen ads** (`public/img/promo/`): art from Scofti's own games (Offroad, Winter Games, Sloth Splash, Void Signal) and the ScofTV crew faces, copied from scofti-winter-games.
 - Everything else in 3D (the tracks, stands, infield, crews, campers) is built in code.
