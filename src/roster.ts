@@ -116,8 +116,8 @@ const byId = <T extends { id: string }>(list: T[], id: string | null) => list.fi
 export const driverById = (id: string | null) => byId(DRIVERS, id);
 export const carById = (id: string | null) => byId(CARS, id);
 export const faceUrl = (d: Driver) => `${import.meta.env.BASE_URL}img/drivers/${d.id}.jpg`;
-/** head to toe, the front view off the driver's sheet */
-export const fullUrl = (d: Driver) => `${import.meta.env.BASE_URL}img/drivers/${d.id}-full.jpg`;
+/** head to toe, cut out of the driver's sheet (see-through around her) */
+export const fullUrl = (d: Driver) => `${import.meta.env.BASE_URL}img/drivers/${d.id}-full.webp`;
 export const carUrl = (c: Car, view = 0) => `${import.meta.env.BASE_URL}img/cars/${c.id}${view ? `-${view}` : ""}.jpg`;
 
 // Tracks. Invented names only, never a real venue (Michael picked "martinsvale" and "Hotlanta",

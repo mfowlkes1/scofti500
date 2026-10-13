@@ -250,6 +250,23 @@ body[data-screen="car"] #car-screen {
   max-width: 100%;
   height: min(100%, 74vh);
   object-fit: contain;
+  /* she's cut out of her sheet, so no card: just her, a shadow standing her off the background
+     (Michael, 2026-10-13: "pop without the white box") */
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: none;
+  transform: none;
+  filter: drop-shadow(0 1rem 1.4rem rgba(0, 0, 0, 0.65));
+}
+#driver-img.pop {
+  animation: pop-cut 0.3s ease-out;
+}
+@keyframes pop-cut {
+  from {
+    transform: translateX(-5%) scale(0.95);
+    opacity: 0.3;
+  }
 }
 
 /* what the driver says, in a speech bubble */
