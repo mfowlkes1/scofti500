@@ -5,15 +5,16 @@
 
 import { LINES } from "./lines";
 
-export type Who = "spotter" | "crew" | "announcer" | "driver";
+export type Who = "spotter" | "crew" | "announcer" | "driver" | "reporter";
 
-const LABEL: Record<Who, string> = { spotter: "SPOTTER", crew: "CREW CHIEF", announcer: "ANNOUNCER", driver: "DRIVER" };
+const LABEL: Record<Who, string> = { spotter: "SPOTTER", crew: "CREW CHIEF", announcer: "ANNOUNCER", driver: "DRIVER", reporter: "HEATHER · TRACKSIDE" };
 // how each one sounds with the browser's voice
 const VOICE: Record<Who, { rate: number; pitch: number; pick: number }> = {
   spotter: { rate: 1.3, pitch: 1.05, pick: 0 },
   crew: { rate: 1.02, pitch: 0.72, pick: 1 },
   announcer: { rate: 1.08, pitch: 1.12, pick: 2 },
   driver: { rate: 1.1, pitch: 1.2, pick: 3 },
+  reporter: { rate: 1.08, pitch: 1.25, pick: 4 },
 };
 
 export type Radio = {
@@ -25,8 +26,9 @@ export type Radio = {
   mute(on: boolean): void;
 };
 
-/** onTalk: called with true as a line starts and false once the radio goes quiet */
-export function createRadio(box: HTMLElement, onTalk: (talking: boolean) => void = () => {}): Radio {
+/** onTalk: called with true as a line starts and false once the radio goes quiet. reporterBox: where
+ * Heather's lines show (her own TV lower third), instead of the radio box */
+export function createRadio(box: HTMLElement, onTalk: (talking: boolean) => void = () => {}, reporterBox?: HTMLElement): Radio {
   const synth = "speechSynthesis" in window ? window.speechSynthesis : null;
   let voices: SpeechSynthesisVoice[] = [];
   const loadVoices = () => {
@@ -50,13 +52,15 @@ export function createRadio(box: HTMLElement, onTalk: (talking: boolean) => void
   let recorded: Promise<Set<string>> | null = null;
 
   function show(who: Who, text: string, label?: string): void {
-    box.dataset.who = who;
-    box.querySelector("b")!.textContent = label ?? LABEL[who];
-    box.querySelector("span")!.textContent = text;
-    box.classList.add("on");
+    const el = who === "reporter" && reporterBox ? reporterBox : box;
+    (el === box ? reporterBox : box)?.classList.remove("on");
+    el.dataset.who = who;
+    el.querySelector("b")!.textContent = label ?? LABEL[who];
+    el.querySelector("span")!.textContent = text;
+    el.classList.add("on");
     hideAt = performance.now() + 2600 + text.length * 45;
     setTimeout(() => {
-      if (performance.now() >= hideAt) box.classList.remove("on");
+      if (performance.now() >= hideAt) el.classList.remove("on");
     }, hideAt - performance.now() + 50);
   }
 

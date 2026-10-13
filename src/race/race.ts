@@ -14,7 +14,7 @@ import { planSpeed } from "./ai";
 import { fieldOf } from "./rivals";
 import { buildTrack, type TrackScene } from "./scene";
 import { buildCrews, type PitCrews } from "./crew";
-import { CHATTER_COUNT, LINES, slug } from "./lines";
+import { CHATTER_COUNT, HEATHER_UPDATE_COUNT, LINES, slug } from "./lines";
 import { createRadio, type Radio } from "./radio";
 import { startAudio, type RaceAudio } from "./sound";
 import { BOUNDS, HALF, L, TRACK, bankAt, frame, gap, heightAt, setTrack } from "./track";
@@ -58,10 +58,14 @@ export function createRace(opts: { onDone(again: boolean): void }) {
   let setup: RaceSetup | null = null;
   let views: CarView[] = [];
   let audio: RaceAudio | null = null;
-  const radio: Radio = createRadio($("hud-radio"), (talking) => {
-    audio?.duck(talking);
-    duckMusic(talking);
-  });
+  const radio: Radio = createRadio(
+    $("hud-radio"),
+    (talking) => {
+      audio?.duck(talking);
+      duckMusic(talking);
+    },
+    $("heather"),
+  );
   let running = false;
   let paused = false;
   let finishedAt = 0;
@@ -695,6 +699,9 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     stop: 99,
     chat: [] as number[], // chatter lines still to say, shuffled
     bones: false,
+    heatherAt: performance.now(),
+    heatherSaid: 0,
+    updates: [] as number[],
   });
   let chat = freshChat();
 
@@ -749,6 +756,8 @@ export function createRace(opts: { onDone(again: boolean): void }) {
       if (e.type === "caution") {
         radio.say("spot-caution");
         radio.say("ann-caution");
+        // Heather says who it was
+        radio.say(`hea-caution-${slug(name(e.car))}`);
         radio.say("crew-caution");
         cautionUntil = s.t + 3;
       } else if (e.type === "restart-soon") {
@@ -879,6 +888,14 @@ export function createRace(opts: { onDone(again: boolean): void }) {
       radio.say(me("draft"));
     }
 
+    // Heather pops up with a race update now and then: twice a race or so, once it's settled in
+    if (racing && s.crossed[s.player] >= 1 && radio.quiet() > 9000 && now - chat.heatherAt > 70000 && chat.heatherSaid < 3) {
+      chat.heatherAt = now;
+      chat.heatherSaid++;
+      if (!chat.updates.length) chat.updates = Array.from({ length: HEATHER_UPDATE_COUNT }, (_, i) => i + 1).sort(() => Math.random() - 0.5);
+      radio.say(`hea-update-${chat.updates.pop()}`);
+      return;
+    }
     // your driver is a talker: after about 14 quiet seconds they say something (each line once
     // before any repeats)
     if (racing && radio.quiet() > 14000) {

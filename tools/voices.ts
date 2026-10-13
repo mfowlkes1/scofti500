@@ -17,6 +17,8 @@ const VOICES: Record<Who, { id: string; name: string; stability: number; style: 
   // the Martinsvale announcer, from Michael's Voice Design: "excited and animated, more emotional" (2026-10-12)
   announcer: { id: "fBRhBCYyrzF7JBCdE4Nt", name: "nascar announcer", stability: 0.4, style: 0.55 },
   driver: { id: "", name: "driver", stability: 0.4, style: 0.45 },
+  // Heather, the trackside correspondent: a voice Michael designed (2026-10-13). Not over the radio, so clean
+  reporter: { id: "oHonHW1uTkyY2RUCyRYY", name: "Heather", stability: 0.4, style: 0.5 },
 };
 
 const RAW = "art/voices";
@@ -58,7 +60,7 @@ for (const key of wanted) {
   if (!existsSync(out)) {
     // the spotter and crew chief come over a two-way radio; the announcer is on the PA
     const radio = "highpass=f=320,lowpass=f=3400,acompressor=threshold=-18dB:ratio=4,volume=1.4,";
-    const filter = `${line.who === "announcer" || line.clean ? "" : radio}loudnorm=I=-16:TP=-1.5:LRA=7`;
+    const filter = `${line.who === "announcer" || line.who === "reporter" || line.clean ? "" : radio}loudnorm=I=-16:TP=-1.5:LRA=7`;
     execFileSync("ffmpeg", ["-v", "error", "-y", "-i", raw, "-af", filter, "-ac", "1", "-ar", "44100", "-b:a", "80k", out]);
   }
 }

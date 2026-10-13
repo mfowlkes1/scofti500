@@ -107,6 +107,24 @@ Object.assign(lines, {
   "crew-qual-back": { who: "crew", text: "We'll be starting in the back. Plenty of time to pass 'em all." },
   "ann-pole": { who: "announcer", text: "And that's the pole! What a lap!" },
 } satisfies Record<string, Line>);
+// ---- Heather, the trackside correspondent (Michael, 2026-10-13) ----
+// she pops up in her own lower third: who brought out a caution, and a race update now and then
+for (const r of [...RIVALS, ...PACK_RIVALS])
+  lines[`hea-caution-${slug(r.name)}`] = { who: "reporter", text: `Big trouble out there! The ${r.number} of ${r.name} is stopped on the track, and that brings out the caution.` };
+for (const name of ["Raven", "Reba", "Lynx", "Maia", "Paige"])
+  lines[`hea-caution-${slug(name)}`] = { who: "reporter", text: `Oh no! That's ${name} stopped on the track, and that brings out the caution. Let's hope she can get it going.` };
+const HEATHER_UPDATES = [
+  "Heather here, trackside. Tire wear is the story tonight. Whoever saves their rubber wins this thing.",
+  "The crowd is on its feet! I haven't seen racing this close all season.",
+  "Word from pit road: a couple of crews are already planning their stops. Watch the strategy.",
+  "Keep an eye on the leaders. They're running nose to tail, and somebody's about to make a move.",
+  "Heather here. The track's getting slick up high. The smart money's on the bottom groove.",
+  "I just talked to a crew chief who said, and I quote, 'hold on to your hats.' So, hold on to your hats!",
+  "The fans out here are wild tonight. I've been offered three hot dogs and a lawn chair.",
+  "Back to you in the booth. But trust me, nobody's backing down out there.",
+];
+HEATHER_UPDATES.forEach((text, i) => (lines[`hea-update-${i + 1}`] = { who: "reporter", text }));
+export const HEATHER_UPDATE_COUNT = HEATHER_UPDATES.length;
 // the announcer calls every lead change
 for (const r of RIVALS) lines[`ann-lead-${slug(r.name)}`] = { who: "announcer", text: `${r.name} takes the lead!` };
 for (const name of ["Raven", "Reba", "Lynx", "Maia", "Paige"]) lines[`ann-lead-${slug(name)}`] = { who: "announcer", text: `${name} takes the lead! Listen to this crowd!` };
