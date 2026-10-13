@@ -46,8 +46,10 @@ export const TRACK_DEFS: Record<string, TrackDef> = {
     R: 58,
     bankDeg: 12,
     straightBankDeg: 0,
-    pit: { wallFrom: 22, wallTo: 222, speed: 15.6, dive: 95, link: 70, gap: 20 },
-    field: 8,
+    // a full short-track field (Michael, 2026-10-13: "load up the martinsville race with cars"); the
+    // boxes packed tight to fit them all along the pit wall
+    pit: { wallFrom: 22, wallTo: 222, speed: 15.6, dive: 95, link: 70, gap: 9.5 },
+    field: 20,
     aiGrip: 0.97,
     drag: 1,
     night: true,
