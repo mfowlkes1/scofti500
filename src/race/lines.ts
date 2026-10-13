@@ -118,18 +118,19 @@ const DRIVER_LINES: Record<string, string> = {
 // said on the pick screens, not over the radio: hello when you look at them, and what they think of
 // each car and paint
 const HELLO: Record<string, string> = {
-  madhuvan: "Hey there! Smile for the cameras... then I'm gone by turn three.",
+  madhuvan: "Strap in, boys. I don't race for second.",
   allan: "Your car sure does look nice... in my rearview mirror.",
   si: "Greetings! Bubble polished. Tires hungry. Ready to race!",
 };
-// each driver's own take on each car: Madhuvan cheeky, Allan few words, Si a friendly robot. The 7 is a
-// nod to the old owl car, and Madhuvan winks about it (Michael, 2026-10-12)
+// each driver's own take on each car: Madhuvan a badass with a mean streak (Michael, 2026-10-13: "not
+// like an innocent girl"), Allan few words, Si a friendly robot. The 7 is a nod to the old owl car, and
+// Madhuvan winks about it (Michael, 2026-10-12)
 const CAR_TALK: Record<string, Record<string, string>> = {
   madhuvan: {
-    "17-modern": "Ooh, the seventeen. Low, wide and mean... just how I like 'em.",
-    "43-eighties": "The forty-three! Big hair, big engine. My kinda eighties.",
-    "3-muscle": "The number three. All that muscle? Sugar, take me for a ride.",
-    "7-owl": "Number seven, the owl car! Hooters? Sugar, I brought my own.",
+    "17-modern": "The seventeen. Low, wide and mean. Just like me.",
+    "43-eighties": "The forty-three. Old school muscle. I'll make it scream.",
+    "3-muscle": "The three. All that muscle... let's see if it can handle me.",
+    "7-owl": "Number seven, the owl car. Hooters? Sugar, I brought my own.",
   },
   allan: {
     "17-modern": "Seventeen. Modern. Clean. I'll take it.",
@@ -148,16 +149,16 @@ const CAR_TALK: Record<string, Record<string, string>> = {
 // 2026-10-12: "she needs to be talkative on the radio"), and how each one answers the crew chief
 const CHATTER: Record<string, string[]> = {
   madhuvan: [
-    "Whoo! This thing is a rocket tonight!",
-    "Somebody tell the boys up front I'm comin'.",
-    "Is it hot in here, or is it just me?",
-    "I can see the fans wavin'! Hi, sugar!",
-    "Car's stickin' like sweet tea on a summer porch.",
-    "Don't you worry, I'll bring her home pretty.",
-    "I'm havin' way too much fun right now.",
-    "Tell my mama I'm on TV!",
-    "That last corner? Smooth as butter, honey.",
-    "These boys can look all they want. They just can't catch me.",
+    "This thing's a rocket. And I'm the one holding the match.",
+    "Somebody tell the boys up front I'm comin'. And I ain't slowing down.",
+    "Is it hot in here, or is it just me? ...It's me.",
+    "Every one of these boys is about to learn my name.",
+    "I don't lift. I don't brake. I don't apologize.",
+    "Wall's close. I like it close.",
+    "They can watch their mirrors all they want. I'm still coming.",
+    "Hold my line? Honey, I own this line.",
+    "That last corner? Flat out. Try and keep up.",
+    "Nice guys finish second. I'm not nice.",
   ],
   allan: [
     "Car's hooked up. Let's go.",
@@ -180,7 +181,7 @@ const CHATTER: Record<string, string[]> = {
     "Request: more speed. Request granted.",
   ],
 };
-const COPY: Record<string, string> = { madhuvan: "Copy that, sugar!", allan: "Copy.", si: "Message received!" };
+const COPY: Record<string, string> = { madhuvan: "Copy. Now let me drive.", allan: "Copy.", si: "Message received!" };
 export const CHATTER_COUNT: Record<string, number> = Object.fromEntries(Object.entries(CHATTER).map(([d, l]) => [d, l.length]));
 const PAINT_TALK: Record<string, string> = {
   stock: "Stock paint. The real deal.",
@@ -196,6 +197,42 @@ const PAINT_TALK: Record<string, string> = {
   "woods-camo": "Woods camo. Huntin' season.",
   "white-camo": "White camo. Now that's badass.",
 };
+// a driver's own words in place of the shared radio, paint and pick lines above
+const OWN: Record<string, Record<string, string>> = {
+  madhuvan: {
+    green: "Green flag. Time to go to work.",
+    pit: "Copy. Coming in hot.",
+    win: "That's how it's done. Somebody hand me that trophy.",
+    podium: "Podium. Not good enough. I'll be back for the win.",
+    wall: "I'm fine. The wall's not. Keep me going.",
+    "feel-good": "Car's perfect. Don't you dare touch it.",
+    "feel-loose": "Rear end's loose. Fix it. I'll keep it off the wall.",
+    "feel-tight": "She's tight in the middle. Free her up.",
+    "got-one": "Move over. Got 'em.",
+    passed: "Oh, hell no. I'm comin' back for that.",
+    lead: "Out front. Exactly where I belong.",
+    tires: "Tires are shot. I'm driving on nothing but attitude.",
+    draft: "Tucked in their draft. They won't know what hit 'em.",
+    white: "Last lap. Nobody's taking this from me.",
+    thanks: "Not my race. Next time, I take what's mine.",
+    "pit-out": "Good stop. Now watch me make it count.",
+    fast: "Now that was a fast lap. Write it down.",
+    rubbing: "They wanna lean on me? I lean back harder.",
+    pick: "Let's go to work.",
+    "paint-stock": "Stock. Let 'em know who's driving.",
+    "paint-red": "Red. So they know I'm dangerous.",
+    "paint-blue": "Blue. Cold as ice on a restart.",
+    "paint-yellow": "Yellow. They'll see me coming. Won't matter.",
+    "paint-orange": "Orange. Hot as hell.",
+    "paint-green": "Green. The color of my prize money.",
+    "paint-purple": "Purple. Royalty. Bow down.",
+    "paint-pink": "Pink. And I'll still beat every one of 'em.",
+    "paint-white": "White. Clean... for now.",
+    "paint-black": "Black. All business. No mercy.",
+    "paint-woods-camo": "Woods camo. Huntin' season, and they're the deer.",
+    "paint-white-camo": "White camo. Now that's badass.",
+  },
+};
 for (const [driver, voice] of Object.entries(DRIVER_VOICES)) {
   const label = driver.toUpperCase();
   for (const [k, text] of Object.entries(DRIVER_LINES)) lines[`drv-${driver}-${k}`] = { who: "driver", text, label, voice };
@@ -206,6 +243,7 @@ for (const [driver, voice] of Object.entries(DRIVER_VOICES)) {
   say("hello", HELLO[driver]);
   for (const [car, text] of Object.entries(CAR_TALK[driver])) say(`car-${car}`, text);
   for (const [paint, text] of Object.entries(PAINT_TALK)) say(`paint-${paint}`, text);
+  for (const [k, text] of Object.entries(OWN[driver] ?? {})) lines[`drv-${driver}-${k}`].text = text;
 }
 
 // the voices read "Si" as "see"; it's said like "sigh" (Michael, 2026-10-12)
