@@ -920,7 +920,9 @@ body[data-screen="garage"] .welcome {
 }
 .chip {
   flex: none;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+  width: 1.2em;
+  height: 1.2em;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7));
 }
 
 /* GET CHIPS */
@@ -990,11 +992,26 @@ body[data-screen="garage"] .welcome {
 }
 .pile {
   display: flex;
-  height: 54px;
+  height: 100px;
   align-items: flex-end;
+  justify-content: center;
 }
-.pile .chip + .chip {
-  margin-left: -26px;
+/* a tower of chips, each one a step up from the one under it */
+.tower {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+}
+.tower .chip + .chip {
+  margin-bottom: -42px;
+}
+.tower + .tower {
+  margin-left: -12px;
+}
+.pile .chip {
+  width: 52px;
+  height: 52px;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.75)) drop-shadow(0 0 10px rgba(182, 255, 0, 0.35));
 }
 .chips-note {
   margin: 0;

@@ -15,7 +15,8 @@ export type Pack = { id: string; name: string; chips: number; tag?: string };
 export const PACKS: Pack[] = [
   { id: "stack", name: "STACK", chips: 500 },
   { id: "rack", name: "RACK", chips: 1500, tag: "POPULAR" },
-  { id: "high-roller", name: "HIGH ROLLER", chips: 5000, tag: "BEST VALUE" },
+  // racing names, not casino ones (Michael, 2026-10-13: "no high roller")
+  { id: "victory-lane", name: "VICTORY LANE", chips: 5000, tag: "BEST VALUE" },
 ];
 
 export function chips(): number {
@@ -61,17 +62,17 @@ export function buyPack(p: Pack): boolean {
   return true;
 }
 
-/** a chip, as inline SVG (size in px, or "1em" to sit in text) */
-export function chipSvg(size: number | string = "1em"): string {
+/** a chip, as inline SVG (size in px, or "1em" to sit in text). A real poker chip: bright lime with a
+ * black edge and big white edge spots, a black middle with the stamp and a shine across the top. Big
+ * ones say SCOFTI; small ones (in prices) a bold S, since the word can't be read that small (Michael,
+ * 2026-10-13: the dark ones didn't stand out) */
+export function chipSvg(size: number | string = "1em", big = typeof size === "number" && size >= 40): string {
   const s = typeof size === "number" ? `${size}px` : size;
-  // eight checkered notches round the rim, alternating white and lime
-  const notches = Array.from({ length: 8 }, (_, i) => {
-    const a = (i / 8) * Math.PI * 2;
-    const x = 50 + Math.cos(a) * 42;
-    const y = 50 + Math.sin(a) * 42;
-    return `<rect x="${x - 6}" y="${y - 8}" width="12" height="16" rx="2" fill="${i % 2 ? "#b6ff00" : "#fff"}" transform="rotate(${(a * 180) / Math.PI + 90} ${x} ${y})"/>`;
-  }).join("");
-  return `<svg class="chip" width="${s}" height="${s}" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="48" fill="#0b0716" stroke="#b6ff00" stroke-width="4"/>${notches}<circle cx="50" cy="50" r="31" fill="#161026" stroke="#b6ff00" stroke-width="2" stroke-dasharray="4 3"/><text x="50" y="57" text-anchor="middle" font-family="Permanent Marker, cursive" font-size="20" fill="#fff">SCOFTI</text></svg>`;
+  const spots = Array.from({ length: 6 }, (_, i) => `<rect x="43" y="4" width="14" height="14" rx="2.5" fill="#fff" transform="rotate(${i * 60} 50 50)"/>`).join("");
+  const stamp = big
+    ? `<text x="50" y="56" text-anchor="middle" font-family="Permanent Marker, cursive" font-size="17" fill="#fff">SCOFTI</text>`
+    : `<text x="50" y="65" text-anchor="middle" font-family="Permanent Marker, cursive" font-size="44" fill="#b6ff00">S</text>`;
+  return `<svg class="chip" width="${s}" height="${s}" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" fill="#b6ff00" stroke="#0b0716" stroke-width="6"/>${spots}<circle cx="50" cy="50" r="31" fill="#0b0716"/><circle cx="50" cy="50" r="26" fill="none" stroke="#b6ff00" stroke-width="2" stroke-dasharray="5 4"/>${stamp}<path d="M17 36 A35 35 0 0 1 38 15" stroke="#fff" stroke-opacity=".6" stroke-width="4" fill="none" stroke-linecap="round"/></svg>`;
 }
 
 /** an amount with the chip in front, as HTML */

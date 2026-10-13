@@ -439,7 +439,9 @@ function openChips(): void {
       const b = document.createElement("button");
       b.type = "button";
       b.className = "pack";
-      const pile = Array.from({ length: k + 2 }, () => chipSvg(46)).join("");
+      // a pile: more chips for the bigger packs, stacked in towers
+      const towers = [[2], [3, 2], [4, 3, 4]][k] ?? [2];
+      const pile = towers.map((n) => `<span class="tower">${Array.from({ length: n }, () => chipSvg(52)).join("")}</span>`).join("");
       b.innerHTML = `${p.tag ? `<em>${p.tag}</em>` : ""}<span class="pile">${pile}</span><b>${p.name}</b>${chipAmount(p.chips)}<small>${canBuy() ? "FREE (TEST)" : "SOON"}</small>`;
       b.addEventListener("click", () => {
         if (buyPack(p)) {
