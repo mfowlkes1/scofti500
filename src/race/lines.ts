@@ -259,6 +259,80 @@ const PAINT_TALK: Record<string, string> = {
   "woods-camo": "Woods camo. Huntin' season, and they're the deer.",
   "white-camo": "White camo. Now that's badass.",
 };
+// what each one says about each color she can wear (Michael, 2026-10-13: "their own sayings for all
+// selections"); stock is her own colors
+const PAINT_LINES: Record<string, Record<string, string>> = {
+  raven: {
+    stock: "My own colors. Classic me.",
+    red: "Red. Ha! They'll see me coming and still can't stop me.",
+    blue: "Blue. Cool on the outside. Trouble on the inside.",
+    yellow: "Yellow. Like a caution flag. Fitting.",
+    orange: "Orange. Loud. I like loud.",
+    green: "Green. Green means go. Watch me go.",
+    purple: "Purple. Fancy. I'll take it.",
+    pink: "Pink. Cute, right? Wait till I pass you.",
+    white: "White. Pure as it gets. Unlike my driving.",
+    black: "Black. My favorite. Matches my mood.",
+    "woods-camo": "Woods camo. Good luck finding me. I'll be up front.",
+    "white-camo": "White camo. Snow day. Let's slide.",
+  },
+  reba: {
+    stock: "My colors. Nothing else needed.",
+    red: "Red. Consider it a warning.",
+    blue: "Blue. Cold. Suits me.",
+    yellow: "Yellow. Bright. I'll allow it.",
+    orange: "Orange. Not my style. I'll win anyway.",
+    green: "Green. The color of money. Mine.",
+    purple: "Purple. Royalty. Naturally.",
+    pink: "Pink. Don't let it fool you.",
+    white: "White. Pure. Like ice.",
+    black: "Black. Quiet. Deadly.",
+    "woods-camo": "Woods camo. Patient. Like a hunter.",
+    "white-camo": "White camo. Frozen ground. My territory.",
+  },
+  lynx: {
+    stock: "My pink! Obviously the best.",
+    red: "Red! Spicy. Let's go!",
+    blue: "Blue? Kinda chill. I'm not.",
+    yellow: "Yellow! Like a bumblebee with a temper.",
+    orange: "Orange! Traffic cone chic.",
+    green: "Green! Go, go, go!",
+    purple: "Purple! Now we're talking.",
+    pink: "Pink! Did you even have to ask?",
+    white: "White. Pure as it gets. I'll get it dirty.",
+    black: "Black. Mysterious. Totally me. Kidding!",
+    "woods-camo": "Camo! Hide and seek at a hundred and eighty.",
+    "white-camo": "White camo! Snowball fight on wheels!",
+  },
+  maia: {
+    stock: "My colors. Don't touch 'em.",
+    red: "Red! Now you're talking. Matches my temper.",
+    blue: "Blue. Calm. Don't count on it.",
+    yellow: "Yellow. Caution. You should've listened.",
+    orange: "Orange. Fire. Obviously.",
+    green: "Green. Envy. They'll have plenty.",
+    purple: "Purple. The color of the bruises I'm handing out.",
+    pink: "Pink. Go ahead, laugh. Then try to pass me.",
+    white: "White. Pure. Won't stay that way.",
+    black: "Black. Like the marks I leave on the track.",
+    "woods-camo": "Woods camo. Sneak attack incoming.",
+    "white-camo": "White camo. Cold blooded. Hot headed.",
+  },
+  paige: {
+    stock: "My signature look. Iconic.",
+    red: "Red. Red carpet ready.",
+    blue: "Blue. Classic. The cameras love it.",
+    yellow: "Yellow. Spotlight color.",
+    orange: "Orange. Bold choice. I like bold.",
+    green: "Green. Like the money they'll pay to watch me.",
+    purple: "Purple. Main character energy.",
+    pink: "Pink. Pretty in the photos. Mean on the track.",
+    white: "White. Pure. Picture perfect.",
+    black: "Black. Elegant. Dangerous.",
+    "woods-camo": "Woods camo. Even camouflaged, all eyes are on me.",
+    "white-camo": "White camo. The winter collection.",
+  },
+};
 // a driver's own words in place of the shared radio, paint and pick lines above
 const OWN: Record<string, Record<string, string>> = {
   paige: {
@@ -329,7 +403,7 @@ for (const [driver, voice] of Object.entries(DRIVER_VOICES)) {
   say("pick", "Let's go racing!");
   say("hello", HELLO[driver]);
   for (const [car, text] of Object.entries(CAR_TALK[driver])) say(`car-${car}`, text);
-  for (const [paint, text] of Object.entries(PAINT_TALK)) say(`paint-${paint}`, text);
+  for (const [paint, text] of Object.entries({ ...PAINT_TALK, ...PAINT_LINES[driver] })) say(`paint-${paint}`, text);
   for (const [k, text] of Object.entries(OWN[driver] ?? {})) lines[`drv-${driver}-${k}`].text = text;
 }
 
