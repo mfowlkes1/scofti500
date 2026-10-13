@@ -450,6 +450,13 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     const dt = SIMTEST ? ((window as unknown as { __simSpeed?: number }).__simSpeed ?? 1) / 30 : Math.min(0.1, (t - last) / 1000 || 0);
     last = t;
     if (!sess || paused) return;
+    // ?simtest frame-by-frame capture (for videos): with window.__hold set, the race moves only when
+    // window.__steps says so, one frame of 1/30 s each
+    const w = window as unknown as { __hold?: boolean; __steps?: number };
+    if (SIMTEST && w.__hold) {
+      if (!w.__steps) return void renderer.render(scene, camera);
+      w.__steps--;
+    }
     if (replaying) {
       // a replay can never strand you: if it goes wrong, straight on to the interview and results
       try {
@@ -462,7 +469,8 @@ export function createRace(opts: { onDone(again: boolean): void }) {
       return;
     }
     if (SIMTEST) (window as unknown as { __race: Session }).__race = sess;
-    const input = readInput(dt);
+    // (?simtest videos: window.__autopilot lets the AI drive your car too)
+    const input = SIMTEST && (window as unknown as { __autopilot?: boolean }).__autopilot ? null : readInput(dt);
     acc += dt;
     let steps = 0;
     const most = SIMTEST ? 400 : 10;
