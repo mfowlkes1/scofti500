@@ -27,7 +27,8 @@ button {
   display: none;
 }
 body[data-screen="title"] #title-screen,
-body[data-screen="track"] #track-screen {
+body[data-screen="track"] #track-screen,
+body[data-screen="credits"] #credits-screen {
   display: block;
 }
 
@@ -839,4 +840,60 @@ body[data-screen="garage"] .welcome {
   bottom: max(8px, env(safe-area-inset-bottom));
   font: 600 11px/1 system-ui, sans-serif;
   color: rgba(255, 255, 255, 0.45);
+}
+
+/* the title's CREDITS button, bottom left */
+.credits-btn {
+  position: fixed;
+  left: max(12px, env(safe-area-inset-left));
+  bottom: max(10px, env(safe-area-inset-bottom));
+  z-index: 3;
+  padding: 0.4em 0.9em;
+  font: 400 14px/1 "Lilita One", system-ui, sans-serif;
+  letter-spacing: 0.12em;
+  color: #fff;
+  background: rgba(11, 7, 22, 0.55);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 999px;
+}
+
+/* the credits: one scrolling column over the blurred stadium */
+#credits-screen {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  text-align: center;
+}
+.credits {
+  box-sizing: border-box;
+  width: min(560px, 100%);
+  margin: 0 auto;
+  overflow-wrap: anywhere;
+  padding: 72px 16px 48px;
+  color: #fff;
+  font: 500 17px/1.45 system-ui, sans-serif;
+}
+.credits p {
+  margin: 0.2em 0;
+}
+.credits h3 {
+  margin: 1.6em 0 0.3em;
+  font: 400 15px/1 "Lilita One", system-ui, sans-serif;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--lime);
+}
+.credits-title {
+  font: 400 clamp(40px, 9vmin, 72px) / 1 "Racing Sans One", system-ui, sans-serif;
+}
+.credits-title .academy-mark {
+  color: #fff;
+}
+.credits-sub {
+  color: var(--muted);
+}
+.credits-note {
+  margin-top: 1.4em !important;
+  color: var(--muted);
+  font-size: 14px;
 }

@@ -20,8 +20,8 @@ sendHome();
 
 // Flow: title → PICK YOUR DRIVER → PICK YOUR CAR → PIT GARAGE → PICK YOUR TRACK → the race → back to
 // the pit garage. Backspace and the on-screen BACK go back; Escape belongs to the arcade.
-type Screen = "title" | "driver" | "car" | "garage" | "track" | "race";
-const BACK: Partial<Record<Screen, Screen>> = { driver: "title", car: "driver", garage: "car", track: "garage" };
+type Screen = "title" | "driver" | "car" | "garage" | "track" | "race" | "credits";
+const BACK: Partial<Record<Screen, Screen>> = { driver: "title", car: "driver", garage: "car", track: "garage", credits: "title" };
 const $ = (id: string) => document.getElementById(id)!;
 
 let screen: Screen = "title";
@@ -275,6 +275,8 @@ function showTrack(): void {
 showTrack();
 
 $("race-now").addEventListener("click", () => show("driver"));
+$("to-credits").addEventListener("click", () => show("credits"));
+$("credits-version").textContent = VERSION;
 $("garage-go").addEventListener("click", () => show("track"));
 for (const b of document.querySelectorAll<HTMLButtonElement>("[data-back]")) {
   b.addEventListener("click", () => show(BACK[screen] ?? "title"));
