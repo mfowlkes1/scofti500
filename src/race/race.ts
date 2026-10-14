@@ -279,8 +279,11 @@ export function createRace(opts: { onDone(again: boolean): void }) {
   const showSteer = () => steerBtns.forEach((b) => b.classList.toggle("on", b.dataset.steer === steerPref));
   for (const b of steerBtns) {
     b.addEventListener("click", async () => {
-      steerPref = await setSteer(b.dataset.steer as SteerMode);
+      const want = b.dataset.steer as SteerMode;
+      steerPref = await setSteer(want);
       showSteer();
+      // the phone said no to its motion sensor: an iPhone won't ask again until the browser is closed
+      $("rp-steer-note").textContent = steerPref === want ? "" : "the phone said no to tilt. close the browser all the way, open the game again and say allow";
     });
   }
 

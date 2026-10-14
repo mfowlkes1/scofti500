@@ -1249,6 +1249,15 @@ body.tilt-steer .t-steer {
 }
 
 /* asked once, after the first car pick on a phone */
+.rp-steer-note {
+  max-width: 340px;
+  color: var(--muted);
+  font: 600 13px/1.3 system-ui, sans-serif;
+  text-align: center;
+}
+.rp-steer-note:empty {
+  display: none;
+}
 .steer-ask {
   position: fixed;
   inset: 0;
@@ -1297,6 +1306,9 @@ body.tilt-steer .t-steer {
 }
 .steer-choice[data-steer="tilt"] span {
   color: rgba(11, 7, 22, 0.75);
+}
+.steer-choice.on {
+  box-shadow: 0 0 0 4px var(--lime), 0 0 26px rgba(182, 255, 0, 0.55);
 }
 
 /* ---- a phone held sideways: the radio up top between the readouts, the map and buttons down the

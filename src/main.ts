@@ -220,13 +220,42 @@ const cars = createPicker<Car>({
     showGaragePaints(c);
     showUpgrades();
     show("garage");
-    // the first time on a phone: tilt or thumb?
-    if (touchScreen() && !savedSteer()) $("steer-ask").classList.add("on");
+    // on a phone, tilt or thumb? Once each time the game is opened, the last pick lit up (only asking
+    // the very first time, Michael never saw it again: 2026-10-14)
+    if (touchScreen() && !steerAsked()) askSteer();
   },
 });
+const ASKED = "scofti500:steer-asked";
+function steerAsked(): boolean {
+  try {
+    return sessionStorage.getItem(ASKED) === "1";
+  } catch {
+    return !!savedSteer();
+  }
+}
+const steerNote = $("steer-ask").querySelector("small")!;
+const STEER_NOTE = steerNote.textContent;
+function askSteer(): void {
+  const was = savedSteer();
+  for (const b of document.querySelectorAll<HTMLButtonElement>("#steer-ask [data-steer]")) b.classList.toggle("on", b.dataset.steer === was);
+  steerNote.textContent = STEER_NOTE;
+  $("steer-ask").classList.add("on");
+}
 for (const b of document.querySelectorAll<HTMLButtonElement>("#steer-ask [data-steer]")) {
   b.addEventListener("click", async () => {
-    await setSteer(b.dataset.steer as SteerMode);
+    const want = b.dataset.steer as SteerMode;
+    const got = await setSteer(want);
+    if (got !== want) {
+      // the phone said no to its motion sensor: an iPhone won't ask again until Safari is closed
+      askSteer();
+      steerNote.textContent = "the phone said no to tilt. close the browser all the way, open the game again and say allow";
+      return;
+    }
+    try {
+      sessionStorage.setItem(ASKED, "1");
+    } catch {
+      // asked again next time
+    }
     $("steer-ask").classList.remove("on");
   });
 }
