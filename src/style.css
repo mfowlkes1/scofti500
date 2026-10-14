@@ -1124,3 +1124,215 @@ body:not([data-screen="title"]) .song-btn {
   opacity: 1;
   transform: translate(-50%, 0);
 }
+
+/* ---- a phone held sideways (short and wide): everything on one screen, nothing scrolls (Michael,
+   2026-10-13: "scrolling is NEVER good on a landscape game") ---- */
+@media (orientation: landscape) and (max-height: 520px) {
+  .pick-screen {
+    padding-top: max(10px, env(safe-area-inset-top));
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+  body[data-screen="driver"] #driver-screen,
+  body[data-screen="car"] #car-screen {
+    gap: 6px;
+  }
+  .pick-title {
+    font-size: 26px;
+  }
+  .back-btn {
+    font-size: 14px;
+  }
+  .pick-info {
+    gap: 5px;
+    align-content: center;
+    min-height: 0;
+  }
+  .pick-role {
+    font-size: 13px;
+  }
+  .pick-name {
+    font-size: 36px;
+  }
+  .pick-sub {
+    font-size: 15px;
+  }
+  .pick-line {
+    margin: 0;
+    font-size: 15px;
+  }
+  .paints-wrap {
+    gap: 4px;
+    margin: 0;
+  }
+  .paint-name {
+    font-size: 12px;
+  }
+  .paints {
+    gap: 6px;
+    max-width: none;
+  }
+  .swatch {
+    width: 28px;
+    height: 28px;
+  }
+  .pick-info .go-btn {
+    margin-top: 4px;
+    font-size: 26px;
+  }
+  .pick-stage {
+    height: 100%;
+    min-height: 0;
+  }
+  #driver-img {
+    height: 100%;
+  }
+  #driver-cards .card-art img {
+    width: 46px;
+  }
+  #car-cards .card-art img {
+    width: 104px;
+  }
+  .card-name {
+    font-size: 12px;
+  }
+  .card-badge {
+    font-size: 15px;
+  }
+  .pick-cards {
+    padding-block: 4px 0;
+  }
+
+  /* pick your track: the track on the left, laps, mode and GO RACING on the right */
+  body[data-screen="track"] #track-screen {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto auto auto 1fr;
+    align-items: center;
+    align-content: center;
+    column-gap: 24px;
+    row-gap: 8px;
+    padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom))
+      max(16px, env(safe-area-inset-left));
+    overflow: hidden;
+  }
+  #track-screen .race-flag {
+    grid-column: 1 / 3;
+    font-size: 30px;
+  }
+  #track-screen > :not(.race-flag, .track-back) {
+    grid-column: 1;
+    margin: 0;
+  }
+  #track-pick {
+    grid-row: 2;
+  }
+  .track-name {
+    grid-row: 3;
+    font-size: 40px;
+  }
+  #track-kind {
+    grid-row: 4;
+  }
+  #track-line {
+    grid-row: 5;
+    font-size: 15px;
+  }
+  #track-time {
+    grid-row: 6;
+    align-self: start;
+  }
+  #track-screen > #laps-pick,
+  #track-screen > #mode-pick,
+  #track-screen > #mode-line,
+  #track-screen > #track-go {
+    grid-column: 2;
+  }
+  #laps-pick {
+    grid-row: 2 / 4;
+  }
+  #mode-pick {
+    grid-row: 4;
+  }
+  #mode-line {
+    grid-row: 5;
+    font-size: 14px;
+  }
+  #track-go {
+    grid-row: 6;
+    align-self: start;
+    font-size: 28px;
+  }
+  .laps-pick button {
+    font-size: 15px;
+  }
+
+  /* the pit garage: the panel runs top to bottom on the right, the upgrades two by two */
+  .garage-top .pick-title {
+    font-size: 24px;
+  }
+  .cash {
+    font-size: 20px;
+  }
+  .garage-panel {
+    top: calc(max(10px, env(safe-area-inset-top)) + 46px);
+    translate: none;
+    width: min(400px, 46vw);
+    gap: 6px;
+    padding: 10px;
+  }
+  .garage-who {
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .garage-paints .paints {
+    flex-wrap: nowrap;
+    gap: 4px;
+  }
+  .garage-paints .swatch {
+    width: 26px;
+    height: 26px;
+    flex: 0 0 auto;
+  }
+  .upgrades {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .upgrade {
+    padding: 6px 8px;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .up-text b {
+    font-size: 17px;
+  }
+  .up-text span:not(.pips) {
+    display: none;
+  }
+  .buy {
+    min-width: 0;
+    flex: 1 0 100%;
+    padding: 0.3em;
+    font-size: 15px;
+  }
+  .garage-panel .go-btn {
+    font-size: 22px;
+  }
+}
+@media (orientation: landscape) and (max-height: 520px) {
+  .pick-info .go-btn.go-long {
+    font-size: 22px;
+    padding-inline: 0.7em;
+  }
+  /* the top bar already says where you are; the panel keeps its room for the paint and upgrades */
+  .garage-who {
+    display: none;
+  }
+  .garage-paints .swatch {
+    flex: 0 1 26px;
+    width: auto;
+    min-width: 18px;
+    height: auto;
+    aspect-ratio: 1;
+  }
+}

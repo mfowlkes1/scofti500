@@ -1339,3 +1339,133 @@ body.tilt-steer .t-steer {
     transform: rotate(90deg);
   }
 }
+
+/* ---- a phone held sideways: the radio up top between the readouts, the map and buttons down the
+   right, tires and speed along the bottom beside the GAS, a smaller steering pad and order board ---- */
+@media (orientation: landscape) and (max-height: 520px) {
+  .hud-pos b {
+    font-size: 40px;
+  }
+  .hud-pos span {
+    font-size: 18px;
+  }
+  .hud-lap {
+    font-size: 16px;
+  }
+  .hud-map {
+    width: 150px;
+    height: 75px;
+  }
+  .hud-btns {
+    top: 95px;
+    gap: 6px;
+  }
+  .hud-btns button {
+    padding: 6px 9px;
+    font-size: 13px;
+  }
+  .hud-radio {
+    top: 10px;
+    max-width: calc(100vw - 2 * 180px);
+    padding: 6px 12px 8px;
+  }
+  .hud-radio span {
+    font-size: 15px;
+  }
+  .hud-board {
+    top: 128px;
+  }
+  .hud-board li {
+    grid-template-columns: 14px 24px 74px 54px;
+    gap: 4px;
+    padding: 2px 6px;
+    font-size: 11px;
+  }
+  .hud-board li em {
+    display: none;
+  }
+  .hud-board li small {
+    grid-column: 4;
+    font-size: 10px;
+  }
+  .hud-board li i {
+    font-size: 13px;
+  }
+  .hud-flag {
+    font-size: 44px;
+  }
+  .heather {
+    left: 140px;
+    top: 64px;
+    bottom: auto;
+    align-items: flex-start;
+    max-width: calc(100vw - 2 * 180px);
+  }
+  .heather img {
+    height: 44vh;
+  }
+  .heather-bar {
+    margin: 24px 0 0;
+    padding: 8px 12px 10px 30px;
+  }
+  .heather-bar span {
+    font-size: 14px;
+  }
+}
+@media (orientation: landscape) and (max-height: 520px) and (pointer: coarse) {
+  .hud-br {
+    right: 182px;
+    bottom: 14px;
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+  }
+  .hud-tires {
+    zoom: 0.8;
+  }
+  .hud-speed b {
+    font-size: 42px;
+  }
+  .t-steer {
+    width: 240px;
+    height: 92px;
+  }
+  .t-gas {
+    height: 130px;
+  }
+}
+@media (orientation: landscape) and (max-height: 520px) {
+  /* the radio sits between the lap readout on the left and the map on the right */
+  .hud-radio {
+    left: 140px;
+    right: 176px;
+    width: auto;
+    max-width: none;
+    transform: translateY(-12px);
+  }
+  .hud-radio.on {
+    transform: none;
+  }
+  .hud-radio span {
+    font-size: 14px;
+  }
+  .hud-btns {
+    top: 98px;
+    gap: 4px;
+  }
+  .hud-btns button {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+}
+@media (orientation: landscape) and (max-height: 520px) and (pointer: coarse) {
+  .hud-tires {
+    zoom: 0.7;
+  }
+  .hud-speed b {
+    font-size: 38px;
+  }
+  .t-steer {
+    width: 220px;
+  }
+}

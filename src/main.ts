@@ -366,7 +366,31 @@ function showTrack(): void {
 showTrack();
 
 $("race-now").addEventListener("click", () => show("driver"));
-$("to-credits").addEventListener("click", () => show("credits"));
+$("to-credits").addEventListener("click", () => {
+  show("credits");
+  rollCredits();
+});
+
+// the credits roll up by themselves, like the end of a movie; a touch or the wheel takes over
+function rollCredits(): void {
+  const el = $("credits-screen");
+  el.scrollTop = 0;
+  let pos = 0;
+  // a moment to read the title first
+  let last = performance.now() + 1500;
+  let stopped = false;
+  const stop = () => (stopped = true);
+  el.addEventListener("pointerdown", stop, { once: true });
+  el.addEventListener("wheel", stop, { once: true });
+  const step = (now: number) => {
+    if (stopped || screen !== "credits") return;
+    pos += 0.035 * Math.max(0, Math.min(50, now - last));
+    last = Math.max(last, now);
+    el.scrollTop = pos;
+    if (pos < el.scrollHeight - el.clientHeight) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
 $("credits-version").textContent = VERSION;
 $("garage-go").addEventListener("click", () => show("track"));
 for (const b of document.querySelectorAll<HTMLButtonElement>("[data-back]")) {
