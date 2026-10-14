@@ -1469,3 +1469,19 @@ body.tilt-steer .t-steer {
     width: 220px;
   }
 }
+/* in the seat on a sideways phone: the dash has its own speed, so the tires go up the right side
+   under the buttons, off the gauges (Michael, 2026-10-13) */
+@media (orientation: landscape) and (max-height: 520px) and (pointer: coarse) {
+  body.in-seat .hud-br {
+    top: 136px;
+    right: 16px;
+    bottom: auto;
+  }
+  body.in-seat .hud-tires {
+    zoom: 0.6;
+  }
+  /* a slimmer pedal, clear of the dash's MPH */
+  body.in-seat .t-gas {
+    width: 112px;
+  }
+}

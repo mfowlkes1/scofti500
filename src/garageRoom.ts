@@ -91,11 +91,17 @@ export function createGarage(canvas: HTMLCanvasElement): Garage {
     camera.fov = tall ? 52 : 38;
     // wide: the car sits left of the upgrade panel; tall: up top, the panel under it
     if (tall) {
+      camera.clearViewOffset();
       camera.position.set(0, 3.6, 12.5);
       camera.lookAt(0, -1.6, 0);
     } else {
+      // the car in the middle of the room the panel leaves it, however wide the panel is on this
+      // screen (on a sideways phone the panel covered half the car: Michael, 2026-10-13)
       camera.position.set(-0.2, 2.3, 10.5);
-      camera.lookAt(2.0, 0.7, 0);
+      camera.lookAt(0, 0.7, 0);
+      const panel = document.querySelector(".garage-panel")?.getBoundingClientRect();
+      const room = panel && panel.width ? panel.left : w * 0.6;
+      camera.setViewOffset(w, h, w / 2 - room / 2, 0, w, h);
     }
     camera.updateProjectionMatrix();
   }

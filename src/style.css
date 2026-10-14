@@ -1336,3 +1336,75 @@ body:not([data-screen="title"]) .song-btn {
     aspect-ratio: 1;
   }
 }
+@media (orientation: landscape) and (max-height: 520px) {
+  /* pick your car: the picture takes the height there is and no more, so on a wide phone it can't
+     climb over BACK and the title (Michael, 2026-10-13, on an iPhone) */
+  #car-screen .hero-box {
+    height: 100%;
+    grid-template-rows: minmax(0, 1fr) auto;
+    /* room for the picture's border and shadow above the tap-to-turn row */
+    gap: 14px;
+  }
+  #car-screen #car-img {
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+    min-height: 0;
+  }
+  .driver-chip {
+    top: -4px;
+  }
+  #car-driver {
+    width: 44px;
+  }
+
+  /* GET CHIPS: the three packs, the note and the button on one screen */
+  #chips-screen {
+    overflow: hidden;
+  }
+  .chips-page {
+    gap: 8px;
+    padding: max(10px, env(safe-area-inset-top)) 16px max(8px, env(safe-area-inset-bottom));
+  }
+  .chips-page .race-flag {
+    font-size: 30px;
+  }
+  .chips-have {
+    font-size: 17px;
+  }
+  .pack {
+    width: min(200px, 30vw);
+    gap: 4px;
+    padding: 12px 8px 10px;
+  }
+  .pile {
+    height: 62px;
+  }
+  .pile .chip {
+    width: 36px;
+    height: 36px;
+  }
+  .tower .chip + .chip {
+    margin-bottom: -29px;
+  }
+  .pile .flag {
+    height: 40px;
+    width: auto;
+  }
+  .pack .chips-amt {
+    font-size: 22px;
+  }
+  .pack small {
+    font-size: 12px;
+  }
+  .chips-note {
+    max-width: none;
+    font-size: 13px;
+  }
+  .chips-page .go-btn {
+    font-size: 24px;
+  }
+  .chips-lineup {
+    display: none;
+  }
+}
