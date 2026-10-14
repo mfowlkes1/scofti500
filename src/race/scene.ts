@@ -7,7 +7,7 @@
 import * as THREE from "three";
 import { racingLine } from "./ai";
 import { buildInfield } from "./infield";
-import { APRON, HALF, L, LINE_S, PIT, R, TRACK, TURNS, frame, heightAt } from "./track";
+import { APRON, HALF, L, LINE_S, PIT, R, TRACK, TURNS, frame, heightAt, pitFarWall } from "./track";
 
 export type TrackScene = {
   /** everything in the track's scene, to show or hide */
@@ -92,7 +92,13 @@ function ribbon(
 }
 
 /** an upright strip (a wall face) along d from s0 to s1, from the surface up `height` */
-function wallStrip(s0: number, s1: number, d: number, height: number, opts: { step?: number; u?: number; base?: number; flatBase?: boolean } = {}): THREE.BufferGeometry {
+function wallStrip(
+  s0: number,
+  s1: number,
+  d0: number,
+  height: number,
+  opts: { step?: number; u?: number; base?: number; flatBase?: boolean; dAt?: (s: number) => number } = {},
+): THREE.BufferGeometry {
   const step = opts.step ?? 2;
   const n = Math.max(1, Math.ceil((s1 - s0) / step));
   const pos: number[] = [];
@@ -100,6 +106,7 @@ function wallStrip(s0: number, s1: number, d: number, height: number, opts: { st
   const idx: number[] = [];
   for (let i = 0; i <= n; i++) {
     const s = s0 + ((s1 - s0) * i) / n;
+    const d = opts.dAt ? opts.dAt(s) : d0;
     const f = frame(s, d);
     const y0 = (opts.flatBase ? 0 : heightAt(s, Math.min(d, HALF))) + (opts.base ?? 0);
     pos.push(f.x, y0, f.z, f.x, y0 + height, f.z);
@@ -463,7 +470,10 @@ export async function buildTrack(): Promise<TrackScene> {
   const concWall = new THREE.MeshStandardMaterial({ color: "#c9cbcf", roughness: 0.85, side: THREE.DoubleSide });
   for (const d of [PIT.wallOut, PIT.wallIn]) add(wallStrip(PIT.wallFrom, PIT.wallTo, d, 1.0, { flatBase: true }), concWall);
   add(ribbon(PIT.wallFrom, PIT.wallTo, PIT.wallIn, PIT.wallOut, { flat: true, lift: 1.0 }), concWall);
-  add(wallStrip(PIT.wallFrom - 14, PIT.wallTo + 14, PIT.inner - 0.4, 1.0, { flatBase: true }), concWall);
+  // the far wall, down the entry lane, along the boxes and up the exit lane (Michael, 2026-10-13: no
+  // wall on the left coming into Hotlanta's long pit road)
+  add(wallStrip(L - PIT.link - 5, L, 0, 1.0, { flatBase: true, dAt: (s) => pitFarWall(s)! }), concWall);
+  add(wallStrip(0, PIT.wallTo + 80, 0, 1.0, { flatBase: true, dAt: (s) => pitFarWall(s)! }), concWall);
   // the box lines and a red tool cart behind each box
   {
     const boxes = new THREE.Group();

@@ -12,7 +12,7 @@
 // - Tires wear with every meter, much faster while sliding, and lose grip as they go. Cold tires
 //   (the start, out of the pits) have less grip until they warm up.
 // - Walls and other cars push back: rubbin' is racin', but a hard hit off-center spins you.
-import { frame, gap, heightAt, HALF, INFIELD, inPitRoad, L, PIT, TRACK, project, surfaceAt, bankAt, wrap, type Surface } from "./track";
+import { frame, gap, heightAt, HALF, INFIELD, inPitRoad, L, PIT, TRACK, pitFarWall, project, surfaceAt, bankAt, wrap, type Surface } from "./track";
 
 export const G = 9.81;
 export const WHEELBASE = 2.8;
@@ -302,6 +302,13 @@ function wallCheck(c: CarState, prevD: number): void {
       // on pit road
       limitHi = PIT.wallIn - hw;
       limitLo = PIT.inner + hw;
+    }
+  } else {
+    // pit road's far wall down the entry and exit lanes: solid from either side
+    const far = pitFarWall(s);
+    if (far !== null) {
+      if (prevD > far) limitLo = Math.max(limitLo, far + hw);
+      else limitHi = Math.min(limitHi, far - hw);
     }
   }
   if (c.d > limitHi) hitWall(c, c.d - limitHi, 1);

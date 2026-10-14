@@ -283,6 +283,19 @@ export function surfaceAt(s: number, d: number): Surface {
   return "grass";
 }
 
+/** pit road's far wall (its d) at s: down the inside of the entry lane, along the boxes and up the
+ * inside of the exit lane, so there's a wall on your left all the way through; null where there's none */
+export function pitFarWall(s: number): number | null {
+  s = wrap(s);
+  const edge = PIT.inner - 0.4;
+  const rise = APRON - PIT.inner - 1;
+  const link = PIT.link + 5;
+  if (s > L - link) return edge + ((L - s) / link) * rise;
+  if (s <= PIT.wallTo + 13) return edge;
+  if (s < PIT.wallTo + 80) return edge + ((s - PIT.wallTo - 13) / 67) * rise;
+  return null;
+}
+
 /** on the pit lane itself, behind the pit wall */
 export function inPitRoad(s: number, d: number): boolean {
   s = wrap(s);
