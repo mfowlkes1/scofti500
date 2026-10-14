@@ -21,7 +21,8 @@ import { savedSuit, suitUrl } from "../suit";
 import { createRadio, type Radio } from "./radio";
 import { startAudio, type RaceAudio } from "./sound";
 import { BOUNDS, HALF, L, TRACK, bankAt, frame, gap, heightAt, setTrack } from "./track";
-import { setSteer, steerMode, tiltSteer, touchScreen, type SteerMode } from "../steer";
+import { setSteer, steerMode, tiltSteer, type SteerMode } from "../steer";
+import { pointerX } from "../turn";
 
 /** easy: preseason testing. Walls and bumps only slow you down, a bit more grip, and the rivals take it easy */
 /** grid: the starting order from qualifying (names); race night qualifies first when there's none */
@@ -112,13 +113,13 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     let id: number | null = null;
     pad.addEventListener("pointerdown", (e) => {
       id = e.pointerId;
-      x0 = e.clientX;
+      x0 = pointerX(e);
       pad.setPointerCapture(e.pointerId);
       touchSteer = 0;
     });
     pad.addEventListener("pointermove", (e) => {
       if (e.pointerId !== id) return;
-      touchSteer = clamp((e.clientX - x0) / 70, -1, 1);
+      touchSteer = clamp((pointerX(e) - x0) / 70, -1, 1);
       knob.style.transform = `translateX(${touchSteer * 52}px)`;
     });
     const end = (e: PointerEvent) => {
@@ -305,8 +306,6 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     const tall = h > w;
     camera.fov = camMode === "seat" && !replaying ? (tall ? 92 : 72) : tall ? 76 : 60;
     camera.updateProjectionMatrix();
-    // a phone turned upright gets the TURN YOUR PHONE SIDEWAYS cover: hold the race behind it
-    if (touchScreen() && h > w && running && !paused) setPaused(true);
   }
   addEventListener("resize", resize);
 

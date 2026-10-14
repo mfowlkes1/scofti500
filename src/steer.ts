@@ -2,6 +2,8 @@
 // pick (Michael, 2026-10-13: the store racing games all offer it); the pause screen changes it later.
 // Saved as scofti500:steer ("tilt" or "thumb").
 
+import { viewAngle } from "./turn";
+
 const KEY = "scofti500:steer";
 export type SteerMode = "tilt" | "thumb";
 
@@ -52,7 +54,7 @@ addEventListener("deviceorientation", (e) => {
   const g = (e.gamma * Math.PI) / 180;
   const ux = -Math.cos(b) * Math.sin(g);
   const uy = Math.sin(b);
-  const rot = ((screen.orientation?.angle ?? (window as unknown as { orientation?: number }).orientation ?? 0) * Math.PI) / 180;
+  const rot = (viewAngle() * Math.PI) / 180;
   const sx = ux * Math.cos(rot) - uy * Math.sin(rot);
   const sy = ux * Math.sin(rot) + uy * Math.cos(rot);
   // lying flat there's no wheel to read: hold the last angle

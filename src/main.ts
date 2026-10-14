@@ -1,6 +1,7 @@
 import "@fontsource/lilita-one";
 import "@fontsource/permanent-marker";
 import "@fontsource/racing-sans-one";
+import "./turn";
 import "./style.css";
 import "./race/race.css";
 import { PAINTS, paintedUrl, savePaint, savedPaint } from "./paint";
@@ -16,6 +17,7 @@ import { createRace } from "./race/race";
 import { CARS, DRIVERS, TRACKS, carUrl, faceUrl, fullUrl, type Car, type Driver } from "./roster";
 import { sendHome } from "./home";
 import { savedSteer, setSteer, touchScreen, type SteerMode } from "./steer";
+import { pointerX } from "./turn";
 import { SUIT_PAINTS, carPaintFor, ownSwatch, saveSuit, savedSuit, suitUrl } from "./suit";
 import { VERSION } from "./version";
 
@@ -321,10 +323,10 @@ function turn(by: number): void {
 {
   const img = $("car-img");
   let startX: number | null = null;
-  img.addEventListener("pointerdown", (e) => (startX = e.clientX));
+  img.addEventListener("pointerdown", (e) => (startX = pointerX(e)));
   img.addEventListener("pointerup", (e) => {
     if (startX === null) return;
-    const dx = e.clientX - startX;
+    const dx = pointerX(e) - startX;
     startX = null;
     // a swipe turns the way you swiped; a tap goes round
     turn(Math.abs(dx) > 30 ? (dx < 0 ? 1 : -1) : 1);

@@ -1299,47 +1299,6 @@ body.tilt-steer .t-steer {
   color: rgba(11, 7, 22, 0.75);
 }
 
-/* phones race sideways only: held upright, everything waits behind this */
-.turn-phone {
-  display: none;
-}
-@media (pointer: coarse) and (orientation: portrait) {
-  .turn-phone {
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    display: grid;
-    place-content: center;
-    justify-items: center;
-    gap: 14px;
-    padding: 16px;
-    text-align: center;
-    background: var(--night);
-  }
-  .turn-phone span {
-    font-size: 84px;
-    line-height: 1;
-    color: var(--lime);
-    animation: turn-phone 1.8s ease-in-out infinite;
-  }
-  .turn-phone p {
-    margin: 0;
-    font: 400 clamp(26px, 8vw, 40px) / 1.1 "Racing Sans One", system-ui, sans-serif;
-    color: #fff;
-    transform: skewX(-8deg);
-  }
-}
-@keyframes turn-phone {
-  0%,
-  30% {
-    transform: rotate(0deg);
-  }
-  60%,
-  100% {
-    transform: rotate(90deg);
-  }
-}
-
 /* ---- a phone held sideways: the radio up top between the readouts, the map and buttons down the
    right, tires and speed along the bottom beside the GAS, a smaller steering pad and order board ---- */
 @media (orientation: landscape) and (max-height: 520px) {

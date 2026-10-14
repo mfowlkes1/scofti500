@@ -10,6 +10,7 @@ import { loadCar } from "./carModel";
 import { addNumber, addTrim } from "./carNumber";
 import { paintedUrl } from "./paint";
 import { carUrl, type Car } from "./roster";
+import { boxLeft, pointerX } from "./turn";
 
 const W = 24; // wall to wall (x)
 const D = 40; // back wall to front wall (z)
@@ -68,13 +69,13 @@ export function createGarage(canvas: HTMLCanvasElement): Garage {
   let dragX: number | null = null;
   let idle = 0;
   canvas.addEventListener("pointerdown", (e) => {
-    dragX = e.clientX;
+    dragX = pointerX(e);
     canvas.setPointerCapture(e.pointerId);
   });
   canvas.addEventListener("pointermove", (e) => {
     if (dragX === null) return;
-    spin += (e.clientX - dragX) * 0.01;
-    dragX = e.clientX;
+    spin += (pointerX(e) - dragX) * 0.01;
+    dragX = pointerX(e);
     idle = 0;
   });
   const drop = () => (dragX = null);
@@ -99,8 +100,8 @@ export function createGarage(canvas: HTMLCanvasElement): Garage {
       // screen (on a sideways phone the panel covered half the car: Michael, 2026-10-13)
       camera.position.set(-0.2, 2.3, 10.5);
       camera.lookAt(0, 0.7, 0);
-      const panel = document.querySelector(".garage-panel")?.getBoundingClientRect();
-      const room = panel && panel.width ? panel.left : w * 0.6;
+      const panel = document.querySelector(".garage-panel");
+      const room = panel && panel.clientWidth ? boxLeft(panel) : w * 0.6;
       camera.setViewOffset(w, h, w / 2 - room / 2, 0, w, h);
     }
     camera.updateProjectionMatrix();

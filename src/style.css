@@ -17,6 +17,28 @@ body {
   user-select: none;
 }
 
+/* a phone held upright: the game stays sideways, drawn a quarter turn round (src/turn.ts). The body
+   is the game's screen, and the rules that size things by the screen read it (vite.config.ts) */
+html.turned {
+  --sa-top: 0px;
+  --sa-bottom: 0px;
+  --sa-left: max(env(safe-area-inset-top), env(safe-area-inset-bottom));
+  --sa-right: max(env(safe-area-inset-top), env(safe-area-inset-bottom));
+}
+html.turned body {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--turn-w);
+  height: var(--turn-h);
+  container: game / size;
+  transform-origin: 0 0;
+  transform: rotate(-90deg) translateX(-100%);
+}
+html.turned-cw body {
+  transform: rotate(90deg) translateY(-100%);
+}
+
 button {
   font: inherit;
   cursor: pointer;
