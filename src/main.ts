@@ -362,25 +362,15 @@ function turn(by: number): void {
   });
 }
 
-// the tracks: a button for each, the one you raced last picked
-const TRACK_KEY = "scofti500:track";
-let track = TRACKS[0];
-try {
-  track = TRACKS.find((t) => t.id === localStorage.getItem(TRACK_KEY)) ?? track;
-} catch {
-  // not remembered
-}
+// the tracks: a button for each, hotlanta picked every time the game is opened (Michael, 2026-10-16:
+// the easier one to play, so everyone starts there), never the one raced last
+let track = TRACKS.find((t) => t.id === "hotlanta") ?? TRACKS[0];
 const trackButtons = TRACKS.map((t) => {
   const b = document.createElement("button");
   b.type = "button";
   b.textContent = t.name.toUpperCase();
   b.addEventListener("click", () => {
     track = t;
-    try {
-      localStorage.setItem(TRACK_KEY, t.id);
-    } catch {
-      // not remembered
-    }
     showTrack();
   });
   $("track-pick").append(b);

@@ -14,6 +14,9 @@ const files = import.meta.glob("./radio/*.mp3", { eager: true, query: "?url", im
 const SONGS = Object.entries(files)
   .filter(([path]) => /radio\/thunder--.+\.mp3$/.test(path))
   .map(([, url]) => url);
+/** every time the game is opened, the first song is this one; the shuffle starts after it
+ * (Michael, 2026-10-16: "force against the tide as first song") */
+const FIRST = files["./radio/thunder--against-the-tide.mp3"];
 
 const MENU = 0.95; // Michael, 2026-10-13: "can barely hear it"
 const RACE = 0.9; // up over the engines (Michael, 2026-10-13: "needs music to help drown it out", then "louder while driving")
@@ -148,7 +151,7 @@ function next(): void {
     return;
   }
   const choices = SONGS.length > 1 ? SONGS.filter((s) => s !== last) : SONGS;
-  play(choices[Math.floor(Math.random() * choices.length)]);
+  play(!played.length && FIRST ? FIRST : choices[Math.floor(Math.random() * choices.length)]);
   played.push(last);
 }
 
