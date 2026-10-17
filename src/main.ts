@@ -210,7 +210,9 @@ const cars = createPicker<Car>({
   sub: (c) => `#${c.number}`,
   line: (c) => c.line,
   badge: (c) => c.number,
-  accent: (c) => c.accent,
+  // every card's number badge and glow in silver, the hooter's too (Michael, 2026-10-17); its orange
+  // accent stays for its stock paint swatch
+  accent: () => "#d9dde3",
   onShow: (c, hero, card) => {
     showPaints(c, hero, card);
     if (screen === "car") speak(driver, `car-${c.id}`, $("car-say"));
