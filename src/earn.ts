@@ -1,7 +1,7 @@
 // Drivers you earn (Michael, 2026-10-17): Raven and Paige are open to everyone; Reba, Maia and Lynx
 // join Scofti Racing once you've proved yourself on track. Earned, never bought: no chips. Locked
 // drivers still show and still say hello on the pick screen. Only race night / race day counts, not
-// preseason testing. Saved on this device (scofti500:earned, and the tracks won at in scofti500:wins).
+// preseason testing. Saved on this device (scofti500:earned, and every win, by track, in scofti500:wins).
 
 const EARNED_KEY = "scofti500:earned";
 const WINS_KEY = "scofti500:wins";
@@ -12,8 +12,8 @@ type Rule = { id: string; how: string; met: (pos: number, wins: string[]) => boo
 const RULES: Rule[] = [
   { id: "reba", how: "FINISH ON THE PODIUM TO PLAY WITH REBA", met: (pos) => pos <= 3 },
   { id: "maia", how: "MAIA WON'T JOIN A TEAM WITHOUT A WIN", met: (pos) => pos === 1 },
-  // three different tracks, not just the two there are now (Michael, 2026-10-17: more tracks are coming)
-  { id: "lynx", how: "WIN AT 3 SEPARATE TRACKS TO CONVINCE LYNX TO JOIN", met: (_, wins) => wins.length >= 3 },
+  // any three wins, at any tracks
+  { id: "lynx", how: "3 WINS AND YOU CAN PLAY WITH LYNX", met: (_, wins) => wins.length >= 3 },
 ];
 
 function read(key: string): string[] {
@@ -42,7 +42,7 @@ export function lockedHow(id: string): string | null {
 /** a race finished (not preseason): remembers a win, and returns the drivers it just earned */
 export function raceFinished(pos: number, track: string): string[] {
   const wins = read(WINS_KEY);
-  if (pos === 1 && !wins.includes(track)) write(WINS_KEY, (wins.push(track), wins));
+  if (pos === 1) write(WINS_KEY, (wins.push(track), wins));
   const earned = read(EARNED_KEY);
   const fresh = RULES.filter((r) => !earned.includes(r.id) && r.met(pos, wins)).map((r) => r.id);
   if (fresh.length) write(EARNED_KEY, [...earned, ...fresh]);
