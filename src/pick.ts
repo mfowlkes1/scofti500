@@ -19,6 +19,8 @@ export type PickerOptions<T extends PickerItem> = {
   line: (t: T) => string;
   /** little badge on the small card (a car number, say) */
   badge?: (t: T) => string;
+  /** how to earn it, when it's locked (it still shows; only the button won't take it) */
+  locked?: (t: T) => string | null;
   /** colour of the selected card's glow */
   accent?: (t: T) => string;
   /** called each time the shown item changes, with the hero image and the item's small-card image */
@@ -26,7 +28,9 @@ export type PickerOptions<T extends PickerItem> = {
   onGo: (t: T) => void;
 };
 
-export type Picker<T> = { step: (by: number) => void; current: () => T };
+export type Picker<T> = { step: (by: number) => void; current: () => T; refresh: () => void };
+
+const LOCK = `<svg class="lock" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3" fill="none" stroke="currentColor" stroke-width="2.6"/><rect x="4" y="10" width="16" height="12" rx="2.5" fill="currentColor"/></svg>`;
 
 export function createPicker<T extends PickerItem>(o: PickerOptions<T>): Picker<T> {
   let cur = 0;
@@ -45,7 +49,7 @@ export function createPicker<T extends PickerItem>(o: PickerOptions<T>): Picker<
     b.type = "button";
     b.className = "card";
     const badge = o.badge ? `<span class="card-badge">${o.badge(t)}</span>` : "";
-    b.innerHTML = `<span class="card-art"><img src="${o.img(t)}" alt="" />${badge}</span><span class="card-name">${t.name}</span>`;
+    b.innerHTML = `<span class="card-art"><img src="${o.img(t)}" alt="" />${badge}<span class="card-lock">${LOCK}</span></span><span class="card-name">${t.name}</span>`;
     b.addEventListener("click", () => {
       cur = i;
       refresh();
@@ -53,6 +57,9 @@ export function createPicker<T extends PickerItem>(o: PickerOptions<T>): Picker<
     $(`${o.prefix}-cards`).append(b);
     return b;
   });
+
+  const go = $(`${o.prefix}-go`) as HTMLButtonElement;
+  const goLabel = go.textContent ?? "";
 
   function refresh(): void {
     const t = o.items[cur];
@@ -66,16 +73,22 @@ export function createPicker<T extends PickerItem>(o: PickerOptions<T>): Picker<
     $(`${o.prefix}-name`).textContent = t.name;
     $(`${o.prefix}-sub`).textContent = o.sub(t);
     $(`${o.prefix}-line`).textContent = o.line(t);
+    const how = o.locked?.(t) ?? null;
+    go.disabled = !!how;
+    go.classList.toggle("go-locked", !!how);
+    go.innerHTML = how ? `${LOCK}${how}` : goLabel;
     for (const [i, c] of cards.entries()) {
       c.classList.toggle("on", i === cur);
+      c.classList.toggle("locked", !!o.locked?.(o.items[i]));
       c.style.setProperty("--accent", o.accent?.(o.items[i]) ?? "");
     }
     cards[cur].scrollIntoView({ block: "nearest", inline: "nearest" });
     o.onShow?.(t, img, cards[cur].querySelector("img")!);
   }
 
-  $(`${o.prefix}-go`).addEventListener("click", () => {
+  go.addEventListener("click", () => {
     const t = o.items[cur];
+    if (o.locked?.(t)) return;
     try {
       localStorage.setItem(o.storageKey, t.id);
     } catch {
@@ -91,5 +104,6 @@ export function createPicker<T extends PickerItem>(o: PickerOptions<T>): Picker<
       refresh();
     },
     current: () => o.items[cur],
+    refresh,
   };
 }

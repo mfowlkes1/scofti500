@@ -16,7 +16,8 @@ import { fieldOf } from "./rivals";
 import { buildTrack, type TrackScene } from "./scene";
 import { buildCrews, type PitCrews } from "./crew";
 import { CHATTER_COUNT, HEATHER_UPDATE_COUNT, HEATHER_WRAP_COUNT, LINES, slug } from "./lines";
-import { DRIVERS } from "../roster";
+import { DRIVERS, faceUrl } from "../roster";
+import { raceFinished } from "../earn";
 import { savedSuit, suitUrl } from "../suit";
 import { createRadio, type Radio } from "./radio";
 import { startAudio, type RaceAudio } from "./sound";
@@ -1437,6 +1438,17 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     $("rr-title").textContent = pos === 1 ? "VICTORY LANE" : pos <= 3 ? "PODIUM" : "CHECKERED FLAG";
     $("rr-pos").textContent = `P${pos}`;
     $("rr-cash").innerHTML = chipAmount(payout, "+");
+    // a driver earned (not in preseason testing): her face, the news, and her line in her own voice
+    const fresh = setup && !setup.easy ? raceFinished(pos, setup.track) : [];
+    const joined = fresh.map((id) => DRIVERS.find((d) => d.id === id)!).filter(Boolean);
+    $("rr-earned").innerHTML = joined
+      .map((d) => `<p><img src="${faceUrl(d)}" alt="" /><b>${d.name.toUpperCase()} JOINS SCOFTI RACING</b><span>${LINES[`drv-${d.id}-joins`]?.text ?? ""}</span></p>`)
+      .join("");
+    if (joined.length) {
+      const key = `drv-${joined[0].id}-joins`;
+      duckMusic(true);
+      void playClip(`${import.meta.env.BASE_URL}audio/radio/${key}.mp3`).done.then(() => duckMusic(false));
+    }
     // laps down on the winner, the way the real results sheet shows it
     const down = (i: number) => s.crossed[ord[0]] - s.crossed[i];
     $("rr-table").innerHTML = ord

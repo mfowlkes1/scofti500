@@ -325,6 +325,12 @@ const BONES: Record<string, string> = {
   maia: "Who's throwing chicken bones?! I'm finding you after this race!",
   paige: "Chicken bones on the track. Classy, Martinsvale. Love you anyway.",
 };
+// earned on track (earn.ts): what she says joining Scofti Racing, on the results card. Tough, not grateful
+const JOINS: Record<string, string> = {
+  reba: "You hit your marks. Fine. I'm in. Don't slow me down.",
+  maia: "You won it? Okay. I'm in. Somebody's getting moved.",
+  lynx: "Both tracks? That's badass. Now hand me the keys.",
+};
 const COPY: Record<string, string> = { raven: "Copy that.", reba: "Understood.", lynx: "Yep! Got it!", maia: "Yeah, yeah. Got it.", paige: "Copy. Showtime." };
 export const CHATTER_COUNT: Record<string, number> = Object.fromEntries(Object.entries(CHATTER).map(([d, l]) => [d, l.length]));
 const PAINT_TALK: Record<string, string> = {
@@ -486,6 +492,7 @@ for (const [driver, voice] of Object.entries(DRIVER_VOICES)) {
   const say = (key: string, text: string) => (lines[`drv-${driver}-${key}`] = { who: "driver", text, label, voice, clean: true });
   say("pick", "Let's go racing!");
   say("hello", HELLO[driver]);
+  if (JOINS[driver]) say("joins", JOINS[driver]);
   for (const [car, text] of Object.entries(CAR_TALK[driver])) say(`car-${car}`, text);
   for (const [paint, text] of Object.entries({ ...PAINT_TALK, ...PAINT_LINES[driver] })) say(`paint-${paint}`, text);
   for (const [k, text] of Object.entries(OWN[driver] ?? {})) lines[`drv-${driver}-${k}`].text = text;

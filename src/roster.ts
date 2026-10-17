@@ -34,6 +34,7 @@ export type Car = {
   views: number[];
 };
 
+// in pick order: Raven and Paige open to everyone, then Reba, Maia and Lynx as you earn them (earn.ts)
 export const DRIVERS: Driver[] = [
   {
     id: "raven",
@@ -43,18 +44,18 @@ export const DRIVERS: Driver[] = [
     line: "Smirks on the grid. Laughs on the last lap.",
   },
   {
+    id: "paige",
+    name: "paige",
+    team: "Scofti Racing",
+    role: "the showstopper",
+    line: "Plays to the crowd. Wins for herself.",
+  },
+  {
     id: "reba",
     name: "reba",
     team: "Scofti Racing",
     role: "the ice queen",
     line: "Never smiles on the grid. Never misses a mark.",
-  },
-  {
-    id: "lynx",
-    name: "lynx",
-    team: "Scofti Racing",
-    role: "the wild child",
-    line: "Tattoos, pigtails, zero brakes. Racing's the fun part.",
   },
   {
     id: "maia",
@@ -64,11 +65,11 @@ export const DRIVERS: Driver[] = [
     line: "Red hair, short fuse, no brakes.",
   },
   {
-    id: "paige",
-    name: "paige",
+    id: "lynx",
+    name: "lynx",
     team: "Scofti Racing",
-    role: "the showstopper",
-    line: "Plays to the crowd. Wins for herself.",
+    role: "the wild child",
+    line: "Tattoos, pigtails, zero brakes. Racing's the fun part.",
   },
 ];
 

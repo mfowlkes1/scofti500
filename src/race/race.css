@@ -794,6 +794,50 @@ body.in-seat .hud-speed {
   font-size: clamp(28px, 5vmin, 44px);
   color: #2bff5a;
 }
+/* a driver just earned: her face and the news, over the results */
+.rr-earned p {
+  margin: 4px 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 12px;
+  align-items: center;
+  padding: 6px 14px 6px 6px;
+  background: rgba(11, 7, 22, 0.85);
+  border: 3px solid var(--lime, #b6ff00);
+  border-radius: 999px;
+  box-shadow: 0 0 1.4rem rgba(182, 255, 0, 0.5);
+}
+.rr-earned img {
+  grid-row: span 2;
+  width: clamp(44px, 8vmin, 72px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.rr-earned b {
+  font: 400 clamp(18px, 3.4vmin, 30px) / 1.1 "Racing Sans One", system-ui, sans-serif;
+  color: var(--lime, #b6ff00);
+}
+.rr-earned span {
+  font-size: clamp(13px, 2.2vmin, 18px);
+}
+/* a phone on its side: slim, so the results still show under it */
+@media (max-height: 500px) {
+  .rr-earned p {
+    margin: 2px 0;
+    padding: 2px 12px 2px 3px;
+    border-width: 2px;
+  }
+  .rr-earned img {
+    width: 30px;
+  }
+  .rr-earned b {
+    font-size: 14px;
+  }
+  .rr-earned span {
+    font-size: 11px;
+  }
+}
 .rr-table {
   margin: 0;
   padding: 0;

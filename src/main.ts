@@ -15,6 +15,7 @@ import { LINES, slug } from "./race/lines";
 import { STOCK } from "./race/physics";
 import { createRace } from "./race/race";
 import { CARS, DRIVERS, TRACKS, carUrl, faceUrl, fullUrl, type Car, type Driver } from "./roster";
+import { lockedHow } from "./earn";
 import { sendHome } from "./home";
 import { savedSteer, setSteer, touchScreen, type SteerMode } from "./steer";
 import { pointerX } from "./turn";
@@ -38,7 +39,8 @@ function show(next: Screen): void {
   document.body.dataset.screen = next;
   garage.show(next === "garage");
   musicForRace(next === "race");
-  if (next === "driver") speak(drivers.current(), "hello", $("driver-say"));
+  // (a race may have just earned someone: the locks redrawn, and hello from whoever's up)
+  if (next === "driver") drivers.refresh();
 }
 
 // The drivers talk on the pick screens: hello when you look at one, then what they think of each car
@@ -126,6 +128,8 @@ const drivers = createPicker<Driver>({
   role: (d) => d.role,
   sub: (d) => d.team,
   line: (d) => d.line,
+  // Reba, Maia and Lynx are earned on track (earn.ts); locked, they still show and say hello
+  locked: (d) => lockedHow(d.id),
   // say hello as each one comes up, and show her colors
   onShow: (d, hero) => {
     showSuits(d, hero);

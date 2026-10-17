@@ -659,6 +659,53 @@ body[data-screen="track"] #track-screen {
   font: 600 18px/1.4 system-ui, sans-serif;
 }
 
+/* a driver not earned yet (earn.ts): a lock on her card, and the button says how to earn her */
+.card-lock {
+  display: none;
+  position: absolute;
+  left: -4px;
+  top: -4px;
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+  color: #fff;
+  background: var(--night);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+.card.locked .card-lock {
+  display: block;
+}
+.card.locked .card-art img {
+  filter: grayscale(0.7) brightness(0.75);
+}
+.lock {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.go-btn.go-locked {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  max-width: 100%;
+  padding: 0.35em 1em 0.3em;
+  font-size: clamp(16px, 2.6vmin, 24px);
+  white-space: normal;
+  text-align: left;
+  color: #fff;
+  background: rgba(11, 7, 22, 0.8);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: none;
+  cursor: default;
+}
+.go-btn.go-locked .lock {
+  flex: 0 0 auto;
+  width: 1.1em;
+  height: 1.1em;
+}
+
 /* a longer label on the big button (PICK YOUR TRACK ▶) */
 .go-btn.go-long {
   font-size: clamp(24px, 4.8vmin, 44px);
@@ -1200,6 +1247,9 @@ body:not([data-screen="title"]) .song-btn {
   .pick-info .go-btn {
     margin-top: 4px;
     font-size: 26px;
+  }
+  .pick-info .go-btn.go-locked {
+    font-size: 15px;
   }
   .pick-stage {
     height: 100%;
