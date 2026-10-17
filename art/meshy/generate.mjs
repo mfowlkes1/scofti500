@@ -52,6 +52,18 @@ const MODELS = {
     views: SHEET_VIEWS,
     texture: `Boxy 1980s stock car. Bright orange body with white panels, a fierce owl face across the hood and rear, owl feather shapes down the sides, big white number 7 with a black outline on both doors and the roof. Black wheels, quad square headlights, black grille. ${NO_BRANDS}`,
   },
+  // the '90s #90, from the OpenAI sheet (art/openai/car-sheet.mjs) with its lettering taken off: SCOFTI
+  // and the number go on after with fix-lettering.mjs. 1536 x 1024, its own layout
+  "car-90-nineties": {
+    sheet: "car-90s-sheet-fixed.png",
+    views: [
+      { left: 20, top: 15, width: 745, height: 345 }, // front three-quarter
+      { left: 795, top: 15, width: 741, height: 345 }, // rear three-quarter
+      { left: 20, top: 395, width: 745, height: 230 }, // left side
+      { left: 20, top: 685, width: 470, height: 325 }, // top
+    ],
+    texture: `Smooth rounded 1990s stock car with a low sloped nose, fastback roof and tall flat rear spoiler. Matte black body covered in bright lime yellow paint splatter streaks. Black steel wheels, black tires, red tail lights, headlight decals. No lettering and no numbers anywhere. ${NO_BRANDS}`,
+  },
 };
 
 const auth = { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" };
