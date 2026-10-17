@@ -16,7 +16,7 @@ import { fieldOf } from "./rivals";
 import { buildTrack, type TrackScene } from "./scene";
 import { buildCrews, type PitCrews } from "./crew";
 import { CHATTER_COUNT, HEATHER_UPDATE_COUNT, HEATHER_WRAP_COUNT, LINES, slug } from "./lines";
-import { DRIVERS, faceUrl } from "../roster";
+import { DRIVERS, carUrl, faceUrl } from "../roster";
 import { raceFinished } from "../earn";
 import { savedSuit, suitUrl } from "../suit";
 import { createRadio, type Radio } from "./radio";
@@ -1439,11 +1439,14 @@ export function createRace(opts: { onDone(again: boolean): void }) {
     $("rr-pos").textContent = `P${pos}`;
     $("rr-cash").innerHTML = chipAmount(payout, "+");
     // a driver earned (not in preseason testing): her face, the news, and her line in her own voice
-    const fresh = setup && !setup.easy ? raceFinished(pos, setup.track) : [];
-    const joined = fresh.map((id) => DRIVERS.find((d) => d.id === id)!).filter(Boolean);
-    $("rr-earned").innerHTML = joined
-      .map((d) => `<p><img src="${faceUrl(d)}" alt="" /><b>${d.name.toUpperCase()} JOINS SCOFTI RACING</b><span>${LINES[`drv-${d.id}-joins`]?.text ?? ""}</span></p>`)
-      .join("");
+    // and a car earned: its picture and the news
+    const fresh = setup && !setup.easy ? raceFinished(pos, setup.track) : { drivers: [], cars: [] };
+    const joined = fresh.drivers.map((id) => DRIVERS.find((d) => d.id === id)!).filter(Boolean);
+    const got = fresh.cars.map((id) => CARS.find((c) => c.id === id)!).filter(Boolean);
+    $("rr-earned").innerHTML = [
+      ...joined.map((d) => `<p><img src="${faceUrl(d)}" alt="" /><b>${d.name.toUpperCase()} JOINS SCOFTI RACING</b><span>${LINES[`drv-${d.id}-joins`]?.text ?? ""}</span></p>`),
+      ...got.map((c) => `<p class="car"><img src="${carUrl(c)}" alt="" /><b>${c.name.toUpperCase()} IS YOURS</b><span>The #${c.number} is in your garage.</span></p>`),
+    ].join("");
     if (joined.length) {
       const key = `drv-${joined[0].id}-joins`;
       duckMusic(true);

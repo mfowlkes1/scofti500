@@ -814,6 +814,11 @@ body.in-seat .hud-speed {
   border-radius: 50%;
   object-fit: cover;
 }
+.rr-earned .car img {
+  aspect-ratio: 2 / 1;
+  width: clamp(88px, 16vmin, 144px);
+  border-radius: 999px 8px 8px 999px;
+}
 .rr-earned b {
   font: 400 clamp(18px, 3.4vmin, 30px) / 1.1 "Racing Sans One", system-ui, sans-serif;
   color: var(--lime, #b6ff00);
@@ -830,6 +835,9 @@ body.in-seat .hud-speed {
   }
   .rr-earned img {
     width: 30px;
+  }
+  .rr-earned .car img {
+    width: 60px;
   }
   .rr-earned b {
     font-size: 14px;

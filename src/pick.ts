@@ -21,6 +21,8 @@ export type PickerOptions<T extends PickerItem> = {
   badge?: (t: T) => string;
   /** how to earn it, when it's locked (it still shows; only the button won't take it) */
   locked?: (t: T) => string | null;
+  /** the button on a locked one, when it can do something (buy a car); without it the button is off */
+  onLocked?: (t: T) => void;
   /** colour of the selected card's glow */
   accent?: (t: T) => string;
   /** called each time the shown item changes, with the hero image and the item's small-card image */
@@ -74,9 +76,11 @@ export function createPicker<T extends PickerItem>(o: PickerOptions<T>): Picker<
     $(`${o.prefix}-sub`).textContent = o.sub(t);
     $(`${o.prefix}-line`).textContent = o.line(t);
     const how = o.locked?.(t) ?? null;
-    go.disabled = !!how;
-    go.classList.toggle("go-locked", !!how);
-    go.innerHTML = how ? `${LOCK}${how}` : goLabel;
+    // locked with nothing to do: dark and off; locked but buyable: still a bright button, with the lock
+    go.disabled = !!how && !o.onLocked;
+    go.classList.toggle("go-locked", !!how && !o.onLocked);
+    go.classList.toggle("go-buy", !!how && !!o.onLocked);
+    go.innerHTML = how ? `${LOCK}<span>${how}</span>` : goLabel;
     for (const [i, c] of cards.entries()) {
       c.classList.toggle("on", i === cur);
       c.classList.toggle("locked", !!o.locked?.(o.items[i]));
@@ -88,7 +92,7 @@ export function createPicker<T extends PickerItem>(o: PickerOptions<T>): Picker<
 
   go.addEventListener("click", () => {
     const t = o.items[cur];
-    if (o.locked?.(t)) return;
+    if (o.locked?.(t)) return void o.onLocked?.(t);
     try {
       localStorage.setItem(o.storageKey, t.id);
     } catch {

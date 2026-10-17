@@ -700,10 +700,28 @@ body[data-screen="track"] #track-screen {
   box-shadow: none;
   cursor: default;
 }
-.go-btn.go-locked .lock {
+.go-btn.go-locked .lock,
+.go-btn.go-buy .lock {
   flex: 0 0 auto;
   width: 1.1em;
   height: 1.1em;
+}
+/* a car you can buy: still the bright button, the price big and how to earn it small under it */
+.go-btn.go-buy,
+.go-btn.go-long.go-buy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: clamp(22px, 4vmin, 38px);
+  text-align: left;
+}
+.go-buy small {
+  display: block;
+  font-size: 0.5em;
+  letter-spacing: 0.06em;
+}
+.go-buy .chips-amt .chip {
+  vertical-align: -0.12em;
 }
 
 /* a longer label on the big button (PICK YOUR TRACK ▶) */
@@ -1046,6 +1064,10 @@ body[data-screen="garage"] .welcome {
   gap: 14px;
   padding: 64px 16px 24px;
 }
+/* over the page, or the page swallowed the tap and BACK did nothing */
+#chips-back {
+  z-index: 3;
+}
 .chips-have {
   margin: 0;
   font: 400 clamp(18px, 3vmin, 26px) / 1 "Lilita One", system-ui, sans-serif;
@@ -1250,6 +1272,9 @@ body:not([data-screen="title"]) .song-btn {
   }
   .pick-info .go-btn.go-locked {
     font-size: 15px;
+  }
+  .pick-info .go-btn.go-buy {
+    font-size: 22px;
   }
   .pick-stage {
     height: 100%;

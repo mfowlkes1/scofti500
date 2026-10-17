@@ -15,7 +15,7 @@ import { LINES, slug } from "./race/lines";
 import { STOCK } from "./race/physics";
 import { createRace } from "./race/race";
 import { CARS, DRIVERS, TRACKS, carUrl, faceUrl, fullUrl, type Car, type Driver } from "./roster";
-import { lockedHow } from "./earn";
+import { buyCar, carLock, lockedHow } from "./earn";
 import { sendHome } from "./home";
 import { savedSteer, setSteer, touchScreen, type SteerMode } from "./steer";
 import { pointerX } from "./turn";
@@ -213,6 +213,13 @@ const cars = createPicker<Car>({
   // every card's number badge and glow in silver, the hooter's too (Michael, 2026-10-17); its orange
   // accent stays for its stock paint swatch
   accent: () => "#d9dde3",
+  // the muscle and the hooter: bought with chips, or earned on track (earn.ts)
+  locked: (c) => {
+    const lock = carLock(c.id);
+    return lock && `BUY ${chipAmount(lock.price)}<small>${lock.how}</small>`;
+  },
+  // short on chips: it opens GET CHIPS, like an upgrade does
+  onLocked: (c) => (buyCar(c.id) ? cars.refresh() : openChips("car")),
   onShow: (c, hero, card) => {
     showPaints(c, hero, card);
     if (screen === "car") speak(driver, `car-${c.id}`, $("car-say"));
@@ -515,7 +522,9 @@ function showUpgrades(): void {
 }
 
 // ---- GET CHIPS: the packs. On the web it's "coming soon in the app" (?chiptest hands them over) ----
-function openChips(): void {
+function openChips(from: Screen = "garage"): void {
+  // back to wherever it was opened from (the pit garage, or a car you're short for)
+  BACK.chips = from;
   $("chips-have").innerHTML = chipAmount(chips());
   $("chips-note").textContent = canBuy() ? "TEST MODE: packs are free" : "Coming soon in the SCOFTI 500 app. For now, race to win more!";
   $("chips-packs").replaceChildren(
@@ -538,8 +547,8 @@ function openChips(): void {
   );
   show("chips");
 }
-$("chips-back").addEventListener("click", () => show("garage"));
-$("chips-race").addEventListener("click", () => show("track"));
+$("chips-back").addEventListener("click", () => back());
+$("chips-race").addEventListener("click", () => (BACK.chips === "car" ? back() : show("track")));
 {
   const lineup = $("chips-lineup");
   for (const id of ["maia", "lynx", "reba", "raven", "paige"]) {
@@ -609,6 +618,8 @@ showMode();
 
 const race = createRace({
   onDone: () => {
+    // a car may have been earned: its lock comes off before you're back to the cars
+    cars.refresh();
     showUpgrades();
     show("garage");
   },
