@@ -2,8 +2,8 @@
 // join Scofti Racing once you've proved yourself on track. Earned, never bought: no chips. Locked
 // drivers still show and still say hello on the pick screen.
 //
-// Cars are different: they can be bought with chips or earned on track, whichever comes first. Guyute
-// and the brawler are open to everyone.
+// Cars are different: they can be bought with chips or earned on track, whichever comes first. Only
+// the muscle is open to everyone.
 //
 // Only race night / race day counts, not preseason testing. Saved on this device: scofti500:earned
 // (drivers and cars earned or bought), scofti500:wins (every win, by track) and scofti500:races (how
@@ -29,9 +29,11 @@ const RULES: Rule[] = [
 
 // the cars by car id: a price in chips, or the goal that earns it
 const CAR_RULES: CarRule[] = [
-  { id: "3-muscle", price: 1000, how: "OR FINISH 5 RACES", met: (r) => r.races >= 5 },
-  { id: "7-owl", price: 1500, how: "OR WIN AT MARTINSVALE", met: (r) => r.wins.includes("martinsvale") },
+  // only the '60s muscle is open to start (Michael, 2026-10-17); the rest climb in era order
+  { id: "7-owl", price: 1000, how: "OR FINISH 5 RACES", met: (r) => r.races >= 5 },
+  { id: "43-eighties", price: 1500, how: "OR WIN AT MARTINSVALE", met: (r) => r.wins.includes("martinsvale") },
   { id: "90-nineties", price: 2500, how: "OR WIN AT HOTLANTA", met: (r) => r.wins.includes("hotlanta") },
+  { id: "17-modern", price: 5000, how: "OR WIN 5 RACES", met: (r) => r.wins.length >= 5 },
 ];
 
 function read<T>(key: string, fallback: T): T {
