@@ -11,7 +11,7 @@ type Rule = { id: string; how: string; met: (pos: number, wins: string[]) => boo
 // in the order you earn them
 const RULES: Rule[] = [
   { id: "reba", how: "FINISH ON THE PODIUM TO PLAY WITH REBA", met: (pos) => pos <= 3 },
-  { id: "maia", how: "WIN A RACE TO EARN MAIA", met: (pos) => pos === 1 },
+  { id: "maia", how: "MAIA WON'T JOIN A TEAM WITHOUT ONE CHECKERED FLAG", met: (pos) => pos === 1 },
   // three different tracks, not just the two there are now (Michael, 2026-10-17: more tracks are coming)
   { id: "lynx", how: "WIN AT 3 SEPARATE TRACKS TO CONVINCE LYNX TO JOIN", met: (_, wins) => wins.length >= 3 },
 ];
