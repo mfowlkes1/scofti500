@@ -329,7 +329,7 @@ const BONES: Record<string, string> = {
 const JOINS: Record<string, string> = {
   reba: "You hit your marks. Fine. I'm in. Don't slow me down.",
   maia: "You won it? Okay. I'm in. Somebody's getting moved.",
-  lynx: "Both tracks? That's badass. Now hand me the keys.",
+  lynx: "Three tracks? Okay, that's badass. Now hand me the keys.",
 };
 const COPY: Record<string, string> = { raven: "Copy that.", reba: "Understood.", lynx: "Yep! Got it!", maia: "Yeah, yeah. Got it.", paige: "Copy. Showtime." };
 export const CHATTER_COUNT: Record<string, number> = Object.fromEntries(Object.entries(CHATTER).map(([d, l]) => [d, l.length]));
