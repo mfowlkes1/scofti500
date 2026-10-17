@@ -122,7 +122,8 @@ let driver: Driver = DRIVERS[0];
 const drivers = createPicker<Driver>({
   prefix: "driver",
   items: DRIVERS,
-  storageKey: "scofti500:driver",
+  // no storageKey: Raven is up every time the game is opened, never the driver picked last (Michael,
+  // 2026-10-17: Paige kept showing first)
   img: faceUrl,
   hero: fullUrl,
   role: (d) => d.role,

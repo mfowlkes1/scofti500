@@ -1,6 +1,6 @@
 // The pick screens, bold and 2D like winter games': PICK YOUR DRIVER, then PICK YOUR CAR. One picker
 // drives both: a big hero image with the name, role and line beside it (below on a phone), a row of
-// small cards to switch, and a fat button. Each pick is saved (scofti500:driver, scofti500:car).
+// small cards to switch, and a fat button. The car pick is saved (scofti500:car); the driver pick always opens on Raven.
 
 const $ = (id: string) => document.getElementById(id)!;
 
@@ -10,7 +10,8 @@ export type PickerOptions<T extends PickerItem> = {
   /** element id prefix: <prefix>-img, -role, -name, -sub, -line, -go, -cards */
   prefix: string;
   items: T[];
-  storageKey: string;
+  /** where the pick is remembered; without it the first item is up every time the game is opened */
+  storageKey?: string;
   img: (t: T) => string;
   /** the big picture, when it isn't the small card's (a driver head to toe) */
   hero?: (t: T) => string;
@@ -37,7 +38,7 @@ const LOCK = `<svg class="lock" viewBox="0 0 24 24" aria-hidden="true"><path d="
 export function createPicker<T extends PickerItem>(o: PickerOptions<T>): Picker<T> {
   let cur = 0;
   try {
-    const saved = o.items.findIndex((t) => t.id === localStorage.getItem(o.storageKey));
+    const saved = o.storageKey ? o.items.findIndex((t) => t.id === localStorage.getItem(o.storageKey!)) : -1;
     if (saved >= 0) cur = saved;
   } catch {
     // no storage: start on the first
@@ -94,7 +95,7 @@ export function createPicker<T extends PickerItem>(o: PickerOptions<T>): Picker<
     const t = o.items[cur];
     if (o.locked?.(t)) return void o.onLocked?.(t);
     try {
-      localStorage.setItem(o.storageKey, t.id);
+      if (o.storageKey) localStorage.setItem(o.storageKey, t.id);
     } catch {
       // no storage: the pick just isn't remembered
     }

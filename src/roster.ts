@@ -73,34 +73,8 @@ export const DRIVERS: Driver[] = [
   },
 ];
 
+// in era order, oldest first, guyute (today's car) last (Michael, 2026-10-17)
 export const CARS: Car[] = [
-  {
-    id: "17-modern",
-    number: "17",
-    era: "modern",
-    name: "guyute",
-    line: "Today's car. Low, wide, all splatter.",
-    accent: "#d9dde3",
-    // the 17 is lime itself, so in black it goes silver (where it sits in each view)
-    key: { ...LIME, numbers: { 0: [[0.17, 0.28, 0.35, 0.64]], 2: [[0.35, 0.42, 0.56, 0.66]], 4: [[0.46, 0.26, 0.7, 0.55]] } },
-    // no lime on the cars (Michael)
-    // starts in white camo (Michael: "that one is BADASS")
-    paint: "white-camo",
-    // no rear views: the sheet shows a real maker's badge on the back
-    views: [0, 2, 4],
-  },
-  {
-    id: "43-eighties",
-    number: "43",
-    era: "'80s",
-    name: "the brawler",
-    line: "A big square box. Rubbin' is racin'.",
-    accent: "#d9dde3",
-    key: LIME,
-    // no lime on the cars (Michael)
-    paint: "black",
-    views: [0, 1, 2, 4],
-  },
   {
     id: "3-muscle",
     number: "3",
@@ -126,6 +100,18 @@ export const CARS: Car[] = [
     views: [0, 1, 2, 4],
   },
   {
+    id: "43-eighties",
+    number: "43",
+    era: "'80s",
+    name: "the brawler",
+    line: "A big square box. Rubbin' is racin'.",
+    accent: "#d9dde3",
+    key: LIME,
+    // no lime on the cars (Michael)
+    paint: "black",
+    views: [0, 1, 2, 4],
+  },
+  {
     // made 2026-10-17: the sheet from OpenAI (art/openai), the model from Meshy, and these pictures
     // photographed off the lettered model (tools/carPhoto.ts), since the sheet misspelled SCOFTI
     id: "90-nineties",
@@ -137,6 +123,21 @@ export const CARS: Car[] = [
     key: LIME,
     paint: "black",
     views: [0, 1, 2, 4],
+  },
+  {
+    id: "17-modern",
+    number: "17",
+    era: "modern",
+    name: "guyute",
+    line: "Today's car. Low, wide, all splatter.",
+    accent: "#d9dde3",
+    // the 17 is lime itself, so in black it goes silver (where it sits in each view)
+    key: { ...LIME, numbers: { 0: [[0.17, 0.28, 0.35, 0.64]], 2: [[0.35, 0.42, 0.56, 0.66]], 4: [[0.46, 0.26, 0.7, 0.55]] } },
+    // no lime on the cars (Michael)
+    // starts in white camo (Michael: "that one is BADASS")
+    paint: "white-camo",
+    // no rear views: the sheet shows a real maker's badge on the back
+    views: [0, 2, 4],
   },
 ];
 
