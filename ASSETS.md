@@ -4,6 +4,7 @@ Everything ships with the game; nothing loads from other sites.
 
 ## art
 - **Car models** (`public/models/car-*.glb`): Meshy, made from Michael's car sheets (`art/reference/`), lettering repainted by `art/meshy/fix-lettering.mjs`. The car pictures in `public/img/cars/` are from the same sheets.
+  - The '90s #90 ("the slick", `car-90-nineties.glb`): its sheet made with OpenAI gpt-image-1 (`art/openai/car-sheet.mjs`, from the #43 sheet's layout), cleaned of lettering, then Meshy task 01a14bc3-24fb-71ed-b094-218f4d3b5355; its pictures (`public/img/cars/90-nineties*.jpg`) photographed off the lettered model with `tools/carPhoto.ts`.
 - **Drivers** (`public/img/drivers/`): cut from Michael's character sheets (`raven-sheet.png`, `reba-sheet.png`, `lynx-sheet.png`, `maia-sheet.png`, `paige-sheet.png`, and the solo shots `paige-solo.png`, `reba-solo.png`, `lynx-solo.png`, `maia-solo.png`); Heather from `heather-sheet.png` (`public/img/heather*.{jpg,webp}`); full-body pictures cut out of the sheets (background removed).
 - **Title art** (`public/img/welcome-*.jpg`): Michael's. **Covers** (`cover.jpg`, `cover-portrait.jpg`): the title art with the drivers lined up across the bottom, made by `art/make-covers.mjs` (run it again when a driver's picture changes).
 - **Big-screen ads** (`public/img/promo/`): art from Scofti's own games (Offroad, Winter Games, Sloth Splash, Void Signal) and the ScofTV crew faces, copied from scofti-winter-games.
@@ -27,4 +28,4 @@ Everything ships with the game; nothing loads from other sites.
 - Permanent Marker (SCOFTI only), Racing Sans One, Lilita One.
 
 ## saved in the browser (localStorage)
-`scofti500:driver`, `scofti500:car`, `scofti500:paint`, `scofti500:suit`, `scofti500:chips`, `scofti500:upgrades`, `scofti500:track`, `scofti500:laps`, `scofti500:mode`, `scofti500:camera`, `scofti500:music`
+`scofti500:driver`, `scofti500:car`, `scofti500:paint`, `scofti500:suit`, `scofti500:chips`, `scofti500:upgrades`, `scofti500:track`, `scofti500:laps`, `scofti500:mode`, `scofti500:camera`, `scofti500:music`, `scofti500:earned`, `scofti500:wins`, `scofti500:races`

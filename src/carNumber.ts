@@ -31,6 +31,11 @@ const PANELS: Record<string, Panel[]> = {
     { side: "right", x: [-0.26, 0.11], v: [-0.18, 0.08] },
     { side: "roof", x: [-0.12, 0.24], v: [-0.19, 0.2] },
   ],
+  "90-nineties": [
+    { side: "left", x: [-0.38, 0.18], v: [-0.15, 0.05] },
+    { side: "right", x: [-0.38, 0.18], v: [-0.15, 0.05] },
+    { side: "roof", x: [-0.12, 0.41], v: [-0.22, 0.22] },
+  ],
 };
 
 // which way each panel reads: its right, its up, and the way the decal projects (into the car)

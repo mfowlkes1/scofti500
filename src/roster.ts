@@ -125,6 +125,19 @@ export const CARS: Car[] = [
     paint: "stock",
     views: [0, 1, 2, 4],
   },
+  {
+    // made 2026-10-17: the sheet from OpenAI (art/openai), the model from Meshy, and these pictures
+    // photographed off the lettered model (tools/carPhoto.ts), since the sheet misspelled SCOFTI
+    id: "90-nineties",
+    number: "90",
+    era: "'90s",
+    name: "the slick",
+    line: "Smooth, round and slippery. Built to draft.",
+    accent: "#d9dde3",
+    key: LIME,
+    paint: "black",
+    views: [0, 1, 2, 4],
+  },
 ];
 
 const byId = <T extends { id: string }>(list: T[], id: string | null) => list.find((x) => x.id === id);

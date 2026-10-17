@@ -16,6 +16,7 @@ const LETTERS = {
   "17": { w: 900, h: 600, html: `<b class="n">17</b>` },
   "43": { w: 900, h: 600, html: `<b class="n">43</b>` },
   "3": { w: 600, h: 600, html: `<b class="n">3</b>` },
+  "90": { w: 900, h: 600, html: `<b class="n">90</b>` },
 };
 const b = await chromium.launch({ channel: "chrome" });
 for (const [name, { w, h, html }] of Object.entries(LETTERS)) {

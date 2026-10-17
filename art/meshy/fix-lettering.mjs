@@ -20,7 +20,7 @@ const letters = async (name) => {
   return { data, halo, w: info.width, h: info.height };
 };
 const SCOFTI = await letters("scofti");
-const NUM = { "17": await letters("17"), "43": await letters("43"), "3": await letters("3") };
+const NUM = { "17": await letters("17"), "43": await letters("43"), "3": await letters("3"), "90": await letters("90") };
 
 // Each panel: which faces (by position p and face normal n), its flat "reading" frame (a to the
 // right, b downwards, in model units), the area it may touch and where the lettering goes. A panel
@@ -63,6 +63,17 @@ const CARS = {
     sideR([-0.15, 0.23, -0.09, 0.18], [-0.12, 0.2, -0.08, 0.17], NUM["3"]),
     hood([-0.27, 0.27, 0.38, 0.88], [-0.26, 0.26, 0.57, 0.7]),
     roof([-0.1, 0.42, -0.24, 0.24], [0.0, 0.32, -0.16, 0.16], NUM["3"]),
+  ],
+  // the '90s #90: Meshy made it with no lettering at all (the sheet was cleaned first), so this is the
+  // only lettering it gets; SCOFTI on the rear quarters, the hood and under the tail lights
+  "car-90-nineties": [
+    sideL([0.27, 0.86, -0.12, 0.07], [0.28, 0.84, -0.11, 0.06], SCOFTI),
+    sideR([-0.86, -0.27, -0.12, 0.07], [-0.84, -0.28, -0.11, 0.06], SCOFTI),
+    sideL([-0.38, 0.18, -0.05, 0.15], [-0.36, 0.16, -0.04, 0.14], NUM["90"]),
+    sideR([-0.18, 0.38, -0.05, 0.15], [-0.16, 0.36, -0.04, 0.14], NUM["90"]),
+    hood([-0.27, 0.27, 0.38, 0.86], [-0.26, 0.26, 0.56, 0.69]),
+    roof([-0.12, 0.41, -0.22, 0.22], [-0.07, 0.36, -0.14, 0.14], NUM["90"]),
+    rear([-0.24, 0.24, 0.04, 0.13], [-0.2, 0.2, 0.045, 0.125]),
   ],
 };
 

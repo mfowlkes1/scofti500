@@ -13,6 +13,7 @@ export const MODELS: Record<string, string> = {
   "43-eighties": "car-43-eighties",
   "3-muscle": "car-3-muscle",
   "7-owl": "car-7-owl",
+  "90-nineties": "car-90-nineties",
 };
 
 /** the car's model in its paint, nose along -x, or null if it has none */

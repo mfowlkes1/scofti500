@@ -31,6 +31,7 @@ const RULES: Rule[] = [
 const CAR_RULES: CarRule[] = [
   { id: "3-muscle", price: 1000, how: "OR FINISH 5 RACES", met: (r) => r.races >= 5 },
   { id: "7-owl", price: 1500, how: "OR WIN AT MARTINSVALE", met: (r) => r.wins.includes("martinsvale") },
+  { id: "90-nineties", price: 2500, how: "OR WIN AT HOTLANTA", met: (r) => r.wins.includes("hotlanta") },
 ];
 
 function read<T>(key: string, fallback: T): T {
