@@ -116,7 +116,7 @@ export const CARS: Car[] = [
   {
     id: "7-owl",
     number: "7",
-    era: "'80s",
+    era: "'70s",
     name: "the hooter",
     line: "Sees the gap before it opens.",
     accent: "#ff7a1a",
