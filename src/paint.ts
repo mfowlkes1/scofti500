@@ -181,15 +181,26 @@ function recolour(data: ImageData, paint: Paint, key: KeyHue, skip: Rect[], numb
     // how much this pixel is the car's paint: on-hue, coloured enough, not blown out or black.
     // Black reaches further into the dark, muddy edges so no green fringe is left behind.
     const width = dark ? key.width * 1.5 : key.width;
-    const weight =
-      (1 - smooth(width * 0.6, width, dh)) *
-      (dark ? smooth(0.1, 0.25, s) : smooth(0.18, 0.4, s)) *
-      (dark ? smooth(0.02, 0.06, l) : smooth(0.06, 0.16, l)) *
-      (1 - smooth(0.92, 0.99, l));
+    // under the floor line: the car's reflection in the wet floor. Paler and duller than the car, so
+    // the car's thresholds only half-caught it and left dark green patches on a black car (Michael,
+    // 2026-10-17): here any hint of the key hue goes, and the floor keeps its own brightness
+    const fl = floor?.[x] ?? -1;
+    const reflection = !camo && fl >= 0 && y > fl;
+    const weight = reflection
+      ? (1 - smooth(width * 0.6, width, dh)) * smooth(0.04, 0.12, s)
+      : (1 - smooth(width * 0.6, width, dh)) *
+        (dark ? smooth(0.1, 0.25, s) : smooth(0.18, 0.4, s)) *
+        (dark ? smooth(0.02, 0.06, l) : smooth(0.06, 0.16, l)) *
+        (1 - smooth(0.92, 0.99, l));
     if (weight <= 0) continue;
     const shade = l / REF_L;
     let r: number, gg: number, b: number;
-    if (camo) {
+    if (reflection) {
+      // the paint's hue at the floor's own lightness: a black car reflects as a dark grey sheen, a red
+      // one as red, never lime
+      const [th, ts, tl] = paint.hsl!;
+      [r, gg, b] = hslToRgb(th, ts, dark ? l * 0.6 : Math.min(1, (l + tl) / 2));
+    } else if (camo) {
       // in the reflection, the camo is the car's own, upside down (Michael, 2026-10-13: the floor
       // under a camo car was getting its own camo)
       const f = floor?.[x] ?? -1;

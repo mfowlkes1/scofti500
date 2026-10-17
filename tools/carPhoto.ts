@@ -15,7 +15,8 @@ const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffe
 renderer.setPixelRatio(1);
 renderer.setSize(innerWidth, innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
+// no filmic tone mapping: it dulled the lime, and the game's recolor only half caught the paint
+renderer.toneMapping = THREE.NoToneMapping;
 renderer.shadowMap.enabled = true;
 document.body.append(renderer.domElement);
 
@@ -41,17 +42,18 @@ const envTex = skyTex.clone();
 envTex.mapping = THREE.EquirectangularReflectionMapping;
 scene.environment = pmrem.fromEquirectangular(envTex).texture;
 
-scene.add(new THREE.HemisphereLight("#ffd9b0", "#3a2a50", 1.6));
-const sun = new THREE.DirectionalLight("#fff1dc", 2.4);
+// white light, so the paint stays the one yellow the game recolors (warm light pushed it orange)
+scene.add(new THREE.HemisphereLight("#ffffff", "#40384a", 1.7));
+const sun = new THREE.DirectionalLight("#ffffff", 2.2);
 sun.position.set(-4, 6, 5);
 sun.castShadow = true;
 scene.add(sun);
-const rim = new THREE.DirectionalLight("#ff9a50", 1.2);
+const rim = new THREE.DirectionalLight("#ffffff", 0.9);
 rim.position.set(6, 2, -4);
 scene.add(rim);
 
 // a glossy dark floor, like the wet studio floor in the others
-const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.MeshStandardMaterial({ color: "#3a2c48", roughness: 0.38, metalness: 0.35 }));
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.MeshStandardMaterial({ color: "#2e2838", roughness: 0.6, metalness: 0 }));
 floor.rotation.x = -Math.PI / 2;
 floor.receiveShadow = true;
 scene.add(floor);

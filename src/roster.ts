@@ -120,7 +120,8 @@ export const CARS: Car[] = [
     name: "the slick",
     line: "Smooth, round and slippery. Built to draft.",
     accent: "#d9dde3",
-    key: LIME,
+    // its splatter came out a yellower lime than the others (hue about 60)
+    key: { hue: 60, width: 24 },
     paint: "black",
     views: [0, 1, 2, 4],
   },
